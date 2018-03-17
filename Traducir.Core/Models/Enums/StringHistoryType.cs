@@ -5,5 +5,6 @@ namespace Traducir.Core.Models.Enums
         Created = 1,
         Updated = 2,
         Deleted = 3,
+        Undeleted = 4,
     }
 }

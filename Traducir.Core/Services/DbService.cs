@@ -3,13 +3,13 @@ using System.Data.SqlClient;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using StackExchange.Profiling;
+using StackExchange.Profiling.Data;
 
 namespace Traducir.Core.Services
 {
     public interface IDbService
     {
-        DbConnection GetConnection();
-        SqlConnection GetRawConnection();
+        ProfiledDbConnection GetConnection();
     }
 
     public class DbService : IDbService
@@ -22,13 +22,10 @@ namespace Traducir.Core.Services
             ConnectionString = configuration.GetValue<string>("CONNECTION_STRING");
         }
 
-        public SqlConnection GetRawConnection(){
-            return new SqlConnection(ConnectionString);
-        }
-
-        public DbConnection GetConnection()
+        public ProfiledDbConnection GetConnection()
         {
-            return new StackExchange.Profiling.Data.ProfiledDbConnection(GetRawConnection(), MiniProfiler.Current);
+            var connection = new SqlConnection(ConnectionString);
+            return new StackExchange.Profiling.Data.ProfiledDbConnection(connection, MiniProfiler.Current);
         }
     }
 }

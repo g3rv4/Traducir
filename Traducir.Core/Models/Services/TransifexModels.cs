@@ -18,7 +18,9 @@ namespace Traducir.Core.Models.Services
         public string Source { get; set; }
 
         [DataMember(Name = "translation")]
-        public string Translation { get; set; }
+        public string UnreviewedTranslation { get; set; }
+
+        public string Translation => Reviewed ? UnreviewedTranslation : null;
 
         private static string GetNormalizedKey(string key)
         {

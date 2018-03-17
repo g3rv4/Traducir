@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,123 +25,129 @@ namespace Traducir.Core.Services
             _dbService = dbService;
         }
 
+        private Task CreateTemporaryTable(DbConnection db)
+        {
+            return db.ExecuteAsync(@"
+Drop Table If Exists dbo.ImportTable;
+Create Table dbo.ImportTable
+(
+NormalizedKey VarChar(255) Not Null,
+[Key] VarChar(255) Not Null,
+OriginalString NVarChar(Max) Not Null,
+Translation NVarChar(Max) Null,
+
+Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
+)");
+        }
+
         public async Task StoreNewStrings(TransifexString[] strings)
         {
             using(var db = _dbService.GetConnection())
             {
-                var currentKeys = (await db.QueryAsync<(int id, string key)>(@"
-Select Id, NormalizedKey
-From   Strings
-Where  DeletionDate Is Null"))
-                    .ToDictionary(e => e.key, e => e.id, StringComparer.InvariantCultureIgnoreCase);
-                var newKeys = strings.ToDictionary(s => s.NormalizedKey, StringComparer.InvariantCultureIgnoreCase);
-
-                // delete old ones
-                var idsToDelete = currentKeys.Where(e => !newKeys.ContainsKey(e.Key)).Select(e => e.Value);
-                if (idsToDelete.Any())
+                await CreateTemporaryTable(db);
+                using(MiniProfiler.Current.Step("Populate temp table"))
                 {
-                    using(MiniProfiler.Current.Step("Deleting strings"))
-                    {
-                        await db.ExecuteAsync(@"
-Update Strings
-Set    DeletionDate = @now
-Where  Id In @idsToDelete", new { now = DateTime.UtcNow, idsToDelete });
+                    var table = new DataTable();
+                    table.Columns.Add("NormalizedKey", typeof(string));
+                    table.Columns.Add("Key", typeof(string));
+                    table.Columns.Add("OriginalString", typeof(string));
+                    table.Columns.Add("Translation", typeof(string));
 
-                        await db.ExecuteAsync(@"
-Insert Into StringHistory
-            (StringId, HistoryTypeId, CreationDate)
-Select      Id, {=Deleted}, @now
-From        Strings
-Where       Id In @idsToDelete", new { now = DateTime.UtcNow, idsToDelete, StringHistoryType.Deleted });
+                    foreach (var s in strings)
+                    {
+                        table.Rows.Add(s.NormalizedKey, s.Key, s.Source, s.Translation);
+                    }
+
+                    var copyDb = (SqlConnection)db.InnerConnection;
+                    using(var copy = new SqlBulkCopy(copyDb))
+                    {
+                        copy.DestinationTableName = "dbo.ImportTable";
+                        foreach (DataColumn c in table.Columns)
+                        {
+                            copy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(c.ColumnName, c.ColumnName));
+                        }
+
+                        copyDb.Open();
+                        copy.WriteToServer(table);
                     }
                 }
 
-                // add new ones
-                var stringsToAdd = newKeys.Where(e => !currentKeys.ContainsKey(e.Key)).Select(e => e.Value).ToList();
-                if (stringsToAdd.Any())
+                using(MiniProfiler.Current.Step("Delete strings"))
                 {
-                    var existing = new List<(string key, int id)>();
-                    foreach (var stringsBatch in stringsToAdd.Batch(2000))
-                    {
-                        existing.AddRange(await db.QueryAsync<(string key, int id)>(@"
-Select NormalizedKey, Id
-From   Strings
-Where  NormalizedKey In @keys", new { keys = stringsBatch.Select(s => s.NormalizedKey)}));
-                    }
-                    var existingKeys = existing.Select(e => e.key).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+                    await db.ExecuteAsync(@"
+Insert Into StringHistory
+            (StringId, HistoryTypeId, CreationDate)
+Select    s.Id, {=Deleted}, @now
+From      Strings s
+Left Join ImportTable feed On feed.NormalizedKey = s.NormalizedKey
+Where     s.DeletionDate Is Null
+And       feed.NormalizedKey Is Null;
 
-                    if (existingKeys.Any())
-                    {
-                        using(MiniProfiler.Current.Step("Undeleting existing strings"))
-                        {
-                            await db.ExecuteAsync(@"
-Update Strings
-Set    DeletionDate = Null
-Where  Id In @ids;
+Update    s
+Set       s.DeletionDate = @now
+From      Strings s
+Left Join ImportTable feed On feed.NormalizedKey = s.NormalizedKey
+Where     s.DeletionDate Is Null
+And       feed.NormalizedKey Is Null;", new { now = DateTime.UtcNow, StringHistoryType.Deleted });
+                }
+
+                using(MiniProfiler.Current.Step("Update strings"))
+                {
+                    await db.ExecuteAsync(@"
+Insert Into StringHistory
+            (StringId, HistoryTypeId, Comment, CreationDate)
+Select s.Id, {=Updated}, Concat('Key Updated from ', s.[Key], ' to ', feed.[Key]), @now
+From   Strings s
+Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
+Where  s.[Key] <> feed.[Key];
+
+Update s
+Set    s.[Key] = feed.[Key]
+From   Strings s
+Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
+Where  s.[Key] <> feed.[Key];", new { now = DateTime.UtcNow, StringHistoryType.Updated });
+                }
+
+                using(MiniProfiler.Current.Step("Undelete strings"))
+                {
+                    await db.ExecuteAsync(@"
+Insert Into StringHistory
+            (StringId, HistoryTypeId, CreationDate)
+Select s.Id, {=Undeleted}, @now
+From   Strings s
+Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
+Where  s.DeletionDate Is Not Null;
+
+Update s
+Set    s.DeletionDate = Null
+From   Strings s
+Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
+Where  s.DeletionDate Is Not Null;", new { now = DateTime.UtcNow, StringHistoryType.Undeleted });
+                }
+
+                using(MiniProfiler.Current.Step("Add new strings"))
+                {
+                    await db.ExecuteAsync(@"
+Declare @NormalizedKeysToInsert Table (
+    NormalizedKey VarChar(255) Not Null
+);
+
+Insert Into @NormalizedKeysToInsert
+Select    feed.NormalizedKey
+From      ImportTable feed
+Left Join Strings s On s.NormalizedKey = feed.NormalizedKey
+Where     s.NormalizedKey Is Null;
+
+Insert Into Strings ([Key], NormalizedKey, OriginalString, Translation, CreationDate)
+Select [Key], feed.NormalizedKey, feed.OriginalString, feed.Translation, @now
+From   ImportTable feed
+Join   @NormalizedKeysToInsert s On s.NormalizedKey = feed.NormalizedKey;
 
 Insert Into StringHistory
             (StringId, HistoryTypeId, CreationDate)
-Select      Id, {=Created}, @now
-From        Strings
-Where       Id In @ids", new
-                            {
-                                ids = existing.Select(e => e.id),
-                                    now = DateTime.UtcNow,
-                                    StringHistoryType.Created
-                            });
-                        }
-                    }
-
-                    var stringsToInsert = stringsToAdd.Where(st => !existingKeys.Contains(st.NormalizedKey)).ToList();
-                    if (stringsToInsert.Any())
-                    {
-                        using(MiniProfiler.Current.Step("Adding new strings to the database - SqlBulkCopy"))
-                        {
-                            // add the really new ones
-                            var table = new DataTable();
-                            table.Columns.Add("Key", typeof(string));
-                            table.Columns.Add("NormalizedKey", typeof(string));
-                            table.Columns.Add("OriginalString", typeof(string));
-                            table.Columns.Add("Translation", typeof(string));
-                            table.Columns.Add("CreationDate", typeof(DateTime));
-
-                            foreach (var s in stringsToInsert)
-                            {
-                                table.Rows.Add(s.Key, s.NormalizedKey, s.Source, s.Translation, DateTime.UtcNow);
-                            }
-
-                            using(var copyDb = _dbService.GetRawConnection())
-                            using(var copy = new SqlBulkCopy(copyDb))
-                            {
-                                copy.DestinationTableName = "Strings";
-                                foreach (DataColumn c in table.Columns)
-                                {
-                                    copy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(c.ColumnName, c.ColumnName));
-                                }
-
-                                copyDb.Open();
-                                copy.WriteToServer(table);
-                            }
-                        }
-                        using(MiniProfiler.Current.Step("Adding new strings to the database - Add history"))
-                        {
-                            // add the history to the string
-                            foreach (var stringsBatch in stringsToInsert.Batch(2000))
-                            {
-                                await db.ExecuteAsync(@"
-Insert Into StringHistory
-            (StringId, HistoryTypeId, CreationDate)
-Select      Id, {=Created}, @now
-From        Strings
-Where       NormalizedKey In @keys", new
-                                {
-                                    keys = stringsBatch.Select(s => s.NormalizedKey),
-                                        now = DateTime.UtcNow,
-                                        StringHistoryType.Created
-                                });
-                            }
-                        }
-                    }
+Select s.Id, {=Created}, @now
+From   @NormalizedKeysToInsert i
+Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.UtcNow, StringHistoryType.Created });
                 }
             }
         }
