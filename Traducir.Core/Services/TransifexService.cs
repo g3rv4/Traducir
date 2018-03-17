@@ -5,26 +5,25 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using StackExchange.Profiling;
 using Traducir.Core.Models.Services;
 
 namespace Traducir.Core.Services
 {
     public interface ITransifexService
     {
-        Task PullFromTransifex();
+        Task<TransifexString[]> GetStringsFromTransifexAsync();
     }
 
     public class TransifexService : ITransifexService
     {
-        private static IDbService _dbService { get; set; }
         private string _apikey { get; }
         private string _resourcePath { get; }
 
-        public TransifexService(IConfiguration configuration, IDbService dbService)
+        public TransifexService(IConfiguration configuration)
         {
             _apikey = configuration.GetValue<string>("TRANSIFEX_APIKEY");
             _resourcePath = configuration.GetValue<string>("TRANSIFEX_RESOURCE_PATH");
-            _dbService = dbService;
         }
 
         private static HttpClient _HttpClient { get; set; }
@@ -41,19 +40,20 @@ namespace Traducir.Core.Services
             return _HttpClient;
         }
 
-        public async Task PullFromTransifex()
+        public async Task<TransifexString[]> GetStringsFromTransifexAsync()
         {
-            var client = GetHttpClient();
-            var response = await client.GetAsync(_resourcePath);
-            response.EnsureSuccessStatusCode();
-
-            using(var stream = await response.Content.ReadAsStreamAsync())
-            using(var reader = new StreamReader(stream))
+            using(MiniProfiler.Current.Step("Fetching strings from Transifex"))
             {
-                var r = Jil.JSON.Deserialize<TransifexString[]>(reader);
-            }
+                var client = GetHttpClient();
+                var response = await client.GetAsync(_resourcePath);
+                response.EnsureSuccessStatusCode();
 
-            throw new System.NotImplementedException();
+                using(var stream = await response.Content.ReadAsStreamAsync())
+                using(var reader = new StreamReader(stream))
+                {
+                    return Jil.JSON.Deserialize<TransifexString[]>(reader);
+                }
+            }
         }
     }
 }

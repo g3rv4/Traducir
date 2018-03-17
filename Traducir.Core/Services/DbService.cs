@@ -1,11 +1,15 @@
+using System.Data.Common;
 using System.Data.SqlClient;
+using Dapper;
 using Microsoft.Extensions.Configuration;
+using StackExchange.Profiling;
 
 namespace Traducir.Core.Services
 {
     public interface IDbService
     {
-        SqlConnection GetConnection();
+        DbConnection GetConnection();
+        SqlConnection GetRawConnection();
     }
 
     public class DbService : IDbService
@@ -14,12 +18,17 @@ namespace Traducir.Core.Services
 
         public DbService(IConfiguration configuration)
         {
+            SqlMapper.Settings.InListStringSplitCount = 11;
             ConnectionString = configuration.GetValue<string>("CONNECTION_STRING");
         }
 
-        public SqlConnection GetConnection()
-        {
+        public SqlConnection GetRawConnection(){
             return new SqlConnection(ConnectionString);
+        }
+
+        public DbConnection GetConnection()
+        {
+            return new StackExchange.Profiling.Data.ProfiledDbConnection(GetRawConnection(), MiniProfiler.Current);
         }
     }
 }

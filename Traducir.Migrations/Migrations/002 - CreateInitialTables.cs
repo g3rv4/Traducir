@@ -8,65 +8,81 @@ namespace Traducir.Migrations.Migrations
         protected override void Up()
         {
             Execute(@"
-If dbo.fnTableExists('SOStrings') = 0
+If dbo.fnTableExists('Strings') = 0
 Begin
-  Create Table dbo.SOStrings
+  Create Table dbo.Strings
   (
-    Id Int Not Null Primary Key (Id) Identity (1, 1),
+    Id Int Not Null Identity (1, 1),
     [Key] VarChar(255) Not Null,
     NormalizedKey VarChar(255) Not Null,
     OriginalString NVarChar(Max) Not Null,
     Translation NVarChar(Max) Null,
-    CreationDate DateTime Not Null
+    CreationDate DateTime Not Null,
+    DeletionDate DateTime Null
 
-    Constraint IX_SOStrings_Key UNIQUE ([Key]),
-    Constraint IX_SOStrings_NormalizedKey UNIQUE (NormalizedKey)
+    Constraint PK_Strings Primary Key Clustered (Id Asc),
+    Constraint IX_Strings_Key UNIQUE ([Key]),
+    Constraint IX_Strings_NormalizedKey UNIQUE (NormalizedKey)
   )
   On [Primary]
+End
+
+If dbo.fnIndexExists('Strings', 'IX_Strings_NormalizedKey_Filtered') = 0
+Begin
+  Create Index IX_Strings_NormalizedKey_Filtered On Strings (NormalizedKey)
+  Include (DeletionDate)
+  Where DeletionDate Is Null
 End
 
 If dbo.fnTableExists('Users') = 0
 Begin
   Create Table dbo.Users
   (
-    Id Int Not Null Primary Key (Id) Identity (1, 1),
+    Id Int Not Null Identity (1, 1),
     AccountId Int Not Null,
     UserId Int Not Null,
     DisplayName NVarChar(150) Not Null,
     IsModerator Bit Not Null,
     CreationDate datetime Not Null
 
+    Constraint PK_Users Primary Key Clustered (Id Asc),
     Constraint IX_Users_AccountId UNIQUE (AccountId),
     Constraint IX_Users_UserId UNIQUE (UserId)
   )
   On [Primary]
 End
 
-If dbo.fnTableExists('SOStringSuggestions') = 0
+If dbo.fnTableExists('StringSuggestions') = 0
 Begin
-  Create Table dbo.SOStringSuggestions
+  Create Table dbo.StringSuggestions
   (
-    Id Int Not Null Primary Key (Id) Identity (1, 1),
-    SOStringId Int Not Null Constraint FK_SOStringSuggestions_SoString Foreign Key References SOStrings (Id),
+    Id Int Not Null Identity (1, 1),
+    StringId Int Not Null Constraint FK_StringSuggestions_String Foreign Key References Strings (Id),
     Suggestion NVarChar(Max),
-    CreatedById Int Not Null Constraint FK_SOStringSuggestions_CreatedBy Foreign Key References Users (Id),
-    ApprovedBy Int Null Constraint FK_SOStringSuggestions_ApprovedBy Foreign Key References Users (Id),
-    RejectedBy Int Null Constraint FK_SOStringSuggestions_RejectedBy Foreign Key References Users (Id),
-    CreationDate datetime Not Null,
+    CreatedById Int Not Null Constraint FK_StringSuggestions_CreatedBy Foreign Key References Users (Id),
+    ApprovedBy Int Null Constraint FK_StringSuggestions_ApprovedBy Foreign Key References Users (Id),
+    RejectedBy Int Null Constraint FK_StringSuggestions_RejectedBy Foreign Key References Users (Id),
+    CreationDate DateTime Not Null,
+    DeletionDate DateTime Null,
     UpdateDate DateTime Null
+
+    Constraint PK_StringSuggestions Primary Key Clustered (Id Asc)
   )
   On [Primary]
 End
 
-If dbo.fnTableExists('SOStringHistory') = 0
+If dbo.fnTableExists('StringHistory') = 0
 Begin
-  Create Table dbo.SOStringHistory
+  Create Table dbo.StringHistory
   (
-    Id Int Not Null Primary Key (Id) Identity (1, 1),
-    SOStringId Int Not Null Constraint FK_SOStringHistory_SoString Foreign Key References SOStrings (Id),
+    Id Int Not Null Identity (1, 1),
+    StringId Int Not Null Constraint FK_StringHistory_String Foreign Key References Strings (Id),
     HistoryTypeId TinyInt Not Null,
-    UserId Int Not Null Constraint FK_SOStringHistory_User Foreign Key References Users (Id),
+    Comment NVarChar(100) Null,
+    UserId Int Null Constraint FK_StringHistory_User Foreign Key References Users (Id),
     CreationDate datetime Not Null
+
+    Constraint PK_StringHistory Primary Key Clustered (Id Asc)
   )
   On [Primary]
 End");
