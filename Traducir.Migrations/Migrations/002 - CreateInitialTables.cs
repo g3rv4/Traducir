@@ -58,12 +58,11 @@ Begin
     Id Int Not Null Identity (1, 1),
     StringId Int Not Null Constraint FK_StringSuggestions_String Foreign Key References Strings (Id),
     Suggestion NVarChar(Max),
+    StateId TinyInt Not Null,
     CreatedById Int Not Null Constraint FK_StringSuggestions_CreatedBy Foreign Key References Users (Id),
-    ApprovedBy Int Null Constraint FK_StringSuggestions_ApprovedBy Foreign Key References Users (Id),
-    RejectedBy Int Null Constraint FK_StringSuggestions_RejectedBy Foreign Key References Users (Id),
+    StateModifiedBy Int Null Constraint FK_StringSuggestions_StateModifiedBy Foreign Key References Users (Id),
     CreationDate DateTime Not Null,
-    DeletionDate DateTime Null,
-    UpdateDate DateTime Null
+    StateUpdateDate DateTime Null
 
     Constraint PK_StringSuggestions Primary Key Clustered (Id Asc)
   )

@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using StackExchange.Profiling;
+using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Models.Services;
 
@@ -13,10 +16,13 @@ namespace Traducir.Core.Services
     public interface ISOStringService
     {
         Task StoreNewStrings(TransifexString[] strings);
+
+        Task RefreshCache();
     }
     public class SOStringService : ISOStringService
     {
         private IDbService _dbService { get; set; }
+        private List<SOString> _strings { get; set; }
         public SOStringService(IDbService dbService)
         {
             _dbService = dbService;
@@ -147,6 +153,40 @@ Insert Into StringHistory
 Select s.Id, {=Created}, @now
 From   @NormalizedKeysToInsert i
 Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.UtcNow, StringHistoryType.Created });
+                }
+            }
+        }
+
+        public async Task RefreshCache()
+        {
+            const string sql = @"
+Select Id, [Key], OriginalString, Translation, Variant, CreationDate
+From   Strings
+Where  DeletionDate Is Null;
+
+Select ss.Id, ss.StringId, ss.Suggestion, ss.StateId, u.DisplayName CreatedBy, ss.CreationDate
+From   StringSuggestions ss
+Join   Strings s On s.Id = ss.StringId And s.DeletionDate Is Null
+Join   Users u On ss.CreatedById = u.Id
+Where  ss.StateId = {=Created}";
+
+            using(MiniProfiler.Current.Step("Refreshing the strings cache"))
+            using(var db = _dbService.GetConnection())
+            using(var reader = await db.QueryMultipleAsync(sql, new { StringSuggestionState.Created }))
+            {
+                _strings = (await reader.ReadAsync<SOString>()).AsList();
+                var suggestions = (await reader.ReadAsync<SOStringSuggestion>()).AsList();
+
+                using(MiniProfiler.Current.Step("Attaching the suggestions to the strings"))
+                {
+                    var stringsById = _strings.ToDictionary(s => s.Id);
+                    foreach (var g in suggestions.GroupBy(g => g.StringId))
+                    {
+                        if (stringsById.TryGetValue(g.Key, out var str))
+                        {
+                            str.Suggestions = g.ToArray();
+                        }
+                    }
                 }
             }
         }

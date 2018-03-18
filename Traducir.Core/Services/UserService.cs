@@ -21,10 +21,10 @@ namespace Traducir.Core.Services
             using(var db = _dbService.GetConnection())
             {
                 await db.ExecuteAsync(@"
-Declare @hasVote;
-Select @hasVote = HasVote From Users Where Id = @Id;
+Declare @hadVote Int;
+Select @hadVote = HasVote From Users Where Id = @Id;
 
-If @hasVote Is Null
+If @hadVote Is Null
   -- It's an insert!
   Insert Into Users (Id, DisplayName, IsModerator, HasVote, CreationDate, LastSeenDate)
   Values            (@Id, @DisplayName, @IsModerator, @IsModerator, @CreationDate, @LastSeenDate)
@@ -33,7 +33,7 @@ Else
   Update Users
   Set    DisplayName = @DisplayName,
          IsModerator = @IsModerator,
-         HasVote = Case When @hasVote = 1 Then 1 Else @IsModerator, -- if the user already had voting rights, keep them
+         HasVote = Case When @hadVote = 1 Then 1 Else @IsModerator End, -- if the user already had voting rights, keep them
                                                                     -- if they're now a mod, give them voting rights
          LastSeenDate = @LastSeenDate", user);
             }
