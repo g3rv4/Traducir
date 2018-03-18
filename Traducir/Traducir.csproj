@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.0-alpha9-00206" />
+    <PackageReference Include="StackExchange.Exceptional.AspNetCore" Version="2.0.0-rc2.12" />
   </ItemGroup>
 
   <ItemGroup>

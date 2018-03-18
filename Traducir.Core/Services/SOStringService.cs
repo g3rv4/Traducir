@@ -1,13 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using StackExchange.Profiling;
-using Traducir.Core.Helpers;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Models.Services;
 

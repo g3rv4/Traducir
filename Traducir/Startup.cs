@@ -1,9 +1,7 @@
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Profiling.Storage;
 using Traducir.Core.Services;
 
 namespace Traducir
@@ -11,10 +9,12 @@ namespace Traducir
     public class Startup
     {
         public IConfiguration Configuration { get; }
+        public IHostingEnvironment HostingEnvironment { get; }
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
+            HostingEnvironment = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -26,6 +26,10 @@ namespace Traducir
             services.AddSingleton(typeof(ISOStringService), typeof(SOStringService));
 
             services.AddMiniProfiler();
+            services.AddExceptional(settings =>
+            {
+                settings.UseExceptionalPageOnThrow = HostingEnvironment.IsDevelopment();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,6 +41,7 @@ namespace Traducir
             }
 
             app.UseMiniProfiler();
+            app.UseExceptional();
 
             app.UseMvc();
         }
