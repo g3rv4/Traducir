@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -27,15 +28,25 @@ namespace Traducir
             services.AddSingleton(typeof(IDbService), typeof(DbService));
             services.AddSingleton(typeof(ITransifexService), typeof(TransifexService));
             services.AddSingleton(typeof(ISOStringService), typeof(SOStringService));
+            services.AddSingleton(typeof(ISEApiService), typeof(SEApiService));
 
-            services.AddMiniProfiler();
+            services.AddMiniProfiler(settings =>
+            {
+                settings.RouteBasePath = "/app/mini-profiler-resources";
+            });
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+            {
+                o.Cookie.Path = "/app";
+            });
+
             services.AddExceptional(settings =>
             {
                 settings.UseExceptionalPageOnThrow = HostingEnvironment.IsDevelopment();
                 settings.OnBeforeLog += (sender, args)=>
                 {
                     var match = Regex.Match(args.Error.FullUrl, "^(([^/]+)//([^/]+))/", RegexOptions.Compiled);
-                    var miniProfilerUrl = match.Groups[1].Value + "/mini-profiler-resources/results?id=" + MiniProfiler.Current.Id.ToString();
+                    var miniProfilerUrl = match.Groups[1].Value + "/app/mini-profiler-resources/results?id=" + MiniProfiler.Current.Id.ToString();
 
                     args.Error.CustomData = args.Error.CustomData ?? new Dictionary<string, string>();
                     args.Error.CustomData.Add("MiniProfiler", miniProfilerUrl);
@@ -48,6 +59,11 @@ namespace Traducir
         {
             app.UseMiniProfiler();
             app.UseExceptional();
+
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always
+            });
 
             app.UseMvc();
         }

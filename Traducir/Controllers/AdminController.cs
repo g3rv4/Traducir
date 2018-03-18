@@ -35,7 +35,7 @@ namespace Traducir.Controllers
             return View("Ok");
         }
 
-        [Route("admin/errors/{path?}/{subPath?}")]
+        [Route("app/admin/errors/{path?}/{subPath?}")]
         public async Task Exceptions() => await ExceptionalMiddleware.HandleRequestAsync(HttpContext);
     }
 }
