@@ -24,11 +24,11 @@ namespace Traducir.Core.Services
 
     public class SEApiService : ISEApiService
     {
-        const string FilterId = "!3LXFJg8L8HYz9IbqHk";
+        private const string FilterId = "!3LXFJg8L8HYz9IbqHk";
 
-        string ClientId { get; }
-        string AppKey { get; }
-        string AppSecret { get; }
+        private string ClientId { get; }
+        private string AppKey { get; }
+        private string AppSecret { get; }
 
         HttpClientHandler _handler => new HttpClientHandler()
         {
