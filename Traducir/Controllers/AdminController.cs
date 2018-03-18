@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Exceptional;
 using Traducir.Core.Models.Services;
 using Traducir.Core.Services;
 
@@ -33,5 +34,8 @@ namespace Traducir.Controllers
             await _soStringService.StoreNewStrings(strings);
             return View("Ok");
         }
+
+        [Route("admin/errors/{path?}/{subPath?}")]
+        public async Task Exceptions() => await ExceptionalMiddleware.HandleRequestAsync(HttpContext);
     }
 }

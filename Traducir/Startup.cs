@@ -1,7 +1,10 @@
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Profiling;
 using Traducir.Core.Services;
 
 namespace Traducir
@@ -29,17 +32,20 @@ namespace Traducir
             services.AddExceptional(settings =>
             {
                 settings.UseExceptionalPageOnThrow = HostingEnvironment.IsDevelopment();
+                settings.OnBeforeLog += (sender, args)=>
+                {
+                    var match = Regex.Match(args.Error.FullUrl, "^(([^/]+)//([^/]+))/", RegexOptions.Compiled);
+                    var miniProfilerUrl = match.Groups[1].Value + "/mini-profiler-resources/results?id=" + MiniProfiler.Current.Id.ToString();
+
+                    args.Error.CustomData = args.Error.CustomData ?? new Dictionary<string, string>();
+                    args.Error.CustomData.Add("MiniProfiler", miniProfilerUrl);
+                };
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
             app.UseMiniProfiler();
             app.UseExceptional();
 
