@@ -19,7 +19,7 @@ namespace Traducir.Controllers
         }
 
         [HttpGet]
-        [Route("api/admin/updatedata")]
+        [Route("app/api/admin/updatedata")]
         public async Task<IActionResult> UpdateData()
         {
             TransifexString[] strings;

@@ -38,16 +38,14 @@ If dbo.fnTableExists('Users') = 0
 Begin
   Create Table dbo.Users
   (
-    Id Int Not Null Identity (1, 1),
-    AccountId Int Not Null,
-    UserId Int Not Null,
+    Id Int Not Null,
     DisplayName NVarChar(150) Not Null,
     IsModerator Bit Not Null,
-    CreationDate datetime Not Null
+    HasVote Bit Not Null,
+    CreationDate DateTime Not Null,
+    LastSeenDate DateTime Null
 
-    Constraint PK_Users Primary Key Clustered (Id Asc),
-    Constraint IX_Users_AccountId UNIQUE (AccountId),
-    Constraint IX_Users_UserId UNIQUE (UserId)
+    Constraint PK_Users Primary Key Clustered (Id Asc)
   )
   On [Primary]
 End

@@ -1,23 +1,28 @@
-using System.Linq;
+using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Traducir.Core.Models;
 using Traducir.Core.Services;
 
 namespace Traducir.Controllers
 {
     public class AccountController : Controller
     {
-        ISEApiService _seApiService { get; }
-        IConfiguration _configuration { get; }
+        private ISEApiService _seApiService { get; }
+        private IConfiguration _configuration { get; }
+        private IUserService _userService { get; }
 
-        public AccountController(IConfiguration configuration, ISEApiService seApiService)
+        public AccountController(IConfiguration configuration,
+            ISEApiService seApiService,
+            IUserService userService)
         {
             _seApiService = seApiService;
             _configuration = configuration;
+            _userService = userService;
         }
 
         string GetOauthReturnUrl()
@@ -39,16 +44,16 @@ namespace Traducir.Controllers
         }
 
         [Route("app/oauth-callback")]
-        public async Task<IActionResult> OauthCallback(string code, string state)
+        public async Task<IActionResult> OauthCallback(string code)
         {
-            var accessToken = await _seApiService.GetAccessTokenFromCodeAsync(code, GetOauthReturnUrl());
-
             var siteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN");
+
+            var accessToken = await _seApiService.GetAccessTokenFromCodeAsync(code, GetOauthReturnUrl());
             var currentUser = await _seApiService.GetMyUserAsync(siteDomain, accessToken);
 
             if (currentUser == null)
             {
-                return Content("Could not retrieve a user account for " + siteDomain);
+                return Content("Could not retrieve a user account on " + siteDomain);
             }
 
             var identity = new ClaimsIdentity(new []
@@ -64,18 +69,16 @@ namespace Traducir.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(identity));
 
-            return Redirect(state);
-        }
-
-        [Route("app/get-account-type")]
-        public IActionResult GetAccountType()
-        {
-            var employeeClaimValue = User.Claims.Where(c => c.Type == "IsEmployee").Select(c => c.Value).FirstOrDefault();
-            if (employeeClaimValue == null)
+            await _userService.UpsertUser(new User
             {
-                return Unauthorized();
-            }
-            return Content(employeeClaimValue == true.ToString()? "employee" : "user");
+                Id = currentUser.UserId,
+                    DisplayName = currentUser.DisplayName,
+                    IsModerator = currentUser.UserType == "moderator",
+                    CreationDate = DateTime.UtcNow,
+                    LastSeenDate = DateTime.UtcNow
+            });
+
+            return Redirect("/");
         }
     }
 }

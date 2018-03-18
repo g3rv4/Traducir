@@ -29,6 +29,7 @@ namespace Traducir
             services.AddSingleton(typeof(ITransifexService), typeof(TransifexService));
             services.AddSingleton(typeof(ISOStringService), typeof(SOStringService));
             services.AddSingleton(typeof(ISEApiService), typeof(SEApiService));
+            services.AddSingleton(typeof(IUserService), typeof(UserService));
 
             services.AddMiniProfiler(settings =>
             {
