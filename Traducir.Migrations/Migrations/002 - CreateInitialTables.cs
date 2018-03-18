@@ -17,6 +17,7 @@ Begin
     NormalizedKey VarChar(255) Not Null,
     OriginalString NVarChar(Max) Not Null,
     Translation NVarChar(Max) Null,
+    Variant VarChar(255) Null,
     CreationDate DateTime Not Null,
     DeletionDate DateTime Null
 

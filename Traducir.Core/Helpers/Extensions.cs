@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Traducir.Core.Helpers
 {
@@ -12,13 +11,14 @@ namespace Traducir.Core.Helpers
             return new HashSet<T>(source, comparer);
         }
 
-        public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> source, int batchSize)
+        public static bool IsNullOrEmpty(this string str)
         {
-            while (source.Any())
-            {
-                yield return source.Take(batchSize);
-                source = source.Skip(batchSize);
-            }
+            return string.IsNullOrEmpty(str);
+        }
+
+        public static bool HasValue(this string str)
+        {
+            return !str.IsNullOrEmpty();
         }
     }
 }

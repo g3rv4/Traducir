@@ -28,10 +28,11 @@ namespace Traducir.Core.Services
 Drop Table If Exists dbo.ImportTable;
 Create Table dbo.ImportTable
 (
-NormalizedKey VarChar(255) Not Null,
-[Key] VarChar(255) Not Null,
+NormalizedKey  VarChar(255) Not Null,
+[Key]          VarChar(255) Not Null,
+Variant        VarChar(255) Null,
 OriginalString NVarChar(Max) Not Null,
-Translation NVarChar(Max) Null,
+Translation    NVarChar(Max) Null,
 
 Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
 )");
@@ -47,12 +48,13 @@ Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
                     var table = new DataTable();
                     table.Columns.Add("NormalizedKey", typeof(string));
                     table.Columns.Add("Key", typeof(string));
+                    table.Columns.Add("Variant", typeof(string));
                     table.Columns.Add("OriginalString", typeof(string));
                     table.Columns.Add("Translation", typeof(string));
 
                     foreach (var s in strings)
                     {
-                        table.Rows.Add(s.NormalizedKey, s.Key, s.Source, s.Translation);
+                        table.Rows.Add(s.NormalizedKey, s.Key, s.Variant, s.Source, s.Translation);
                     }
 
                     var copyDb = (SqlConnection)db.InnerConnection;
@@ -99,7 +101,7 @@ Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
 Where  s.[Key] <> feed.[Key];
 
 Update s
-Set    s.[Key] = feed.[Key]
+Set    s.[Key] = feed.[Key], s.Variant = feed.Variant
 From   Strings s
 Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
 Where  s.[Key] <> feed.[Key];", new { now = DateTime.UtcNow, StringHistoryType.Updated });
@@ -135,8 +137,8 @@ From      ImportTable feed
 Left Join Strings s On s.NormalizedKey = feed.NormalizedKey
 Where     s.NormalizedKey Is Null;
 
-Insert Into Strings ([Key], NormalizedKey, OriginalString, Translation, CreationDate)
-Select [Key], feed.NormalizedKey, feed.OriginalString, feed.Translation, @now
+Insert Into Strings ([Key], NormalizedKey, Variant, OriginalString, Translation, CreationDate)
+Select [Key], feed.NormalizedKey, feed.Variant, feed.OriginalString, feed.Translation, @now
 From   ImportTable feed
 Join   @NormalizedKeysToInsert s On s.NormalizedKey = feed.NormalizedKey;
 
