@@ -18,6 +18,8 @@ namespace Traducir.Core.Services
         Task StoreNewStrings(TransifexString[] strings);
 
         Task RefreshCache();
+
+        Task<List<SOString>> GetStringAsync(Func<SOString, bool> predicate);
     }
     public class SOStringService : ISOStringService
     {
@@ -155,6 +157,8 @@ From   @NormalizedKeysToInsert i
 Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.UtcNow, StringHistoryType.Created });
                 }
             }
+
+            await RefreshCache();
         }
 
         public async Task RefreshCache()
@@ -189,6 +193,21 @@ Where  ss.StateId = {=Created}";
                     }
                 }
             }
+        }
+
+        public async Task<List<SOString>> GetStringAsync(Func<SOString, bool> predicate)
+        {
+            if (_strings == null)
+            {
+                await RefreshCache();
+            }
+
+            List<SOString> result;
+            using(MiniProfiler.Current.Step("Filtering the strings"))
+            {
+                result = _strings.Where(predicate).ToList();
+            }
+            return result;
         }
     }
 }
