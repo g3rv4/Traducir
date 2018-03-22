@@ -20,7 +20,8 @@ namespace Traducir.Controllers
             _soStringService = soStringService;
         }
 
-        [Route("app/api/query")]
+        [HttpPost]
+        [Route("app/api/strings/query")]
         public async Task<IActionResult> Query([FromBody] QueryViewModel model)
         {
             Func<SOString, bool> predicate = s => true;
@@ -52,6 +53,25 @@ namespace Traducir.Controllers
             }
 
             return Json(await _soStringService.GetStringAsync(predicate));
+        }
+
+        [HttpPut]
+        [Route("app/api/suggestions")]
+        public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Forbid();
+            }
+
+            var userId = User.Claims.Where(c => c.Type == "UserId").Select(c => int.Parse(c.Value)).First();
+
+            var success = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion, userId);
+            if(success){
+                await _soStringService.RefreshCacheAsync();
+                return new EmptyResult();
+            }
+            return BadRequest();
         }
     }
 }

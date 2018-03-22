@@ -15,11 +15,12 @@ namespace Traducir.Core.Services
 {
     public interface ISOStringService
     {
-        Task StoreNewStrings(TransifexString[] strings);
+        Task StoreNewStringsAsync(TransifexString[] strings);
 
-        Task RefreshCache();
+        Task RefreshCacheAsync();
 
         Task<List<SOString>> GetStringAsync(Func<SOString, bool> predicate);
+        Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId);
     }
     public class SOStringService : ISOStringService
     {
@@ -46,7 +47,7 @@ Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
 )");
         }
 
-        public async Task StoreNewStrings(TransifexString[] strings)
+        public async Task StoreNewStringsAsync(TransifexString[] strings)
         {
             using(var db = _dbService.GetConnection())
             {
@@ -158,17 +159,17 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
                 }
             }
 
-            await RefreshCache();
+            await RefreshCacheAsync();
         }
 
-        public async Task RefreshCache()
+        public async Task RefreshCacheAsync()
         {
             const string sql = @"
 Select Id, [Key], OriginalString, Translation, Variant, CreationDate
 From   Strings
 Where  DeletionDate Is Null;
 
-Select ss.Id, ss.StringId, ss.Suggestion, ss.StateId, u.DisplayName CreatedBy, ss.CreationDate
+Select ss.Id, ss.StringId, ss.Suggestion, ss.StateId State, u.DisplayName CreatedBy, ss.CreationDate
 From   StringSuggestions ss
 Join   Strings s On s.Id = ss.StringId And s.DeletionDate Is Null
 Join   Users u On ss.CreatedById = u.Id
@@ -199,7 +200,7 @@ Where  ss.StateId = {=Created}";
         {
             if (_strings == null)
             {
-                await RefreshCache();
+                await RefreshCacheAsync();
             }
 
             List<SOString> result;
@@ -208,6 +209,32 @@ Where  ss.StateId = {=Created}";
                 result = _strings.Where(predicate).ToList();
             }
             return result;
+        }
+
+        public async Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId)
+        {
+            using(var db = _dbService.GetConnection())
+            {
+                try
+                {
+                    await db.ExecuteAsync(@"
+Insert Into StringSuggestions
+            (StringId, Suggestion, StateId, CreatedById, StateModifiedBy, CreationDate, StateUpdateDate)
+Values      (@stringId, @suggestion, {=Created}, @userId, @userId, @now, @now)", new
+                    {
+                        stringId,
+                        suggestion,
+                        StringSuggestionState.Created,
+                        userId,
+                        now = DateTime.UtcNow
+                    });
+                }
+                catch (SqlException e) when(e.Number == 547)
+                {
+                    return false;
+                }
+                return true;
+            }
         }
     }
 }

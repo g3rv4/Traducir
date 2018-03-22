@@ -31,7 +31,7 @@ namespace Traducir.Controllers
             {
                 strings = await _transifexService.GetStringsFromTransifexAsync();
             }
-            await _soStringService.StoreNewStrings(strings);
+            await _soStringService.StoreNewStringsAsync(strings);
             return View("Ok");
         }
 
