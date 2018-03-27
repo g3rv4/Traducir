@@ -61,7 +61,7 @@ namespace Traducir.Controllers
         [Route("app/api/suggestions")]
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
-            var success = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion, User.GetUserId());
+            var success = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion, User.GetClaim<int>(ClaimType.Id));
             if (success)
             {
                 await _soStringService.RefreshCacheAsync();

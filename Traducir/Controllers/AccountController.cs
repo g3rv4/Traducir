@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Traducir.Core.Helpers;
 using Traducir.Core.Models;
+using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
 
 namespace Traducir.Controllers
@@ -75,15 +77,16 @@ namespace Traducir.Controllers
 
             var claims = new List<Claim>
             {
-                new Claim("Id", user.Id.ToString()),
-                new Claim("Name", currentUser.DisplayName)
+                new Claim(ClaimType.Id, user.Id.ToString()),
+                new Claim(ClaimType.Name, user.DisplayName),
+                new Claim(ClaimType.UserType, user.UserType.ToString())
             };
-            if (!user.IsBanned)
+            if (user.UserType != UserType.Banned)
             {
-                claims.Add(new Claim("CanSuggest", "1"));
-                if (user.IsReviewer || user.IsTrusted)
+                claims.Add(new Claim(ClaimType.CanSuggest, "1"));
+                if (user.UserType == UserType.Reviewer || user.UserType == UserType.TrustedUser)
                 {
-                    claims.Add(new Claim("CanReview", "1"));
+                    claims.Add(new Claim(ClaimType.CanReview, "1"));
                 }
             }
             var identity = new ClaimsIdentity(claims, "login");

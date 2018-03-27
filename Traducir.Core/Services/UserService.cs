@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Dapper;
 using Traducir.Core.Models;
+using Traducir.Core.Models.Enums;
 
 namespace Traducir.Core.Services
 {
@@ -46,7 +47,22 @@ Else
         {
             using(var db = _dbService.GetConnection())
             {
-                return await db.QueryFirstOrDefaultAsync<User>("Select * From Users Where Id = @userId", new { userId });
+                return await db.QueryFirstOrDefaultAsync<User>(@"
+Select Id, DisplayName, CreationDate, LastSeenDate,
+       Case When IsBanned = 1 Then {=Banned}
+            When IsReviewer = 1 Then {=Reviewer}
+            When IsTrusted = 1 Then {=TrustedUser}
+            Else {=User}
+       End UserType
+From   Users
+Where  Id = @userId", new
+                {
+                    userId,
+                    UserType.Banned,
+                    UserType.Reviewer,
+                    UserType.TrustedUser,
+                    UserType.User
+                });
             }
         }
     }

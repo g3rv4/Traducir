@@ -42,13 +42,16 @@ namespace Traducir.Core.Helpers
             }
         }
 
-        public static int GetUserId(this ClaimsPrincipal user)
+        public static T GetClaim<T>(this ClaimsPrincipal user, string type)
         {
-            if (int.TryParse(user.Claims.FirstOrDefault(c => c.Type == "Id")? .Value, out var val))
+            var value = user.Claims.FirstOrDefault(c => c.Type == type)? .Value;
+            if (value == null)
             {
-                return val;
+                return default(T);
             }
-            return -1;
+
+            var converter = System.ComponentModel.TypeDescriptor.GetConverter(typeof(T));
+            return (T)converter.ConvertFromString(value);
         }
     }
 }
