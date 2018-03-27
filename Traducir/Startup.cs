@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -39,8 +40,20 @@ namespace Traducir
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
             {
                 o.Cookie.Path = "/app";
+                o.Events.OnRedirectToLogin = context =>
+                {
+                    context.Response.StatusCode = 401;
+                    return Task.CompletedTask;
+                };
+                o.Events.OnRedirectToAccessDenied = context =>
+                {
+                    context.Response.StatusCode = 401;
+                    return Task.CompletedTask;
+                };
             });
-            services.AddAuthorization(options=>{
+
+            services.AddAuthorization(options =>
+            {
                 options.AddPolicy("CanSuggest", policy => policy.RequireClaim("CanSuggest"));
                 options.AddPolicy("CanReview", policy => policy.RequireClaim("CanReview"));
             });
@@ -62,7 +75,7 @@ namespace Traducir
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseAuthentication ();
+            app.UseAuthentication();
             app.UseMiniProfiler();
             app.UseExceptional();
 
