@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models;
@@ -56,17 +57,11 @@ namespace Traducir.Controllers
         }
 
         [HttpPut]
+        [Authorize(Policy = "CanSuggest")]
         [Route("app/api/suggestions")]
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return Forbid();
-            }
-
-            var userId = User.Claims.Where(c => c.Type == "UserId").Select(c => int.Parse(c.Value)).First();
-
-            var success = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion, userId);
+            var success = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion, User.GetUserId());
             if (success)
             {
                 await _soStringService.RefreshCacheAsync();

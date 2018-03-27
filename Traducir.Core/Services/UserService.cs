@@ -28,8 +28,8 @@ Select @wasReviewer = IsReviewer, @wasTrusted = IsTrusted From Users Where Id = 
 
 If @wasReviewer Is Null
   -- It's an insert!
-  Insert Into Users (Id, DisplayName, IsModerator, IsTrusted, IsReviewer, CreationDate, LastSeenDate)
-  Values            (@Id, @DisplayName, @IsModerator, @IsModerator, @IsModerator, @CreationDate, @LastSeenDate)
+  Insert Into Users (Id, DisplayName, IsModerator, IsTrusted, IsReviewer, IsBanned, CreationDate, LastSeenDate)
+  Values            (@Id, @DisplayName, @IsModerator, @IsModerator, @IsModerator, 0, @CreationDate, @LastSeenDate)
 Else
   -- It's an update
   Update Users

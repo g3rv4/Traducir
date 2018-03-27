@@ -44,6 +44,7 @@ Begin
     IsModerator Bit Not Null,
     IsTrusted Bit Not Null,
     IsReviewer Bit Not Null,
+    IsBanned Bit Not Null,
     CreationDate DateTime Not Null,
     LastSeenDate DateTime Null
 

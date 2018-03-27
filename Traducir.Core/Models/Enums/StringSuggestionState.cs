@@ -5,6 +5,7 @@ namespace Traducir.Core.Models.Enums
         Created = 1,
         ApprovedByTrustedUser = 2,
         ApprovedByReviewer = 3,
-        Rejected = 4
+        Rejected = 4,
+        DeletedByOwner = 5
     }
 }

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Text;
 
 namespace Traducir.Core.Helpers
@@ -38,6 +40,15 @@ namespace Traducir.Core.Helpers
                 }
                 return sb.ToString();
             }
+        }
+
+        public static int GetUserId(this ClaimsPrincipal user)
+        {
+            if (int.TryParse(user.Claims.FirstOrDefault(c => c.Type == "Id")? .Value, out var val))
+            {
+                return val;
+            }
+            return -1;
         }
     }
 }

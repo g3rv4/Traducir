@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -72,13 +73,20 @@ namespace Traducir.Controllers
 
             var user = await _userService.GetUserAsync(currentUser.UserId);
 
-            var identity = new ClaimsIdentity(new []
+            var claims = new List<Claim>
             {
                 new Claim("Id", user.Id.ToString()),
-                    new Claim("IsReviewer", user.IsReviewer.ToString()),
-                    new Claim("IsTrusted", user.IsTrusted.ToString()),
-                    new Claim("Name", currentUser.DisplayName)
-            }, "login");
+                new Claim("Name", currentUser.DisplayName)
+            };
+            if (!user.IsBanned)
+            {
+                claims.Add(new Claim("CanSuggest", "1"));
+                if (user.IsReviewer || user.IsTrusted)
+                {
+                    claims.Add(new Claim("CanReview", "1"));
+                }
+            }
+            var identity = new ClaimsIdentity(claims, "login");
 
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,

@@ -40,6 +40,10 @@ namespace Traducir
             {
                 o.Cookie.Path = "/app";
             });
+            services.AddAuthorization(options=>{
+                options.AddPolicy("CanSuggest", policy => policy.RequireClaim("CanSuggest"));
+                options.AddPolicy("CanReview", policy => policy.RequireClaim("CanReview"));
+            });
 
             services.AddExceptional(settings =>
             {

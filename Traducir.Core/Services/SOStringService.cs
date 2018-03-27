@@ -220,14 +220,19 @@ Where  ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
                 {
                     await db.ExecuteAsync(@"
 Insert Into StringSuggestions
-            (StringId, Suggestion, StateId, CreatedById, StateModifiedBy, CreationDate, StateUpdateDate)
-Values      (@stringId, @suggestion, {=Created}, @userId, @userId, @now, @now)", new
+            (StringId, Suggestion, StateId, CreatedById, CreationDate)
+Values      (@stringId, @suggestion, {=Created}, @userId, @now);
+
+Insert Into StringSuggestionHistory
+            (StringSuggestionId, HistoryTypeId, UserId, CreationDate)
+Values      (SCOPE_IDENTITY(), {=HistoryCreated}, @userId, @now);", new
                     {
                         stringId,
                         suggestion,
                         StringSuggestionState.Created,
                         userId,
-                        now = DateTime.UtcNow
+                        now = DateTime.UtcNow,
+                        HistoryCreated = StringSuggestionHistoryType.Created
                     });
                 }
                 catch (SqlException e) when(e.Number == 547)
