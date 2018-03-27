@@ -24,7 +24,7 @@ namespace Traducir.Core.Models.Services
         [DataMember(Name = "comment")]
         public string Comment { get; set; }
 
-        public string Variant => Comment.HasValue() ? Comment : null;
+        public string Variant => Comment.HasValue()? Comment : null;
         public string Translation => Reviewed ? UnreviewedTranslation : null;
 
         private static string GetNormalizedKey(string key)
@@ -39,5 +39,20 @@ namespace Traducir.Core.Models.Services
 
             return $"{parts[0]}|{string.Join(",", variables)}";
         }
+    }
+
+    public class TransifexStringToPush
+    {
+        [IgnoreDataMember]
+        public string Key { get; set; }
+
+        [DataMember(Name = "source_entity_hash")]
+        public string SourceEntityHash => $"{Key}:".CalculateMd5();
+
+        [DataMember(Name = "reviewed")]
+        public bool Reviewed => true;
+
+        [DataMember(Name = "translation")]
+        public string Translation { get; set; }
     }
 }

@@ -1,8 +1,7 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Exceptional;
-using Traducir.Core.Models.Services;
+using Traducir.Core.Helpers;
 using Traducir.Core.Services;
 
 namespace Traducir.Controllers
@@ -18,24 +17,23 @@ namespace Traducir.Controllers
             _soStringService = soStringService;
         }
 
-        [HttpGet]
-        [Route("app/api/admin/updatedata")]
-        public async Task<IActionResult> UpdateData()
+        [Route("app/api/admin/pull")]
+        public async Task<IActionResult> PullStrings()
         {
-            TransifexString[] strings;
-            if (Request.Query.ContainsKey("empty"))
-            {
-                strings = Array.Empty<TransifexString>();
-            }
-            else
-            {
-                strings = await _transifexService.GetStringsFromTransifexAsync();
-            }
+            var strings = await _transifexService.GetStringsFromTransifexAsync();
             await _soStringService.StoreNewStringsAsync(strings);
             return View("Ok");
         }
 
+        [Route("app/api/admin/push")]
+        public async Task<IActionResult> PushStrings()
+        {
+            var stringsToPush = await _soStringService.GetStringsAsync(s => s.Translation.HasValue());
+            await _transifexService.PushStringsToTransifexAsync(stringsToPush);
+            return View("Ok");
+        }
+
         [Route("app/admin/errors/{path?}/{subPath?}")]
-        public async Task Exceptions() => await ExceptionalMiddleware.HandleRequestAsync(HttpContext);
+        public async Task Exceptions()=> await ExceptionalMiddleware.HandleRequestAsync(HttpContext);
     }
 }

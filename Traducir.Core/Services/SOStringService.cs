@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -15,11 +16,11 @@ namespace Traducir.Core.Services
 {
     public interface ISOStringService
     {
-        Task StoreNewStringsAsync(TransifexString[] strings);
+        Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings);
 
         Task RefreshCacheAsync();
 
-        Task<List<SOString>> GetStringAsync(Func<SOString, bool> predicate);
+        Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
         Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId);
     }
     public class SOStringService : ISOStringService
@@ -47,7 +48,7 @@ Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
 )");
         }
 
-        public async Task StoreNewStringsAsync(TransifexString[] strings)
+        public async Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings)
         {
             using(var db = _dbService.GetConnection())
             {
@@ -196,17 +197,17 @@ Where  ss.StateId = {=Created}";
             }
         }
 
-        public async Task<List<SOString>> GetStringAsync(Func<SOString, bool> predicate)
+        public async Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate)
         {
             if (_strings == null)
             {
                 await RefreshCacheAsync();
             }
 
-            List<SOString> result;
+            ImmutableArray<SOString> result;
             using(MiniProfiler.Current.Step("Filtering the strings"))
             {
-                result = _strings.Where(predicate).ToList();
+                result = _strings.Where(predicate).ToImmutableArray();
             }
             return result;
         }

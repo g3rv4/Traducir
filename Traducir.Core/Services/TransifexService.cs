@@ -1,18 +1,23 @@
 using System;
+using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using StackExchange.Profiling;
+using Traducir.Core.Models;
 using Traducir.Core.Models.Services;
 
 namespace Traducir.Core.Services
 {
     public interface ITransifexService
     {
-        Task<TransifexString[]> GetStringsFromTransifexAsync();
+        Task<ImmutableArray<TransifexString>> GetStringsFromTransifexAsync();
+
+        Task<bool> PushStringsToTransifexAsync(ImmutableArray<SOString> strings);
     }
 
     public class TransifexService : ITransifexService
@@ -40,7 +45,7 @@ namespace Traducir.Core.Services
             return _HttpClient;
         }
 
-        public async Task<TransifexString[]> GetStringsFromTransifexAsync()
+        public async Task<ImmutableArray<TransifexString>> GetStringsFromTransifexAsync()
         {
             using(MiniProfiler.Current.Step("Fetching strings from Transifex"))
             {
@@ -51,7 +56,34 @@ namespace Traducir.Core.Services
                 using(var stream = await response.Content.ReadAsStreamAsync())
                 using(var reader = new StreamReader(stream))
                 {
-                    return Jil.JSON.Deserialize<TransifexString[]>(reader);
+                    return Jil.JSON.Deserialize<TransifexString[]>(reader).ToImmutableArray();
+                }
+            }
+        }
+
+        public async Task<bool> PushStringsToTransifexAsync(ImmutableArray<SOString> strings)
+        {
+            using(MiniProfiler.Current.Step("Pushing strings to Transifex"))
+            {
+                ByteArrayContent byteContent;
+                using(MiniProfiler.Current.Step("Serializing the payload"))
+                {
+                    var content = Jil.JSON.Serialize(strings.Select(s => new TransifexStringToPush
+                    {
+                        Key = s.Key,
+                            Translation = s.Translation
+                    }));
+
+                    var buffer = System.Text.Encoding.UTF8.GetBytes(content);
+                    byteContent = new ByteArrayContent(buffer);
+                    byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                }
+
+                using(MiniProfiler.Current.Step("Posting to Transifex"))
+                {
+                    var client = GetHttpClient();
+                    var response = await client.PutAsync(_resourcePath, byteContent);
+                    return response.IsSuccessStatusCode;
                 }
             }
         }

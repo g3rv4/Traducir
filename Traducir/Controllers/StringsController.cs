@@ -52,7 +52,7 @@ namespace Traducir.Controllers
                 predicate = s => oldPredicate(s)&& s.Translation.HasValue()&& regex.IsMatch(s.Translation);
             }
 
-            return Json(await _soStringService.GetStringAsync(predicate));
+            return Json(await _soStringService.GetStringsAsync(predicate));
         }
 
         [HttpPut]
@@ -67,7 +67,8 @@ namespace Traducir.Controllers
             var userId = User.Claims.Where(c => c.Type == "UserId").Select(c => int.Parse(c.Value)).First();
 
             var success = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion, userId);
-            if(success){
+            if (success)
+            {
                 await _soStringService.RefreshCacheAsync();
                 return new EmptyResult();
             }
