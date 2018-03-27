@@ -4,9 +4,10 @@ namespace Traducir.Core.Models.Enums
     {
         Created = 1,
         ApprovedByTrusted = 2,
-        ApprovadByReviewer = 3,
+        ApprovedByReviewer = 3,
         RejectedByTrusted = 4,
         RejectedByReviewer = 5,
-        DeletedByOwner = 6
+        DeletedByOwner = 6,
+        DismissedByOtherString = 7
     }
 }

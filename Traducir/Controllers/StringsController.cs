@@ -64,7 +64,25 @@ namespace Traducir.Controllers
             var success = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion, User.GetClaim<int>(ClaimType.Id));
             if (success)
             {
-                await _soStringService.RefreshCacheAsync();
+                return new EmptyResult();
+            }
+            return BadRequest();
+        }
+
+        [HttpPut]
+        [Authorize(Policy = "CanReview")]
+        [Route("app/api/review")]
+        public async Task<IActionResult> Review([FromBody] ReviewViewModel model)
+        {
+            if (!model.SuggestionId.HasValue || !model.Approve.HasValue)
+            {
+                return BadRequest();
+            }
+            var success = await _soStringService.ReviewSuggestionAsync(model.SuggestionId.Value, model.Approve.Value,
+                User.GetClaim<int>(ClaimType.Id),
+                User.GetClaim<UserType>(ClaimType.UserType));
+            if (success)
+            {
                 return new EmptyResult();
             }
             return BadRequest();

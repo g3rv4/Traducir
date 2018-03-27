@@ -81,10 +81,10 @@ namespace Traducir.Controllers
                 new Claim(ClaimType.Name, user.DisplayName),
                 new Claim(ClaimType.UserType, user.UserType.ToString())
             };
-            if (user.UserType != UserType.Banned)
+            if (user.UserType >= UserType.User)
             {
                 claims.Add(new Claim(ClaimType.CanSuggest, "1"));
-                if (user.UserType == UserType.Reviewer || user.UserType == UserType.TrustedUser)
+                if (user.UserType >= UserType.TrustedUser)
                 {
                     claims.Add(new Claim(ClaimType.CanReview, "1"));
                 }

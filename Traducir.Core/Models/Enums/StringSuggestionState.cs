@@ -6,6 +6,7 @@ namespace Traducir.Core.Models.Enums
         ApprovedByTrustedUser = 2,
         ApprovedByReviewer = 3,
         Rejected = 4,
-        DeletedByOwner = 5
+        DeletedByOwner = 5,
+        DismissedByOtherString = 6
     }
 }

@@ -18,10 +18,9 @@ namespace Traducir.Core.Services
     {
         Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings);
 
-        Task RefreshCacheAsync();
-
         Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
         Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId);
+        Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
     }
     public class SOStringService : ISOStringService
     {
@@ -160,10 +159,15 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
                 }
             }
 
-            await RefreshCacheAsync();
+            ExpireCache();
         }
 
-        public async Task RefreshCacheAsync()
+        private void ExpireCache()
+        {
+            _strings = null;
+        }
+
+        private async Task RefreshCacheAsync()
         {
             const string sql = @"
 Select Id, [Key], OriginalString, Translation, Variant, CreationDate
@@ -235,11 +239,124 @@ Values      (SCOPE_IDENTITY(), {=HistoryCreated}, @userId, @now);", new
                         HistoryCreated = StringSuggestionHistoryType.Created
                     });
                 }
-                catch (SqlException e) when(e.Number == 547)
+                catch (SqlException e)when(e.Number == 547)
                 {
                     return false;
                 }
+
+                ExpireCache();
                 return true;
+            }
+        }
+
+        public async Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType)
+        {
+            if (userType != UserType.TrustedUser && userType != UserType.Reviewer)
+            {
+                return false;
+            }
+            using(var db = _dbService.GetConnection())
+            {
+                // is this suggestion eligible for review?
+                bool eligible = await db.QuerySingleOrDefaultAsync<bool>($@"
+Select 1
+From   StringSuggestions
+Where  Id = @suggestionId
+And    StateId In @validStates", new
+                {
+                    userId,
+                    suggestionId,
+                    validStates = userType == UserType.Reviewer ? new [] { StringSuggestionState.Created, StringSuggestionState.ApprovedByTrustedUser } : new [] { StringSuggestionState.Created }
+                });
+
+                if (eligible)
+                {
+                    StringSuggestionState newState;
+                    StringSuggestionHistoryType historyType;
+
+                    if (userType == UserType.Reviewer)
+                    {
+                        if (approve)
+                        {
+                            newState = StringSuggestionState.ApprovedByReviewer;
+                            historyType = StringSuggestionHistoryType.ApprovedByReviewer;
+                        }
+                        else
+                        {
+                            newState = StringSuggestionState.Rejected;
+                            historyType = StringSuggestionHistoryType.RejectedByReviewer;
+                        }
+                    }
+                    else
+                    {
+                        if (approve)
+                        {
+                            newState = StringSuggestionState.ApprovedByTrustedUser;
+                            historyType = StringSuggestionHistoryType.ApprovedByTrusted;
+                        }
+                        else
+                        {
+                            newState = StringSuggestionState.Rejected;
+                            historyType = StringSuggestionHistoryType.RejectedByTrusted;
+                        }
+                    }
+
+                    string sql = @"
+Insert Into StringSuggestionHistory
+            (StringSuggestionId, HistoryTypeId, UserId, CreationDate)
+Values      (@suggestionId, @historyType, @userId, @now);
+
+Update StringSuggestions
+Set    StateId = @newState,
+       StateUpdateDate = @now
+Where  Id = @suggestionId;";
+                    if (newState == StringSuggestionState.ApprovedByReviewer)
+                    {
+                        sql += @"
+Update str
+Set    str.Translation = sug.Suggestion
+From   Strings str
+Join   StringSuggestions sug On sug.StringId = str.Id
+Where  sug.Id = @suggestionId;
+
+-- useful to avoid joins down the line
+Declare @stringId Int;
+Select @stringId = StringId From StringSuggestions Where Id = @suggestionId;
+
+Insert Into StringSuggestionHistory
+            (StringSuggestionId, HistoryTypeId, Comment, UserId, CreationDate)
+Select Id, {=DismissedByOtherStringHistory}, Concat('Suggestion ', @suggestionId, ' approved'), @userId, @now
+From   StringSuggestions
+Where  StringId = @stringId
+And    StateId In ({=Created}, {=ApprovedByTrustedUser});
+
+Update StringSuggestions
+Set    StateId = {=DismissedByOtherStringState}
+Where  StringId = @stringId
+And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
+                    }
+
+                    await db.ExecuteAsync(sql, new
+                    {
+                        suggestionId,
+                        historyType,
+                        userId,
+                        newState,
+                        StringSuggestionState.Created,
+                        StringSuggestionState.ApprovedByTrustedUser,
+                        now = DateTime.UtcNow,
+                        DismissedByOtherStringHistory = StringSuggestionHistoryType.DismissedByOtherString,
+                        DismissedByOtherStringState = StringSuggestionState.DismissedByOtherString,
+                    });
+
+                    if (newState == StringSuggestionState.ApprovedByReviewer || newState == StringSuggestionState.Rejected)
+                    {
+                        ExpireCache();
+                    }
+
+                    return true;
+                }
+                return false;
             }
         }
     }
