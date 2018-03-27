@@ -37,6 +37,9 @@ namespace Traducir.Core.Models.Services
 
         [DataMember(Name = "is_employee")]
         public bool IsEmployee { get; set; }
+
+        [DataMember(Name = "reputation")]
+        public int Reputation { get; set; }
     }
 
     public class NetworkUser : BaseUser

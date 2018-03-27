@@ -42,7 +42,8 @@ Begin
     Id Int Not Null,
     DisplayName NVarChar(150) Not Null,
     IsModerator Bit Not Null,
-    HasVote Bit Not Null,
+    IsTrusted Bit Not Null,
+    IsReviewer Bit Not Null,
     CreationDate DateTime Not Null,
     LastSeenDate DateTime Null
 
@@ -60,11 +61,26 @@ Begin
     Suggestion NVarChar(Max),
     StateId TinyInt Not Null,
     CreatedById Int Not Null Constraint FK_StringSuggestions_CreatedBy Foreign Key References Users (Id),
-    StateModifiedBy Int Null Constraint FK_StringSuggestions_StateModifiedBy Foreign Key References Users (Id),
     CreationDate DateTime Not Null,
     StateUpdateDate DateTime Null
 
     Constraint PK_StringSuggestions Primary Key Clustered (Id Asc)
+  )
+  On [Primary]
+End
+
+If dbo.fnTableExists('StringSuggestionHistory') = 0
+Begin
+  Create Table dbo.StringSuggestionHistory
+  (
+    Id Int Not Null Identity (1, 1),
+    StringSuggestionId Int Not Null Constraint FK_StringSuggestionHistory_StringSuggestion Foreign Key References StringSuggestions (Id),
+    HistoryTypeId TinyInt Not Null,
+    Comment NVarChar(100) Null,
+    UserId Int Null Constraint FK_StringSuggestionHistory_User Foreign Key References Users (Id),
+    CreationDate datetime Not Null
+
+    Constraint PK_StringSuggestionHistory Primary Key Clustered (Id Asc)
   )
   On [Primary]
 End

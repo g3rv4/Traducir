@@ -56,20 +56,12 @@ namespace Traducir.Controllers
                 return Content("Could not retrieve a user account on " + siteDomain);
             }
 
-            var identity = new ClaimsIdentity(new []
+            if (currentUser.Reputation < 5)
             {
-                new Claim("IsEmployee", currentUser.IsEmployee.ToString()),
-                    new Claim("AccountId", currentUser.AccountId.ToString()),
-                    new Claim("UserId", currentUser.UserId.ToString()),
-                    new Claim("Name", currentUser.DisplayName),
-                    new Claim("UserType", currentUser.UserType)
-            }, "login");
+                return Content("You need more reputation to log in");
+            }
 
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity));
-
-            await _userService.UpsertUser(new User
+            await _userService.UpsertUserAsync(new User
             {
                 Id = currentUser.UserId,
                     DisplayName = currentUser.DisplayName,
@@ -77,6 +69,20 @@ namespace Traducir.Controllers
                     CreationDate = DateTime.UtcNow,
                     LastSeenDate = DateTime.UtcNow
             });
+
+            var user = await _userService.GetUserAsync(currentUser.UserId);
+
+            var identity = new ClaimsIdentity(new []
+            {
+                new Claim("Id", user.Id.ToString()),
+                    new Claim("IsReviewer", user.IsReviewer.ToString()),
+                    new Claim("IsTrusted", user.IsTrusted.ToString()),
+                    new Claim("Name", currentUser.DisplayName)
+            }, "login");
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity));
 
             return Redirect("/");
         }

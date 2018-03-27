@@ -7,7 +7,8 @@ namespace Traducir.Core.Models
         public int Id { get; set; }
         public string DisplayName { get; set; }
         public bool IsModerator { get; set; }
-        public bool HasVote { get; set; }
+        public bool IsReviewer { get; set; }
+        public bool IsTrusted { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime? LastSeenDate { get; set; }
     }

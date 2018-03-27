@@ -174,11 +174,11 @@ Select ss.Id, ss.StringId, ss.Suggestion, ss.StateId State, u.DisplayName Create
 From   StringSuggestions ss
 Join   Strings s On s.Id = ss.StringId And s.DeletionDate Is Null
 Join   Users u On ss.CreatedById = u.Id
-Where  ss.StateId = {=Created}";
+Where  ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
 
             using(MiniProfiler.Current.Step("Refreshing the strings cache"))
             using(var db = _dbService.GetConnection())
-            using(var reader = await db.QueryMultipleAsync(sql, new { StringSuggestionState.Created }))
+            using(var reader = await db.QueryMultipleAsync(sql, new { StringSuggestionState.Created, StringSuggestionState.ApprovedByTrustedUser }))
             {
                 _strings = (await reader.ReadAsync<SOString>()).AsList();
                 var suggestions = (await reader.ReadAsync<SOStringSuggestion>()).AsList();
