@@ -17,10 +17,10 @@ namespace Traducir.Core.Services
     public interface ISOStringService
     {
         Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings);
-
         Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
         Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId);
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
+        Task UpdateStringsPushed(IEnumerable<int> stringIds);
     }
     public class SOStringService : ISOStringService
     {
@@ -170,7 +170,7 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
         private async Task RefreshCacheAsync()
         {
             const string sql = @"
-Select Id, [Key], OriginalString, Translation, Variant, CreationDate
+Select Id, [Key], OriginalString, Translation, NeedsPush, Variant, CreationDate
 From   Strings
 Where  DeletionDate Is Null;
 
@@ -314,7 +314,8 @@ Where  Id = @suggestionId;";
                     {
                         sql += @"
 Update str
-Set    str.Translation = sug.Suggestion
+Set    str.Translation = sug.Suggestion,
+       str.NeedsPush = 1
 From   Strings str
 Join   StringSuggestions sug On sug.StringId = str.Id
 Where  sug.Id = @suggestionId;
@@ -357,6 +358,15 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                     return true;
                 }
                 return false;
+            }
+        }
+
+        public async Task UpdateStringsPushed(IEnumerable<int> stringIds)
+        {
+            using(var db = _dbService.GetConnection())
+            {
+                await db.ExecuteAsync(@"Update Strings Set NeedsPush = 0 Where Id In @stringIds", new { stringIds });
+                ExpireCache();
             }
         }
     }

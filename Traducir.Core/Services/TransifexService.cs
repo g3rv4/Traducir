@@ -24,11 +24,13 @@ namespace Traducir.Core.Services
     {
         private string _apikey { get; }
         private string _resourcePath { get; }
+        private ISOStringService _soStringService { get; }
 
-        public TransifexService(IConfiguration configuration)
+        public TransifexService(IConfiguration configuration, ISOStringService soStringService)
         {
             _apikey = configuration.GetValue<string>("TRANSIFEX_APIKEY");
             _resourcePath = configuration.GetValue<string>("TRANSIFEX_RESOURCE_PATH");
+            _soStringService = soStringService;
         }
 
         private static HttpClient _HttpClient { get; set; }
@@ -79,12 +81,20 @@ namespace Traducir.Core.Services
                     byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 }
 
+                bool success;
                 using(MiniProfiler.Current.Step("Posting to Transifex"))
                 {
                     var client = GetHttpClient();
                     var response = await client.PutAsync(_resourcePath, byteContent);
-                    return response.IsSuccessStatusCode;
+                    success = response.IsSuccessStatusCode;
                 }
+
+                if (success)
+                {
+                    await _soStringService.UpdateStringsPushed(strings.Select(s => s.Id));
+                }
+
+                return success;
             }
         }
     }
