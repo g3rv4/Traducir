@@ -26,29 +26,29 @@ namespace Traducir.Controllers
         public async Task<IActionResult> Query([FromBody] QueryViewModel model)
         {
             Func<SOString, bool> predicate = s => true;
-            if (model.WithoutTranslation.HasValue)
+            if (model.TranslationStatus != QueryViewModel.TranslationStatuses.AnyStatus)
             {
-                predicate = s => s.Translation.IsNullOrEmpty()== model.WithoutTranslation.Value;
+                predicate = s => s.Translation.IsNullOrEmpty()== (model.TranslationStatus == QueryViewModel.TranslationStatuses.WithoutTranslation);
             }
-            if (model.SuggestionsStatus != QueryViewModel.SuggestionApprovalStatuses.AnyStatus)
+            if (model.SuggestionsStatus != QueryViewModel.SuggestionApprovalStatus.AnyStatus)
             {
                 var oldPredicate = predicate;
                 switch (model.SuggestionsStatus)
                 {
-                    case QueryViewModel.SuggestionApprovalStatuses.DoesNotHaveSuggestionsNeedingApproval:
+                    case QueryViewModel.SuggestionApprovalStatus.DoesNotHaveSuggestionsNeedingApproval:
                         predicate = s => oldPredicate(s)&&
                             (s.Suggestions == null ||
-                            !s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                                !s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
-                    case QueryViewModel.SuggestionApprovalStatuses.HasSuggestionsNeedingApproval:
+                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
                         predicate = s => oldPredicate(s)&&
                             (s.Suggestions != null &&
-                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                                s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
-                    case QueryViewModel.SuggestionApprovalStatuses.HasSuggestionsNeedingApprovalApprovedByTrustedUser:
+                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApprovalApprovedByTrustedUser:
                         predicate = s => oldPredicate(s)&&
                             (s.Suggestions != null &&
-                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                                s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
                 }
             }
@@ -67,7 +67,7 @@ namespace Traducir.Controllers
                 predicate = s => oldPredicate(s)&& (s.Translation.HasValue()&& regex.IsMatch(s.Translation));
             }
 
-            return Json(await _soStringService.GetStringsAsync(predicate));
+            return Json((await _soStringService.GetStringsAsync(predicate)).Take(200));
         }
 
         [HttpPut]
