@@ -1,9 +1,9 @@
 export default interface SOStringSuggestion {
-    Id: number;
-    Suggestion: string;
-    State: StringSuggestionState;
-    CreatedBy: string;
-    CreationDate: Date;
+    id: number;
+    suggestion: string;
+    state: StringSuggestionState;
+    createdBy: string;
+    creationDate: Date;
 }
 
 export enum StringSuggestionState {

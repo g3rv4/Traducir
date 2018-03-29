@@ -1,11 +1,11 @@
 import SOStringSuggestion from './SOStringSuggestion'
 
 export default interface SOString {
-    Id: number;
-    Key: string;
-    OriginalString: string;
-    Translation: string;
-    Variant: string;
-    CreationDate: Date;
-    Suggestions: SOStringSuggestion[];
+    id: number;
+    key: string;
+    originalString: string;
+    translation: string;
+    variant: string;
+    creationDate: Date;
+    suggestions: SOStringSuggestion[];
 }
