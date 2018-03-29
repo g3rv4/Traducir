@@ -30,13 +30,27 @@ namespace Traducir.Controllers
             {
                 predicate = s => s.Translation.IsNullOrEmpty()== model.WithoutTranslation.Value;
             }
-            if (model.WithSuggestionsNeedingApproval.HasValue)
+            if (model.SuggestionsStatus != QueryViewModel.SuggestionApprovalStatuses.AnyStatus)
             {
                 var oldPredicate = predicate;
-
-                predicate = s => oldPredicate(s)&&
-                    s.Suggestions != null &&
-                    s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created)== model.WithSuggestionsNeedingApproval.Value;
+                switch (model.SuggestionsStatus)
+                {
+                    case QueryViewModel.SuggestionApprovalStatuses.DoesNotHaveSuggestionsNeedingApproval:
+                        predicate = s => oldPredicate(s)&&
+                            (s.Suggestions == null ||
+                            !s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                        break;
+                    case QueryViewModel.SuggestionApprovalStatuses.HasSuggestionsNeedingApproval:
+                        predicate = s => oldPredicate(s)&&
+                            (s.Suggestions != null &&
+                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                        break;
+                    case QueryViewModel.SuggestionApprovalStatuses.HasSuggestionsNeedingApprovalApprovedByTrustedUser:
+                        predicate = s => oldPredicate(s)&&
+                            (s.Suggestions != null &&
+                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                        break;
+                }
             }
             if (model.SourceRegex.HasValue())
             {
@@ -50,7 +64,7 @@ namespace Traducir.Controllers
                 var oldPredicate = predicate;
 
                 var regex = new Regex(model.TranslationRegex, RegexOptions.Compiled);
-                predicate = s => oldPredicate(s)&& s.Translation.HasValue()&& regex.IsMatch(s.Translation);
+                predicate = s => oldPredicate(s)&& (s.Translation.HasValue()&& regex.IsMatch(s.Translation));
             }
 
             return Json(await _soStringService.GetStringsAsync(predicate));
