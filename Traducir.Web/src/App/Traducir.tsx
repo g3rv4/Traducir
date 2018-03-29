@@ -1,10 +1,12 @@
 import * as React from "react";
-import { Fragment } from "react";
-import axios, { AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
-import * as _ from 'lodash';
+import Filters from "./Components/Filters"
 
-export default class Traducir extends React.Component<{}, {}> {
+export interface TraducirState
+{
+}
+
+export default class Traducir extends React.Component<{}, TraducirState> {
     render() {
-        return <div>Holasssa</div>
+        return <div><Filters /></div>
     }
 }
