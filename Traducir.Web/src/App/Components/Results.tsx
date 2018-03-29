@@ -5,6 +5,7 @@ import { StringSuggestionState } from "../../Models/SOStringSuggestion"
 
 export interface ResultsProps {
     results: SOString[];
+    makeSuggestion: (str: SOString) => void;
 }
 
 interface ResultsState {
@@ -34,7 +35,7 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
         const pending = _.filter(str.suggestions, s => s.state == StringSuggestionState.Created).length;
 
         return <div className="btn-group" role="group" aria-label="Basic example">
-            <button type="button" className="btn btn-sm btn-primary">Suggest</button>
+            <button type="button" className="btn btn-sm btn-primary" onClick={e => this.props.makeSuggestion(str)}>Suggest</button>
             {approved + pending > 0 ? <button type="button" className="btn btn-sm btn-warning">Review</button> : null}
         </div>
     }
