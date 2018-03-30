@@ -36,11 +36,9 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
         const approved = _.filter(str.suggestions, s => s.state == StringSuggestionState.ApprovedByTrustedUser).length;
         const pending = _.filter(str.suggestions, s => s.state == StringSuggestionState.Created).length;
 
-        return <div className="btn-group" role="group">
-            {(this.props.user && this.props.user.canSuggest) || (approved + pending > 0) ?
+        return (this.props.user && this.props.user.canSuggest) || (approved + pending > 0) ?
                 <button type="button" className="btn btn-sm btn-primary" onClick={e => this.props.loadSuggestions(str)}>Suggestions</button>
-                : null}
-        </div>
+                : null
     }
     renderRows(strings: SOString[]): React.ReactFragment {
         if (strings.length == 0) {

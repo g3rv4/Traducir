@@ -21,6 +21,13 @@ namespace Traducir.Controllers
             _soStringService = soStringService;
         }
 
+        [HttpGet]
+        [Route("app/api/strings/{stringId}")]
+        public async Task<IActionResult> GetString(int stringId)
+        {
+            return Json((await _soStringService.GetStringsAsync(s => s.Id == stringId)).FirstOrDefault());
+        }
+
         [HttpPost]
         [Route("app/api/strings/query")]
         public async Task<IActionResult> Query([FromBody] QueryViewModel model)

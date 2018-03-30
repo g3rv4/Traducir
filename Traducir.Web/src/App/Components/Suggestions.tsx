@@ -1,4 +1,5 @@
 import * as React from "react";
+import axios, { AxiosError } from 'axios';
 import SOString from "../../Models/SOString"
 import UserInfo from "../../Models/UserInfo"
 import Config from "../../Models/Config"
@@ -8,21 +9,75 @@ export interface SuggestionsProps {
     user: UserInfo;
     str: SOString;
     config: Config;
-    goBackToResults: () => void;
+    goBackToResults: (stringIdToUpdate?: number) => void;
 }
 
 interface SuggestionsState {
+    aboutToReviewId?: number;
+    actionToPerform?: ReviewAction;
+}
 
+enum ReviewAction {
+    Accept = 1,
+    Reject = 2
 }
 
 export default class Suggestions extends React.Component<SuggestionsProps, SuggestionsState> {
-    renderSuggestionActions(sug: SOStringSuggestion) {
-        if (!this.props.user || !this.props.user.canReview) {
-            return <></>;
+    constructor(props: SuggestionsProps) {
+        super(props);
+
+        this.state = {
+            aboutToReviewId: null,
+            actionToPerform: null
         }
     }
+    processReview(sug: SOStringSuggestion) {
+        if (!this.state.aboutToReviewId || !this.state.actionToPerform) {
+            return;
+        }
+
+        const _that = this;
+        axios.put('/app/api/review', {
+            SuggestionId: this.state.aboutToReviewId,
+            Approve: this.state.actionToPerform == ReviewAction.Accept
+        }).then(r => _that.props.goBackToResults(sug.stringId))
+    }
+    renderSuggestionActions(sug: SOStringSuggestion): JSX.Element {
+        if (!this.props.user || !this.props.user.canReview) {
+            return null;
+        }
+
+        if (!this.state.actionToPerform) {
+            return <div className="btn-group" role="group">
+                <button type="button" className="btn btn-sm btn-success" onClick={e => this.setState({
+                    actionToPerform: ReviewAction.Accept,
+                    aboutToReviewId: sug.id
+                })}>Approve</button>
+                <button type="button" className="btn btn-sm btn-danger" onClick={e => this.setState({
+                    actionToPerform: ReviewAction.Reject,
+                    aboutToReviewId: sug.id
+                })}>Reject</button>
+            </div>;
+        }
+
+        if (this.state.aboutToReviewId != sug.id) {
+            return null;
+        }
+
+        return <div className="text-center">
+            <div>
+                {this.state.actionToPerform == ReviewAction.Accept ? 'Approve' : 'Reject'} this suggestion?
+            </div>
+            <div className="btn-group" role="group">
+                <button type="button" className="btn btn-sm btn-primary" onClick={e => this.processReview(sug)}>Yes</button>
+                <button type="button" className="btn btn-sm btn-secondary" onClick={e => this.setState({
+                    actionToPerform: null,
+                    aboutToReviewId: null
+                })}>No</button>
+            </div>
+        </div>
+    }
     renderSuggestions() {
-        console.log(this.props.str.suggestions);
         return <table className="table mt-2">
             <thead>
                 <tr>
@@ -57,7 +112,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
                 <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
             </div>
             {this.props.str.variant ? <div>
-                <span className="font-weight-bold">Variant:</span> {this.props.str.variant}
+                <span className="font-weight-bold">Variant:</span> {this.props.str.variant.replace('VARIANT: ', '')}
             </div> : null}
             <div>
                 <span className="font-weight-bold">Current Translation:</span> {this.props.str.translation ?
@@ -69,7 +124,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
                 null}
             <div className="float-right mt-1">
                 <button type="button" className="btn btn-primary"
-                    onClick={this.props.goBackToResults}>Go back</button>
+                    onClick={e=>this.props.goBackToResults(null)}>Go back</button>
             </div>
         </>
     }

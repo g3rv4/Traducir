@@ -1,5 +1,6 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
+import * as _ from 'lodash';
 import Filters from "./Components/Filters"
 import Results from "./Components/Results"
 import Suggestions from "./Components/Suggestions"
@@ -66,6 +67,25 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         });
     }
 
+    goBackToResults = (stringIdToUpdate?: number) => {
+        if(stringIdToUpdate){
+            const idx = _.findIndex(this.state.strings, s=>s.id == stringIdToUpdate);
+            const _that = this;
+            axios.get<SOString>(`app/api/strings/${stringIdToUpdate}`)
+                .then(r=>{
+                    let newState = {
+                        action: StringActions.None,
+                        strings: this.state.strings
+                    }
+                    newState.strings[idx] = r.data;
+
+                    this.setState(newState);
+                })
+        } else {
+            this.setState({ action: StringActions.None });
+        }
+    }
+
     renderBody() {
         if (this.state.action == StringActions.None) {
             return <Results
@@ -77,7 +97,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                 config={this.state.config}
                 user={this.state.user}
                 str={this.state.currentString}
-                goBackToResults={() => this.setState({ action: StringActions.None })} />
+                goBackToResults={this.goBackToResults} />
         }
     }
 
