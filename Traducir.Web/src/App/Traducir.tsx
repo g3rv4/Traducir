@@ -68,11 +68,11 @@ export default class Traducir extends React.Component<{}, TraducirState> {
     }
 
     goBackToResults = (stringIdToUpdate?: number) => {
-        if(stringIdToUpdate){
-            const idx = _.findIndex(this.state.strings, s=>s.id == stringIdToUpdate);
+        if (stringIdToUpdate) {
+            const idx = _.findIndex(this.state.strings, s => s.id == stringIdToUpdate);
             const _that = this;
             axios.get<SOString>(`app/api/strings/${stringIdToUpdate}`)
-                .then(r=>{
+                .then(r => {
                     let newState = {
                         action: StringActions.None,
                         strings: this.state.strings
