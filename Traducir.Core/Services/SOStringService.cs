@@ -174,11 +174,15 @@ Select Id, [Key], OriginalString, Translation, NeedsPush, Variant, CreationDate
 From   Strings
 Where  DeletionDate Is Null;
 
-Select ss.Id, ss.StringId, ss.Suggestion, ss.StateId State, ss.CreatedById, u.DisplayName CreatedBy, ss.CreationDate
-From   StringSuggestions ss
-Join   Strings s On s.Id = ss.StringId And s.DeletionDate Is Null
-Join   Users u On ss.CreatedById = u.Id
-Where  ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
+Select    ss.Id, ss.StringId, ss.Suggestion, ss.StateId State,
+          ss.CreatedById, u.DisplayName CreatedByName,
+          ss.LastStateUpdatedById, uu.DisplayName LastStateUpdatedByName,
+          ss.CreationDate
+From      StringSuggestions ss
+Join      Strings s On s.Id = ss.StringId And s.DeletionDate Is Null
+Join      Users u On ss.CreatedById = u.Id
+Left Join Users uu On uu.Id = ss.LastStateUpdatedById
+Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
 
             using(MiniProfiler.Current.Step("Refreshing the strings cache"))
             using(var db = _dbService.GetConnection())
@@ -308,7 +312,8 @@ Values      (@suggestionId, @historyType, @userId, @now);
 
 Update StringSuggestions
 Set    StateId = @newState,
-       StateUpdateDate = @now
+       LastStateUpdatedDate = @now,
+       LastStateUpdatedById = @userId
 Where  Id = @suggestionId;";
                     if (newState == StringSuggestionState.ApprovedByReviewer)
                     {

@@ -63,8 +63,9 @@ Begin
     Suggestion NVarChar(Max),
     StateId TinyInt Not Null,
     CreatedById Int Not Null Constraint FK_StringSuggestions_CreatedBy Foreign Key References Users (Id),
+    LastStateUpdatedById Int Null Constraint FK_StringSuggestions_LastStateUpdatedById Foreign Key References Users (Id),
     CreationDate DateTime Not Null,
-    StateUpdateDate DateTime Null
+    LastStateUpdatedDate DateTime Null
 
     Constraint PK_StringSuggestions Primary Key Clustered (Id Asc)
   )

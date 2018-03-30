@@ -6,6 +6,6 @@ export default interface SOString {
     originalString: string;
     translation: string;
     variant: string;
-    creationDate: Date;
+    creationDate: string;
     suggestions: SOStringSuggestion[];
 }

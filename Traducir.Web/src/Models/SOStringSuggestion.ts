@@ -3,8 +3,10 @@ export default interface SOStringSuggestion {
     suggestion: string;
     state: StringSuggestionState;
     createdById: number;
-    createdBy: string;
-    creationDate: Date;
+    createdByName: string;
+    creationDate: string;
+    lastStateUpdatedById: number;
+    lastStateUpdatedByName: string;
 }
 
 export enum StringSuggestionState {

@@ -4,13 +4,15 @@ import Filters from "./Components/Filters"
 import Results from "./Components/Results"
 import Suggestions from "./Components/Suggestions"
 import SOString from "../Models/SOString"
-import UserInfo, { UserType } from "../Models/UserInfo"
+import UserInfo, { UserType, userTypeToString } from "../Models/UserInfo"
+import Config from "../Models/Config"
 
 export interface TraducirState {
     user: UserInfo;
     strings: SOString[];
     action: StringActions;
     currentString: SOString;
+    config: Config;
 }
 
 export enum StringActions {
@@ -26,55 +28,29 @@ export default class Traducir extends React.Component<{}, TraducirState> {
             user: undefined,
             strings: [],
             action: StringActions.None,
-            currentString: null
+            currentString: null,
+            config: null
         };
     }
 
     componentDidMount() {
         const _that = this;
         axios.post<UserInfo>('/app/api/me', this.state)
-            .then(function (response) {
-                _that.setState({
-                    user: response.data
-                });
-            })
-            .catch(function (error) {
-                _that.setState({
-                    user: null
-                });
-            });
+            .then(response => _that.setState({ user: response.data }))
+            .catch(error => _that.setState({ user: null }));
+        axios.get<Config>('/app/api/config')
+            .then(response => _that.setState({ config: response.data }))
     }
 
     renderUser() {
-        if (this.state.user === null) {
+        if (!this.state || this.state.user === null) {
             return <li className="nav-item">
                 <a href="/app/login" className="nav-link">Anonymous - Log in!</a>
             </li>
         } else if (this.state.user) {
-            let userType: string;
-
-            switch (this.state.user.userType) {
-                case UserType.Banned: {
-                    userType = 'Banned';
-                    break;
-                }
-                case UserType.User: {
-                    userType = "User";
-                    break;
-                }
-                case UserType.TrustedUser: {
-                    userType = "Trusted User";
-                    break;
-                }
-                case UserType.Reviewer: {
-                    userType = "Reviewer";
-                    break;
-                }
-            }
-
             return <>
                 <li className="nav-item"><div className="navbar-text">
-                    {this.state.user.name} ({userType}) -
+                    {this.state.user.name} ({userTypeToString(this.state.user.userType)}) -
                 </div></li>
                 <li>
                     <a href="/app/logout" className="nav-link">Log out</a>
@@ -98,9 +74,10 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                 loadSuggestions={this.loadSuggestions} />
         } else if (this.state.action == StringActions.Suggestions) {
             return <Suggestions
+                config={this.state.config}
                 user={this.state.user}
                 str={this.state.currentString}
-                goBackToResults={()=>this.setState({action: StringActions.None})} />
+                goBackToResults={() => this.setState({ action: StringActions.None })} />
         }
     }
 
@@ -114,7 +91,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         return <>
             <nav className="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
                 <div className="container">
-                    <a className="navbar-brand" href="#">SOes Translations</a>
+                    <a className="navbar-brand" href="#">{this.state.config && this.state.config.friendlyName} Translations</a>
                     <div className="collapse navbar-collapse" id="navbarResponsive">
                         <ul className="navbar-nav ml-auto">
                             {this.renderUser()}

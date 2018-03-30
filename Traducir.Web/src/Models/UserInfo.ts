@@ -12,3 +12,16 @@ export enum UserType {
     TrustedUser = 3,
     Reviewer = 4
 }
+
+export function userTypeToString(userType: UserType) {
+    switch (userType) {
+        case UserType.Banned:
+            return 'Banned';
+        case UserType.User:
+            return "User";
+        case UserType.TrustedUser:
+            return "Trusted User";
+        case UserType.Reviewer:
+            return "Reviewer";
+    }
+}
