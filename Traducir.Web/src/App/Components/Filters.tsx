@@ -7,8 +7,10 @@ import SOString from "./../../Models/SOString";
 interface FiltersState {
     sourceRegex?: string;
     translationRegex?: string;
+    key?: string;
     translationStatus?: TranslationStatus;
     suggestionsStatus?: SuggestionsStatus;
+    pushStatus?: PushStatus;
 }
 
 export interface FiltersProps {
@@ -26,6 +28,12 @@ enum TranslationStatus {
     AnyStatus = 0,
     WithTranslation = 1,
     WithoutTranslation = 2
+}
+
+enum PushStatus {
+    AnyStatus = 0,
+    NeedsPush = 1,
+    DoesNotNeedPush = 2
 }
 
 export default class Filters extends React.Component<FiltersProps, FiltersState> {
@@ -48,12 +56,12 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     submitForm = _.debounce(() => {
         const _that = this;
         axios.post<SOString[]>('/app/api/strings/query', this.state)
-          .then(function (response) {
-              _that.props.onResultsFetched(response.data);
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+            .then(function (response) {
+                _that.props.onResultsFetched(response.data);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     }, 1000);
 
     render() {
@@ -85,7 +93,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                         <label htmlFor="withoutTranslation">Strings without translation</label>
                         <select className="form-control" id="withoutTranslation"
                             value={this.state.translationStatus}
-                            onChange={e => this.handleField({ translationStatus: parseInt(e.target.value)})}
+                            onChange={e => this.handleField({ translationStatus: parseInt(e.target.value) })}
                         >
                             <option value={TranslationStatus.AnyStatus}>Any string</option>
                             <option value={TranslationStatus.WithoutTranslation}>Only strings without translation</option>
@@ -96,14 +104,37 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                 <div className="col">
                     <div className="form-group">
                         <label htmlFor="suggestionsStatus">Strings with pending suggestions</label>
-                        <select className="form-control" id="suggestionsStatus" 
-                        value={this.state.suggestionsStatus}
-                        onChange={e => this.handleField({ suggestionsStatus: parseInt(e.target.value)})}
+                        <select className="form-control" id="suggestionsStatus"
+                            value={this.state.suggestionsStatus}
+                            onChange={e => this.handleField({ suggestionsStatus: parseInt(e.target.value) })}
                         >
                             <option value={SuggestionsStatus.AnyStatus}>Any string</option>
                             <option value={SuggestionsStatus.HasSuggestionsNeedingApproval}>Strings with pending suggestions</option>
                             <option value={SuggestionsStatus.HasSuggestionsNeedingApprovalApprovedByTrustedUser}>Strings with pending suggestions approved by a trusted user</option>
                             <option value={SuggestionsStatus.DoesNotHaveSuggestionsNeedingApproval}>Strings without pending suggestions</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div className="row">
+                <div className="col">
+                    <div className="form-group">
+                        <label htmlFor="key">Key</label>
+                        <input type="text" className="form-control" id="key"
+                            value={this.state.key}
+                            onChange={e => this.handleField({ key: e.target.value })} />
+                    </div>
+                </div>
+                <div className="col">
+                    <div className="form-group">
+                        <label htmlFor="suggestionsStatus">Strings with pending push</label>
+                        <select className="form-control" id="pushStatus"
+                            value={this.state.pushStatus}
+                            onChange={e => this.handleField({ pushStatus: parseInt(e.target.value) })}
+                        >
+                            <option value={PushStatus.AnyStatus}>Any string</option>
+                            <option value={PushStatus.NeedsPush}>Needs push</option>
+                            <option value={PushStatus.DoesNotNeedPush}>Is updated</option>
                         </select>
                     </div>
                 </div>

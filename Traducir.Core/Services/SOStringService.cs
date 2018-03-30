@@ -21,7 +21,7 @@ namespace Traducir.Core.Services
         Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
         Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId);
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
-        Task UpdateStringsPushed(IEnumerable<int> stringIds);
+        Task UpdateStringsPushed();
     }
     public class SOStringService : ISOStringService
     {
@@ -397,11 +397,11 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
             }
         }
 
-        public async Task UpdateStringsPushed(IEnumerable<int> stringIds)
+        public async Task UpdateStringsPushed()
         {
             using(var db = _dbService.GetConnection())
             {
-                await db.ExecuteAsync(@"Update Strings Set NeedsPush = 0 Where Id In @stringIds", new { stringIds });
+                await db.ExecuteAsync(@"Update Strings Set NeedsPush = 0 Where NeedsPush = 1");
                 ExpireCache();
             }
         }

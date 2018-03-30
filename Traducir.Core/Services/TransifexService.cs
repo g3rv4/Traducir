@@ -91,7 +91,7 @@ namespace Traducir.Core.Services
 
                 if (success)
                 {
-                    await _soStringService.UpdateStringsPushed(strings.Select(s => s.Id));
+                    await _soStringService.UpdateStringsPushed();
                 }
 
                 return success;

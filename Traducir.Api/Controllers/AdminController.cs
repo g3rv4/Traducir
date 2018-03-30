@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Exceptional;
 using Traducir.Core.Services;
+using Traducir.Core.Helpers;
 
 namespace Traducir.Controllers
 {
@@ -27,7 +28,7 @@ namespace Traducir.Controllers
         [Route("app/api/admin/push")]
         public async Task<IActionResult> PushStrings()
         {
-            var stringsToPush = await _soStringService.GetStringsAsync(s => s.NeedsPush);
+            var stringsToPush = await _soStringService.GetStringsAsync(s => s.Translation.HasValue());
             if (stringsToPush.Length > 0)
             {
                 await _transifexService.PushStringsToTransifexAsync(stringsToPush);

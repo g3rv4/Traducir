@@ -33,45 +33,55 @@ namespace Traducir.Controllers
         public async Task<IActionResult> Query([FromBody] QueryViewModel model)
         {
             Func<SOString, bool> predicate = s => true;
+
+            void composePredicate(Func<SOString, bool> newPredicate)
+            {
+                var oldPredicate = predicate;
+                predicate = s => oldPredicate(s)&& newPredicate(s);
+            }
+
             if (model.TranslationStatus != QueryViewModel.TranslationStatuses.AnyStatus)
             {
                 predicate = s => s.Translation.IsNullOrEmpty()== (model.TranslationStatus == QueryViewModel.TranslationStatuses.WithoutTranslation);
             }
+            if (model.PushStatus != QueryViewModel.PushStatuses.AnyStatus)
+            {
+                composePredicate(s => s.NeedsPush == (model.PushStatus == QueryViewModel.PushStatuses.NeedsPush));
+            }
             if (model.SuggestionsStatus != QueryViewModel.SuggestionApprovalStatus.AnyStatus)
             {
-                var oldPredicate = predicate;
                 switch (model.SuggestionsStatus)
                 {
                     case QueryViewModel.SuggestionApprovalStatus.DoesNotHaveSuggestionsNeedingApproval:
-                        predicate = s => oldPredicate(s)&&
-                            (s.Suggestions == null ||
-                                !s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                        composePredicate(s =>
+                            s.Suggestions == null ||
+                            !s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
-                        predicate = s => oldPredicate(s)&&
-                            (s.Suggestions != null &&
-                                s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                        composePredicate(s =>
+                            s.Suggestions != null &&
+                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApprovalApprovedByTrustedUser:
-                        predicate = s => oldPredicate(s)&&
-                            (s.Suggestions != null &&
-                                s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                        composePredicate(s =>
+                            s.Suggestions != null &&
+                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
                 }
             }
+            if (model.Key.HasValue())
+            {
+                composePredicate(s => s.Key.StartsWith(model.Key));
+            }
             if (model.SourceRegex.HasValue())
             {
-                var oldPredicate = predicate;
-
                 var regex = new Regex(model.SourceRegex, RegexOptions.Compiled);
-                predicate = s => oldPredicate(s)&& regex.IsMatch(s.OriginalString);
+                composePredicate(s => regex.IsMatch(s.OriginalString));
             }
             if (model.TranslationRegex.HasValue())
             {
-                var oldPredicate = predicate;
-
                 var regex = new Regex(model.TranslationRegex, RegexOptions.Compiled);
-                predicate = s => oldPredicate(s)&& (s.Translation.HasValue()&& regex.IsMatch(s.Translation));
+                composePredicate(s => s.Translation.HasValue()&& regex.IsMatch(s.Translation));
             }
 
             return Json((await _soStringService.GetStringsAsync(predicate)).Take(200));
