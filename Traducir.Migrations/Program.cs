@@ -6,7 +6,7 @@ using SimpleMigrations.DatabaseProvider;
 
 namespace Traducir.Migrations
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {

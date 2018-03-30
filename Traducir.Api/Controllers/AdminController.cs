@@ -1,8 +1,12 @@
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using SimpleMigrations;
+using SimpleMigrations.DatabaseProvider;
 using StackExchange.Exceptional;
-using Traducir.Core.Services;
 using Traducir.Core.Helpers;
+using Traducir.Core.Services;
 
 namespace Traducir.Controllers
 {
@@ -10,11 +14,13 @@ namespace Traducir.Controllers
     {
         private ITransifexService _transifexService { get; }
         private ISOStringService _soStringService { get; }
+        private IConfiguration _configuration { get; }
 
-        public AdminController(ITransifexService transifexService, ISOStringService soStringService)
+        public AdminController(ITransifexService transifexService, ISOStringService soStringService, IConfiguration configuration)
         {
             _transifexService = transifexService;
             _soStringService = soStringService;
+            _configuration = configuration;
         }
 
         [Route("app/api/admin/pull")]
@@ -32,6 +38,21 @@ namespace Traducir.Controllers
             if (stringsToPush.Length > 0)
             {
                 await _transifexService.PushStringsToTransifexAsync(stringsToPush);
+            }
+            return new EmptyResult();
+        }
+
+        [Route("app/api/admin/migrate")]
+        public IActionResult Migrate()
+        {
+            var migrationsAssembly = typeof(Traducir.Migrations.Program).Assembly;
+            using(var db = new SqlConnection(_configuration.GetValue<string>("CONNECTION_STRING")))
+            {
+                var databaseProvider = new MssqlDatabaseProvider(db);
+                var migrator = new SimpleMigrator(migrationsAssembly, databaseProvider);
+
+                migrator.Load();
+                migrator.MigrateToLatest();
             }
             return new EmptyResult();
         }
