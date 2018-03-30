@@ -3,6 +3,7 @@ import SOString from "../../Models/SOString"
 import UserInfo from "../../Models/UserInfo"
 import Config from "../../Models/Config"
 import SuggestionsTable from "./SuggestionsTable"
+import SuggestionNew from "./SuggestionNew"
 
 export interface SuggestionsProps {
     user: UserInfo;
@@ -34,15 +35,21 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
                     <pre className="d-inline">{this.props.str.translation}</pre> :
                     <i>Missing translation</i>}
             </div>
-            <SuggestionsTable 
+            <SuggestionsTable
                 user={this.props.user}
                 config={this.props.config}
                 suggestions={this.props.str.suggestions}
                 goBackToResults={this.props.goBackToResults} />
-            <div className="float-right mt-1">
-                <button type="button" className="btn btn-primary"
-                    onClick={e=>this.props.goBackToResults(null)}>Go back</button>
+
+            <div className="mt-1 text-right">
+                <button type="button" className="btn btn-secondary"
+                    onClick={e => this.props.goBackToResults(null)}>Go back</button>
             </div>
+            <SuggestionNew
+                user={this.props.user}
+                stringId={this.props.str.id}
+                goBackToResults={this.props.goBackToResults}
+            />
         </>
     }
 }

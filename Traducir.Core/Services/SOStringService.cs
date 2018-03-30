@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dapper;
 using StackExchange.Profiling;
@@ -220,10 +221,40 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
             return result;
         }
 
+        private Regex _variablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
         public async Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId)
         {
             using(var db = _dbService.GetConnection())
             {
+                var str = (await GetStringsAsync(s => s.Id == stringId)).FirstOrDefault();
+
+                // if the string id is invalid
+                if (str == null)
+                {
+                    return false;
+                }
+
+                // if the suggestion is the same as the current translation
+                if (str.Translation == suggestion)
+                {
+                    return false;
+                }
+
+                // if there's another suggestion with the same value
+                if (str.Suggestions != null && str.Suggestions.Any(sug => sug.Suggestion == suggestion))
+                {
+                    return false;
+                }
+
+                // if there are missing or extra values
+                var variablesInOriginal = _variablesRegex.Matches(str.OriginalString).Cast<Match>().Select(m => m.Value).ToArray();
+                var variablesInSuggestion = _variablesRegex.Matches(suggestion).Cast<Match>().Select(m => m.Value).ToArray();
+                if (variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v))||
+                    variablesInSuggestion.Any(v => !variablesInOriginal.Contains(v)))
+                {
+                    return false;
+                }
+
                 try
                 {
                     await db.ExecuteAsync(@"
