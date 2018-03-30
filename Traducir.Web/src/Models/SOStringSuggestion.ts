@@ -2,6 +2,7 @@ export default interface SOStringSuggestion {
     id: number;
     suggestion: string;
     state: StringSuggestionState;
+    createdById: number;
     createdBy: string;
     creationDate: Date;
 }

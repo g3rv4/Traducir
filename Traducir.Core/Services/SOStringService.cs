@@ -174,7 +174,7 @@ Select Id, [Key], OriginalString, Translation, NeedsPush, Variant, CreationDate
 From   Strings
 Where  DeletionDate Is Null;
 
-Select ss.Id, ss.StringId, ss.Suggestion, ss.StateId State, u.DisplayName CreatedBy, ss.CreationDate
+Select ss.Id, ss.StringId, ss.Suggestion, ss.StateId State, ss.CreatedById, u.DisplayName CreatedBy, ss.CreationDate
 From   StringSuggestions ss
 Join   Strings s On s.Id = ss.StringId And s.DeletionDate Is Null
 Join   Users u On ss.CreatedById = u.Id

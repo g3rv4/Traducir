@@ -1,11 +1,13 @@
 import * as React from "react";
 import * as _ from 'lodash';
 import SOString from "../../Models/SOString"
+import UserInfo from "../../Models/UserInfo"
 import { StringSuggestionState } from "../../Models/SOStringSuggestion"
 
 export interface ResultsProps {
+    user: UserInfo;
     results: SOString[];
-    makeSuggestion: (str: SOString) => void;
+    loadSuggestions: (str: SOString) => void;
 }
 
 interface ResultsState {
@@ -34,9 +36,10 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
         const approved = _.filter(str.suggestions, s => s.state == StringSuggestionState.ApprovedByTrustedUser).length;
         const pending = _.filter(str.suggestions, s => s.state == StringSuggestionState.Created).length;
 
-        return <div className="btn-group" role="group" aria-label="Basic example">
-            <button type="button" className="btn btn-sm btn-primary" onClick={e => this.props.makeSuggestion(str)}>Suggest</button>
-            {approved + pending > 0 ? <button type="button" className="btn btn-sm btn-warning">Review</button> : null}
+        return <div className="btn-group" role="group">
+            {(this.props.user && this.props.user.canSuggest) || (approved + pending > 0) ?
+                <button type="button" className="btn btn-sm btn-primary" onClick={e => this.props.loadSuggestions(str)}>Suggestions</button>
+                : null}
         </div>
     }
     renderRows(strings: SOString[]): React.ReactFragment {
@@ -65,7 +68,7 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
                         <th>String</th>
                         <th>Translation</th>
                         <th>Suggestions</th>
-                        <th>Actions</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>

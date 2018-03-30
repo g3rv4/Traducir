@@ -10,6 +10,7 @@ namespace Traducir.Core.Models
         public string Suggestion { get; set; }
         public StringSuggestionState State { get; set; }
         public string CreatedBy { get; set; }
+        public int CreatedById{get;set;}
         public DateTime CreationDate { get; set; }
     }
 }

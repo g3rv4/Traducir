@@ -4,8 +4,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Traducir.Api.ViewModels.Account;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
@@ -18,14 +20,17 @@ namespace Traducir.Controllers
         private ISEApiService _seApiService { get; }
         private IConfiguration _configuration { get; }
         private IUserService _userService { get; }
+        private IAuthorizationService _authorizationService{get;}
 
         public AccountController(IConfiguration configuration,
             ISEApiService seApiService,
-            IUserService userService)
+            IUserService userService,
+            IAuthorizationService authorizationService)
         {
             _seApiService = seApiService;
             _configuration = configuration;
             _userService = userService;
+            _authorizationService=authorizationService;
         }
 
         string GetOauthReturnUrl()
@@ -43,7 +48,7 @@ namespace Traducir.Controllers
         public async Task<IActionResult> LogOut()
         {
             await HttpContext.SignOutAsync();
-            return Content("bye!");
+            return Redirect("/");
         }
 
         [Route("app/oauth-callback")]
@@ -96,6 +101,21 @@ namespace Traducir.Controllers
                 new ClaimsPrincipal(identity));
 
             return Redirect("/");
+        }
+
+        [Authorize]
+        [Route("app/api/me")]
+        public async Task<IActionResult> WhoAmI()
+        {
+            var canSuggest = await _authorizationService.AuthorizeAsync(User, "CanSuggest");
+            var canReview = await _authorizationService.AuthorizeAsync(User, "CanReview");
+
+            return Json(new UserInfo{
+                Name = User.GetClaim<string>(ClaimType.Name),
+                UserType = User.GetClaim<UserType>(ClaimType.UserType),
+                CanSuggest = canSuggest.Succeeded,
+                CanReview = canReview.Succeeded
+            });
         }
     }
 }
