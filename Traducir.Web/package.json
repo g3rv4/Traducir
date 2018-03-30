@@ -4,7 +4,8 @@
   "description": "",
   "main": "webpack run",
   "scripts": {
-    "start": "webpack-dev-server --hot --public traducir.g3rv4.win --config webpack.dev-hot.js"
+    "start": "webpack-dev-server --hot --public traducir.g3rv4.win --config webpack.dev-hot.js",
+    "build": "webpack --config webpack.prod.js"
   },
   "author": "",
   "license": "ISC",

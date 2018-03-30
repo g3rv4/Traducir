@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traducir.Core", "Traducir.Core\Traducir.Core.csproj", "{646EE9FF-EDE5-416C-9D36-A4E843FE14C5}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traducir.Api", "Traducir.Api\Traducir.Api.csproj", "{45512CCB-2D89-4060-8245-D9A4D6A4739D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Traducir.Migrations", "Traducir.Migrations\Traducir.Migrations.csproj", "{4C017B12-4268-4976-950F-BF864B40A74E}"
