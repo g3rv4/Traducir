@@ -120,7 +120,10 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                 </div>
             </nav>
             <div className="container">
-                <Filters onResultsFetched={this.resultsReceived} />
+                <Filters
+                    onResultsFetched={this.resultsReceived}
+                    goBackToResults={this.goBackToResults}
+                     />
                 {this.renderBody()}
             </div>
         </>

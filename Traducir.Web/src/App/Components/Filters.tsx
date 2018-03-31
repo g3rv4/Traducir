@@ -15,6 +15,7 @@ interface FiltersState {
 
 export interface FiltersProps {
     onResultsFetched: (strings: SOString[]) => void;
+    goBackToResults: (stringIdToUpdate?: number) => void;
 }
 
 enum SuggestionsStatus {
@@ -49,8 +50,19 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     }
 
     handleField = (updatedState: FiltersState) => {
-        this.setState(updatedState);
-        this.submitForm();
+        this.setState(updatedState, () => this.submitForm());
+    }
+
+    reset = () => {
+        this.setState({
+            sourceRegex: "",
+            translationRegex: "",
+            translationStatus: TranslationStatus.AnyStatus,
+            suggestionsStatus: SuggestionsStatus.AnyStatus
+        }, () => {
+            this.props.goBackToResults();
+            this.props.onResultsFetched([]);
+        })
     }
 
     submitForm = _.debounce(() => {
@@ -137,6 +149,11 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                             <option value={PushStatus.DoesNotNeedPush}>Is updated</option>
                         </select>
                     </div>
+                </div>
+            </div>
+            <div className="row text-center mb-5">
+                <div className="col">
+                    <button className="btn btn-secondary" onClick={this.reset}>Reset</button>
                 </div>
             </div>
         </>
