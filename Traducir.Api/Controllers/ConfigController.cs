@@ -16,7 +16,8 @@ namespace Traducir.Api.Controllers
         public IActionResult GetConfig(){
             return Json(new ConfigViewModel{
                 SiteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN"),
-                FriendlyName = _configuration.GetValue<string>("FRIENDLY_NAME")
+                FriendlyName = _configuration.GetValue<string>("FRIENDLY_NAME"),
+                TransifexPath = _configuration.GetValue<string>("TRANSIFEX_LINK_PATH")
             });
         }
     }

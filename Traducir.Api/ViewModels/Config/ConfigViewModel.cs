@@ -4,5 +4,6 @@ namespace Traducir.Api.ViewModels.Config
     {
         public string SiteDomain { get; set; }
         public string FriendlyName { get; set; }
+        public string TransifexPath { get; set; }
     }
 }

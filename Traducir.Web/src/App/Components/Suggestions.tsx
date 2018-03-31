@@ -25,6 +25,9 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
                 <span className="font-weight-bold">Key:</span> <pre className="d-inline">{this.props.str.key}</pre>
             </div>
             <div>
+                <span className="font-weight-bold">Transifex:</span> <a href={`https://www.transifex.com/${this.props.config.transifexPath}/1?key=${this.props.str.key}`} target="_blank">View it on Transifex</a>
+            </div>
+            <div>
                 <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
             </div>
             {this.props.str.variant ? <div>
