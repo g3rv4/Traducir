@@ -19,7 +19,7 @@ namespace Traducir.Core.Services
     {
         Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings);
         Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
-        Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId);
+        Task<int?> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
         Task UpdateStringsPushed();
     }
@@ -222,7 +222,7 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
         }
 
         private Regex _variablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
-        public async Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId)
+        public async Task<int?> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve)
         {
             using(var db = _dbService.GetConnection())
             {
@@ -231,19 +231,19 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
                 // if the string id is invalid
                 if (str == null)
                 {
-                    return false;
+                    return null;
                 }
 
                 // if the suggestion is the same as the current translation
                 if (str.Translation == suggestion)
                 {
-                    return false;
+                    return null;
                 }
 
                 // if there's another suggestion with the same value
                 if (str.Suggestions != null && str.Suggestions.Any(sug => sug.Suggestion == suggestion))
                 {
-                    return false;
+                    return null;
                 }
 
                 // if there are missing or extra values
@@ -252,35 +252,50 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
                 if (variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v))||
                     variablesInSuggestion.Any(v => !variablesInOriginal.Contains(v)))
                 {
-                    return false;
+                    return null;
                 }
 
+                int? suggestionId;
                 try
                 {
-                    await db.ExecuteAsync(@"
+                    var initialState = userType >= UserType.TrustedUser ? StringSuggestionState.ApprovedByTrustedUser : StringSuggestionState.Created;
+                    suggestionId = await db.QuerySingleOrDefaultAsync<int?>(@"
+Declare @suggestionId Int;
+
 Insert Into StringSuggestions
             (StringId, Suggestion, StateId, CreatedById, CreationDate)
-Values      (@stringId, @suggestion, {=Created}, @userId, @now);
+Values      (@stringId, @suggestion, @state, @userId, @now);
+
+Select @suggestionId = Scope_Identity();
 
 Insert Into StringSuggestionHistory
-            (StringSuggestionId, HistoryTypeId, UserId, CreationDate)
-Values      (SCOPE_IDENTITY(), {=HistoryCreated}, @userId, @now);", new
+            (StringSuggestionId, HistoryTypeId, UserId, Comment, CreationDate)
+Values      (@suggestionID, {=HistoryCreated}, @userId, @comment, @now);
+
+Select @suggestionId;", new
                     {
                         stringId,
                         suggestion,
                         StringSuggestionState.Created,
                         userId,
+                        state = initialState,
                         now = DateTime.UtcNow,
+                        comment = initialState == StringSuggestionState.ApprovedByTrustedUser ? "Created by a trusted user" : null,
                         HistoryCreated = StringSuggestionHistoryType.Created
                     });
+
+                    if (approve)
+                    {
+                        await ReviewSuggestionAsync(suggestionId.Value, true, userId, userType);
+                    }
                 }
                 catch (SqlException e)when(e.Number == 547)
                 {
-                    return false;
+                    return null;
                 }
 
                 ExpireCache();
-                return true;
+                return suggestionId;
             }
         }
 
@@ -337,9 +352,11 @@ And    StateId In @validStates", new
                     }
 
                     string sql = @"
+Declare @historyId Int;
 Insert Into StringSuggestionHistory
             (StringSuggestionId, HistoryTypeId, UserId, CreationDate)
 Values      (@suggestionId, @historyType, @userId, @now);
+Select @historyId = Scope_Identity();
 
 Update StringSuggestions
 Set    StateId = @newState,
@@ -349,6 +366,13 @@ Where  Id = @suggestionId;";
                     if (newState == StringSuggestionState.ApprovedByReviewer)
                     {
                         sql += @"
+Update h
+Set    h.Comment = Concat('Previous translation: ', str.Translation)
+From   StringSuggestionHistory h
+Join   StringSuggestions sug On sug.Id = h.StringSuggestionId
+Join   Strings str On str.Id = sug.StringId
+Where  h.Id = @historyId;
+
 Update str
 Set    str.Translation = sug.Suggestion,
        str.NeedsPush = 1

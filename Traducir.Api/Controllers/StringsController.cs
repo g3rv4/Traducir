@@ -92,8 +92,11 @@ namespace Traducir.Controllers
         [Route("app/api/suggestions")]
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
-            var success = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion, User.GetClaim<int>(ClaimType.Id));
-            if (success)
+            var suggestionId = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion,
+                User.GetClaim<int>(ClaimType.Id),
+                User.GetClaim<UserType>(ClaimType.UserType),
+                model.Approve);
+            if (suggestionId.HasValue)
             {
                 return new EmptyResult();
             }

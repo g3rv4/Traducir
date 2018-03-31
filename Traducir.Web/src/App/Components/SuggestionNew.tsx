@@ -1,6 +1,7 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
-import UserInfo from "../../Models/UserInfo"
+import UserInfo, { UserType } from "../../Models/UserInfo";
+import { StringSuggestionState } from "../../Models/SOStringSuggestion";
 
 export interface SuggestionNewProps {
     user: UserInfo;
@@ -21,12 +22,13 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
         };
     }
 
-    sendSuggestion = () => {
+    postSuggestion = (approve: boolean) => {
         axios.put('app/api/suggestions', {
             StringId: this.props.stringId,
-            Suggestion: this.state.suggestion
-        }).then(r=>this.props.goBackToResults(this.props.stringId))
-        .catch(e=>alert('Failed sending the suggestion. Are you missing a variable?'));
+            Suggestion: this.state.suggestion,
+            Approve: approve
+        }).then(r => this.props.goBackToResults(this.props.stringId))
+            .catch(e => alert('Failed sending the suggestion. Are you missing a variable?'));
     }
 
     render(): JSX.Element {
@@ -46,8 +48,14 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
             </div>
             <div>
                 <div className="mt-1">
-                    <button type="button" className="btn btn-primary float-left"
-                        onClick={this.sendSuggestion}>Send new suggestion</button>
+                    <div className="btn-group" role="group">
+                        <button type="button" className="btn btn-primary float-left"
+                            onClick={e => this.postSuggestion(false)}>Send new suggestion</button>
+                        {this.props.user.userType >= UserType.Reviewer ?
+                            <button type="button" className="btn btn-warning float-left"
+                                onClick={e => this.postSuggestion(true)}>Send final translation</button>
+                            : null}
+                    </div>
                     <button type="button" className="btn btn-secondary float-right"
                         onClick={e => this.props.goBackToResults(null)}>Go back</button>
                 </div>
