@@ -64,9 +64,10 @@ namespace Traducir.Controllers
                 return Content("Could not retrieve a user account on " + siteDomain);
             }
 
-            if (currentUser.Reputation < 5)
+            var minRep = _configuration.GetValue<int>("MIN_REP_TO_LOGIN");
+            if (currentUser.Reputation < minRep)
             {
-                return Content("You need more reputation to log in");
+                return Content($"You need at least {minRep} to log in");
             }
 
             await _userService.UpsertUserAsync(new User
