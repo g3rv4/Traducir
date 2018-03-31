@@ -54,7 +54,7 @@ namespace Traducir.Core.Services
 
         public string GetInitialOauthUrl(string returnUrl, string state = null)
         {
-            return $"https://stackexchange.com/oauth?client_id={ClientId}&redirect_uri={returnUrl}" +
+            return $"https://stackoverflow.com/oauth?client_id={ClientId}&redirect_uri={WebUtility.UrlEncode(returnUrl)}" +
                 (state == null ? "" : $"&state={WebUtility.UrlEncode(state)}");
         }
 
@@ -62,7 +62,7 @@ namespace Traducir.Core.Services
         {
             using(var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("https://stackexchange.com");
+                client.BaseAddress = new Uri("https://stackoverflow.com");
                 var content = new FormUrlEncodedContent(new []
                 {
                     ("client_id", ClientId),

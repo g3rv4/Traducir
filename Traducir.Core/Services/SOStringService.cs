@@ -401,8 +401,11 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
         {
             using(var db = _dbService.GetConnection())
             {
-                await db.ExecuteAsync(@"Update Strings Set NeedsPush = 0 Where NeedsPush = 1");
-                ExpireCache();
+                var rows = await db.ExecuteAsync(@"Update Strings Set NeedsPush = 0 Where NeedsPush = 1");
+                if (rows > 0)
+                {
+                    ExpireCache();
+                }
             }
         }
     }
