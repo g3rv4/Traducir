@@ -1,3 +1,4 @@
+using System;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -55,6 +56,11 @@ namespace Traducir.Controllers
                 migrator.MigrateToLatest();
             }
             return new EmptyResult();
+        }
+
+        [Route("app/admin/throw")]
+        public IActionResult Throw(){
+            throw new InvalidOperationException();
         }
 
         [Route("app/admin/errors/{path?}/{subPath?}")]
