@@ -84,7 +84,7 @@ namespace Traducir.Controllers
                 composePredicate(s => s.Translation.HasValue()&& regex.IsMatch(s.Translation));
             }
 
-            return Json((await _soStringService.GetStringsAsync(predicate)).Take(200));
+            return Json((await _soStringService.GetStringsAsync(predicate)).Take(2000));
         }
 
         [HttpPut]
