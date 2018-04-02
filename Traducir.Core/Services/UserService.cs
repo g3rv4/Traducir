@@ -39,7 +39,8 @@ Else
          IsReviewer = Case When @wasReviewer = 1 Then 1 Else @IsModerator End, -- if the user was a reviewer, keep them
                                                                                -- if they're now a mod, make them a reviewer
          IsTrusted = Case When @wasTrusted = 1 Then 1 Else @IsModerator End,
-         LastSeenDate = @LastSeenDate", user);
+         LastSeenDate = @LastSeenDate
+Where    Id = @Id", user);
             }
         }
 
