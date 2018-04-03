@@ -1,14 +1,8 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import * as _ from 'lodash';
-import {
-    Navbar,
-    NavbarBrand,
-    NavbarToggler,
-    Collapse,
-    Nav,
-    NavItem
-} from 'reactstrap';
+import { Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, NavItem } from 'reactstrap';
+import { Route } from 'react-router-dom'
 import Filters from "./Components/Filters"
 import Results from "./Components/Results"
 import Suggestions from "./Components/Suggestions"
@@ -138,7 +132,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         return <>
             <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
-                    <NavbarBrand href="/">{this.state.config && this.state.config.friendlyName} Translations</NavbarBrand>
+                    <div className="navbar-brand">{this.state.config && this.state.config.friendlyName} Translations</div>
                     <NavbarToggler onClick={this.toggle} className="mr-5" />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
@@ -153,7 +147,12 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                     goBackToResults={this.goBackToResults}
                     showErrorMessage={this.showErrorMessage}
                 />
-                {this.renderBody()}
+                <Route path='/filter' render={p =>
+                    <Results
+                        user={this.state.user}
+                        results={this.state.strings}
+                        loadSuggestions={this.loadSuggestions} />
+                } />
             </div>
         </>
     }

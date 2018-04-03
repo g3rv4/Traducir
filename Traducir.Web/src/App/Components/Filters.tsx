@@ -1,6 +1,8 @@
 import * as React from "react";
 import * as _ from 'lodash';
 import axios from 'axios';
+import { stringify, parse } from 'query-string';
+import { Redirect } from 'react-router-dom';
 
 import SOString from "./../../Models/SOString";
 
@@ -42,9 +44,11 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     constructor(props: FiltersProps) {
         super(props);
 
+        const parts: FiltersState = parse(location.search);
         this.state = {
-            sourceRegex: "",
-            translationRegex: "",
+            sourceRegex: parts.sourceRegex || "",
+            translationRegex: parts.translationRegex || "",
+            key: parts.key || "",
             translationStatus: TranslationStatus.AnyStatus,
             suggestionsStatus: SuggestionsStatus.AnyStatus
         };
@@ -76,6 +80,12 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                 _that.props.showErrorMessage(null, error.response.status);
             });
     }, 1000);
+
+    shouldRedirect = () => {
+        const s = location.search;
+        const d = stringify(this.state);
+        return s.substring(1) != d;
+    }
 
     render() {
         return <>
@@ -157,6 +167,13 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                     <button className="btn btn-secondary" onClick={this.reset}>Reset</button>
                 </div>
             </div>
+            {this.shouldRedirect() ?
+                <Redirect
+                    to={{
+                        pathname: '/filters',
+                        search: stringify(this.state)
+                    }} />
+                : null}
         </>
     }
 }
