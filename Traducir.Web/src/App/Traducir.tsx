@@ -97,7 +97,8 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                 config={this.state.config}
                 user={this.state.user}
                 str={this.state.currentString}
-                goBackToResults={this.goBackToResults} />
+                goBackToResults={this.goBackToResults}
+                showErrorMessage={this.showErrorMessage} />
         }
     }
 
@@ -105,6 +106,19 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         this.setState({
             strings
         })
+    }
+
+    showErrorMessage = (message?: string, code?: number) => {
+        if (message) {
+            alert(message);
+        } else {
+            if (code == 401) {
+                alert('Your session has expired... you will be redirected to the log in page');
+                window.location.href = '/app/login';
+            } else {
+                alert('Unknown error. Code: ' + code);
+            }
+        }
     }
 
     render() {

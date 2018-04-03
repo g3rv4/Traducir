@@ -10,6 +10,7 @@ export interface SuggestionsProps {
     str: SOString;
     config: Config;
     goBackToResults: (stringIdToUpdate?: number) => void;
+    showErrorMessage: (message?: string, code?: number) => void;
 }
 
 export default class Suggestions extends React.Component<SuggestionsProps, {}> {
@@ -42,7 +43,9 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
                 user={this.props.user}
                 config={this.props.config}
                 suggestions={this.props.str.suggestions}
-                goBackToResults={this.props.goBackToResults} />
+                goBackToResults={this.props.goBackToResults}
+                showErrorMessage={this.props.showErrorMessage}
+            />
 
             <div className="mt-1 text-right">
                 <button type="button" className="btn btn-secondary"
@@ -52,6 +55,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
                 user={this.props.user}
                 stringId={this.props.str.id}
                 goBackToResults={this.props.goBackToResults}
+                showErrorMessage={this.props.showErrorMessage}
             />
         </>
     }

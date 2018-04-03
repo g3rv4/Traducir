@@ -9,6 +9,7 @@ export interface SuggestionsTableProps {
     config: Config;
     user: UserInfo;
     goBackToResults: (stringIdToUpdate?: number) => void;
+    showErrorMessage: (message?: string, code?: number) => void;
 }
 
 interface SuggestionsTableState {
@@ -113,5 +114,12 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             SuggestionId: this.state.aboutToReviewId,
             Approve: this.state.actionToPerform == ReviewAction.Accept
         }).then(r => _that.props.goBackToResults(sug.stringId))
+            .catch(e => {
+                if (e.response.status == 400) {
+                    this.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
+                } else {
+                    this.props.showErrorMessage(null, e.response.status);
+                }
+            });
     }
 }

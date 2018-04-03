@@ -7,6 +7,7 @@ export interface SuggestionNewProps {
     user: UserInfo;
     stringId: number;
     goBackToResults: (stringIdToUpdate?: number) => void;
+    showErrorMessage: (message?: string, code?: number) => void;
 }
 
 interface SuggestionNewState {
@@ -28,7 +29,13 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
             Suggestion: this.state.suggestion,
             Approve: approve
         }).then(r => this.props.goBackToResults(this.props.stringId))
-            .catch(e => alert('Failed sending the suggestion. Are you missing a variable?'));
+            .catch(e => {
+                if (e.response.status == 400) {
+                    this.props.showErrorMessage("Failed sending the suggestion. Are you missing a variable?");
+                } else {
+                    this.props.showErrorMessage(null, e.response.status);
+                }
+            });
     }
 
     render(): JSX.Element {
