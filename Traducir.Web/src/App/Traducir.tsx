@@ -137,7 +137,8 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                 <Filters
                     onResultsFetched={this.resultsReceived}
                     goBackToResults={this.goBackToResults}
-                     />
+                    showErrorMessage={this.showErrorMessage}
+                />
                 {this.renderBody()}
             </div>
         </>

@@ -16,6 +16,7 @@ interface FiltersState {
 export interface FiltersProps {
     onResultsFetched: (strings: SOString[]) => void;
     goBackToResults: (stringIdToUpdate?: number) => void;
+    showErrorMessage: (message?: string, code?: number) => void;
 }
 
 enum SuggestionsStatus {
@@ -72,7 +73,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                 _that.props.onResultsFetched(response.data);
             })
             .catch(function (error) {
-                console.log(error);
+                _that.props.showErrorMessage(null, error.response.status);
             });
     }, 1000);
 
