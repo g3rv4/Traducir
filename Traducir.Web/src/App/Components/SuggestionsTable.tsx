@@ -2,7 +2,7 @@ import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import SOStringSuggestion, { StringSuggestionState } from "../../Models/SOStringSuggestion"
 import Config from "../../Models/Config"
-import UserInfo from "../../Models/UserInfo"
+import UserInfo, { UserType } from "../../Models/UserInfo"
 
 export interface SuggestionsTableProps {
     suggestions: SOStringSuggestion[];
@@ -22,7 +22,7 @@ enum ReviewAction {
 }
 
 export default class SuggestionsTable extends React.Component<SuggestionsTableProps, SuggestionsTableState> {
-    constructor(props: SuggestionsTableProps){
+    constructor(props: SuggestionsTableProps) {
         super(props);
 
         this.state = {
@@ -31,7 +31,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         }
     }
     render(): JSX.Element {
-        if(!this.props.suggestions || !this.props.suggestions.length){
+        if (!this.props.suggestions || !this.props.suggestions.length) {
             return null;
         }
 
@@ -63,6 +63,12 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
 
     renderSuggestionActions(sug: SOStringSuggestion): JSX.Element {
         if (!this.props.user || !this.props.user.canReview) {
+            return null;
+        }
+
+        if (sug.state == StringSuggestionState.ApprovedByTrustedUser &&
+            this.props.user.userType == UserType.TrustedUser) {
+            // a trusted user can't act on a suggestion approved by a trusted user
             return null;
         }
 
