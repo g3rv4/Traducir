@@ -1,6 +1,8 @@
 pipeline:
   build:
     image: g3rv4/transifex-builder
+    when:
+      branch: master
     commands:
       - "git clone git@github.com:g3rv4-docker/traducir.git output-image"
       - "rm -rf output-image/app/backend"
