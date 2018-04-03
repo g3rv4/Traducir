@@ -1,6 +1,14 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import * as _ from 'lodash';
+import {
+    Navbar,
+    NavbarBrand,
+    NavbarToggler,
+    Collapse,
+    Nav,
+    NavItem
+} from 'reactstrap';
 import Filters from "./Components/Filters"
 import Results from "./Components/Results"
 import Suggestions from "./Components/Suggestions"
@@ -14,6 +22,7 @@ export interface TraducirState {
     action: StringActions;
     currentString: SOString;
     config: Config;
+    isOpen: boolean;
 }
 
 export enum StringActions {
@@ -30,7 +39,8 @@ export default class Traducir extends React.Component<{}, TraducirState> {
             strings: [],
             action: StringActions.None,
             currentString: null,
-            config: null
+            config: null,
+            isOpen: false
         };
     }
 
@@ -45,17 +55,14 @@ export default class Traducir extends React.Component<{}, TraducirState> {
 
     renderUser() {
         if (!this.state || this.state.user === null) {
-            return <li className="nav-item">
+            return <NavItem>
                 <a href="/app/login" className="nav-link">Anonymous - Log in!</a>
-            </li>
+            </NavItem>
         } else if (this.state.user) {
             return <>
-                <li className="nav-item"><div className="navbar-text">
-                    {this.state.user.name} ({userTypeToString(this.state.user.userType)}) -
-                </div></li>
-                <li>
-                    <a href="/app/logout" className="nav-link">Log out</a>
-                </li>
+                <NavItem className="navbar-text">
+                    {this.state.user.name} ({userTypeToString(this.state.user.userType)}) - <a href="/app/logout">Log out</a>
+                </NavItem>
             </>
         }
     }
@@ -120,19 +127,25 @@ export default class Traducir extends React.Component<{}, TraducirState> {
             }
         }
     }
+    toggle = () => {
+        this.setState({
+            isOpen: !this.state.isOpen
+        });
+    }
 
     render() {
         return <>
-            <nav className="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+            <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
-                    <a className="navbar-brand" href="#">{this.state.config && this.state.config.friendlyName} Translations</a>
-                    <div className="collapse navbar-collapse" id="navbarResponsive">
-                        <ul className="navbar-nav ml-auto">
+                    <NavbarBrand href="/">{this.state.config && this.state.config.friendlyName} Translations</NavbarBrand>
+                    <NavbarToggler onClick={this.toggle} />
+                    <Collapse isOpen={this.state.isOpen} navbar>
+                        <Nav className="ml-auto" navbar>
                             {this.renderUser()}
-                        </ul>
-                    </div>
+                        </Nav>
+                    </Collapse>
                 </div>
-            </nav>
+            </Navbar>
             <div className="container">
                 <Filters
                     onResultsFetched={this.resultsReceived}
