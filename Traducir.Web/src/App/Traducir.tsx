@@ -139,7 +139,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
             <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
                     <NavbarBrand href="/">{this.state.config && this.state.config.friendlyName} Translations</NavbarBrand>
-                    <NavbarToggler onClick={this.toggle} />
+                    <NavbarToggler onClick={this.toggle} className="mr-5" />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
                             {this.renderUser()}
