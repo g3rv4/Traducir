@@ -1,6 +1,7 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: {
@@ -27,6 +28,9 @@ module.exports = {
             template: "./src/index.ejs",
             chunks: ['manifest', 'vendor', 'index']
         }),
+        new CopyWebpackPlugin([
+            { from: 'lib', to: 'lib/' }
+        ]),
     ],
 
     optimization: {

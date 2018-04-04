@@ -51,6 +51,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
             .catch(error => _that.setState({ user: null }));
         axios.get<Config>('/app/api/config')
             .then(response => _that.setState({ config: response.data }))
+            .catch(error => this.showErrorMessage(null, error.response.status ));
     }
 
     renderUser() {
