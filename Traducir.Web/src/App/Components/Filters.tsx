@@ -2,7 +2,7 @@ import * as React from "react";
 import * as _ from 'lodash';
 import axios from 'axios';
 import { stringify, parse } from 'query-string';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 
 import SOString from "./../../Models/SOString";
 
@@ -49,9 +49,25 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             sourceRegex: parts.sourceRegex || "",
             translationRegex: parts.translationRegex || "",
             key: parts.key || "",
-            translationStatus: TranslationStatus.AnyStatus,
-            suggestionsStatus: SuggestionsStatus.AnyStatus
+            translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
+            suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
+            pushStatus: parts.pushStatus || PushStatus.AnyStatus
         };
+    }
+
+    hasFilter = () => {
+        return this.state.sourceRegex ||
+            this.state.translationRegex ||
+            this.state.key ||
+            this.state.translationStatus ||
+            this.state.suggestionsStatus ||
+            this.state.pushStatus;
+    }
+
+    componentDidMount() {
+        if(this.hasFilter()){
+            this.submitForm();
+        }
     }
 
     handleField = (updatedState: FiltersState) => {
@@ -62,10 +78,11 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
         this.setState({
             sourceRegex: "",
             translationRegex: "",
+            key: "",
             translationStatus: TranslationStatus.AnyStatus,
-            suggestionsStatus: SuggestionsStatus.AnyStatus
+            suggestionsStatus: SuggestionsStatus.AnyStatus,
+            pushStatus: PushStatus.AnyStatus
         }, () => {
-            this.props.goBackToResults();
             this.props.onResultsFetched([]);
         })
     }
@@ -84,7 +101,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     shouldRedirect = () => {
         const s = location.search;
         const d = stringify(this.state);
-        return s.substring(1) != d;
+        return this.hasFilter() && s.substring(1) != d;
     }
 
     render() {
@@ -164,14 +181,14 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             </div>
             <div className="row text-center mb-5">
                 <div className="col">
-                    <button className="btn btn-secondary" onClick={this.reset}>Reset</button>
+                    <Link to='/' className="btn btn-secondary" onClick={this.reset}>Reset</Link>
                 </div>
             </div>
             {this.shouldRedirect() ?
                 <Redirect
                     to={{
                         pathname: '/filters',
-                        search: stringify(this.state)
+                        search: stringify(_.pickBy(this.state, e=>e))
                     }} />
                 : null}
         </>

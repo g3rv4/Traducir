@@ -88,22 +88,6 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         }
     }
 
-    renderBody() {
-        if (this.state.action == StringActions.None) {
-            return <Results
-                user={this.state.user}
-                results={this.state.strings}
-                loadSuggestions={this.loadSuggestions} />
-        } else if (this.state.action == StringActions.Suggestions) {
-            return <Suggestions
-                config={this.state.config}
-                user={this.state.user}
-                str={this.state.currentString}
-                goBackToResults={this.goBackToResults}
-                showErrorMessage={this.showErrorMessage} />
-        }
-    }
-
     resultsReceived = (strings: SOString[]) => {
         this.setState({
             strings
@@ -147,11 +131,19 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                     goBackToResults={this.goBackToResults}
                     showErrorMessage={this.showErrorMessage}
                 />
-                <Route path='/filter' render={p =>
+                <Route path='/filters' render={p =>
                     <Results
                         user={this.state.user}
                         results={this.state.strings}
                         loadSuggestions={this.loadSuggestions} />
+                } />
+                <Route path='/string' render={p =>
+                    <Suggestions
+                        config={this.state.config}
+                        user={this.state.user}
+                        str={this.state.currentString}
+                        goBackToResults={this.goBackToResults}
+                        showErrorMessage={this.showErrorMessage} />
                 } />
             </div>
         </>
