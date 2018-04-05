@@ -1,14 +1,8 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import * as _ from 'lodash';
-import {
-    Navbar,
-    NavbarBrand,
-    NavbarToggler,
-    Collapse,
-    Nav,
-    NavItem
-} from 'reactstrap';
+import { Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, NavItem } from 'reactstrap';
+import { Route } from 'react-router-dom'
 import Filters from "./Components/Filters"
 import Results from "./Components/Results"
 import Suggestions from "./Components/Suggestions"
@@ -19,15 +13,9 @@ import Config from "../Models/Config"
 export interface TraducirState {
     user: UserInfo;
     strings: SOString[];
-    action: StringActions;
     currentString: SOString;
     config: Config;
     isOpen: boolean;
-}
-
-export enum StringActions {
-    None = 0,
-    Suggestions = 1
 }
 
 export default class Traducir extends React.Component<{}, TraducirState> {
@@ -37,7 +25,6 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         this.state = {
             user: undefined,
             strings: [],
-            action: StringActions.None,
             currentString: null,
             config: null,
             isOpen: false
@@ -51,7 +38,18 @@ export default class Traducir extends React.Component<{}, TraducirState> {
             .catch(error => _that.setState({ user: null }));
         axios.get<Config>('/app/api/config')
             .then(response => _that.setState({ config: response.data }))
-            .catch(error => this.showErrorMessage(null, error.response.status ));
+            .catch(error => this.showErrorMessage(null, error.response.status));
+
+        const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/)
+        if (stringMatch) {
+            axios.get<SOString>(`/app/api/strings/${stringMatch[1]}`)
+                .then(r => {
+                    this.setState({
+                        currentString: r.data
+                    });
+                })
+                .catch(error => this.showErrorMessage(null, error.response.status));
+        }
     }
 
     renderUser() {
@@ -70,7 +68,6 @@ export default class Traducir extends React.Component<{}, TraducirState> {
 
     loadSuggestions = (str: SOString) => {
         this.setState({
-            action: StringActions.Suggestions,
             currentString: str
         });
     }
@@ -79,34 +76,15 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         if (stringIdToUpdate) {
             const idx = _.findIndex(this.state.strings, s => s.id == stringIdToUpdate);
             const _that = this;
-            axios.get<SOString>(`app/api/strings/${stringIdToUpdate}`)
+            axios.get<SOString>(`/app/api/strings/${stringIdToUpdate}`)
                 .then(r => {
                     let newState = {
-                        action: StringActions.None,
                         strings: this.state.strings
                     }
                     newState.strings[idx] = r.data;
 
                     this.setState(newState);
                 })
-        } else {
-            this.setState({ action: StringActions.None });
-        }
-    }
-
-    renderBody() {
-        if (this.state.action == StringActions.None) {
-            return <Results
-                user={this.state.user}
-                results={this.state.strings}
-                loadSuggestions={this.loadSuggestions} />
-        } else if (this.state.action == StringActions.Suggestions) {
-            return <Suggestions
-                config={this.state.config}
-                user={this.state.user}
-                str={this.state.currentString}
-                goBackToResults={this.goBackToResults}
-                showErrorMessage={this.showErrorMessage} />
         }
     }
 
@@ -138,7 +116,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         return <>
             <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
-                    <NavbarBrand href="/">{this.state.config && this.state.config.friendlyName} Translations</NavbarBrand>
+                    <div className="navbar-brand">{this.state.config && this.state.config.friendlyName} Translations</div>
                     <NavbarToggler onClick={this.toggle} className="mr-5" />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
@@ -153,7 +131,21 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                     goBackToResults={this.goBackToResults}
                     showErrorMessage={this.showErrorMessage}
                 />
-                {this.renderBody()}
+                <Route path='/filters' render={p =>
+                    <Results
+                        user={this.state.user}
+                        results={this.state.strings}
+                        loadSuggestions={this.loadSuggestions} />
+                } />
+                <Route path='/string' render={p =>
+                    this.state.currentString ? <Suggestions
+                        config={this.state.config}
+                        user={this.state.user}
+                        str={this.state.currentString}
+                        goBackToResults={this.goBackToResults}
+                        showErrorMessage={this.showErrorMessage} />
+                        : null
+                } />
             </div>
         </>
     }

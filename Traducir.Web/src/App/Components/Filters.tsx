@@ -1,6 +1,9 @@
 import * as React from "react";
 import * as _ from 'lodash';
 import axios from 'axios';
+import history from '../../history'
+import { stringify, parse } from 'query-string';
+import { Redirect, Link } from 'react-router-dom';
 
 import SOString from "./../../Models/SOString";
 
@@ -42,26 +45,54 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     constructor(props: FiltersProps) {
         super(props);
 
+        const parts: FiltersState = parse(location.search);
         this.state = {
-            sourceRegex: "",
-            translationRegex: "",
-            translationStatus: TranslationStatus.AnyStatus,
-            suggestionsStatus: SuggestionsStatus.AnyStatus
+            sourceRegex: parts.sourceRegex || "",
+            translationRegex: parts.translationRegex || "",
+            key: parts.key || "",
+            translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
+            suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
+            pushStatus: parts.pushStatus || PushStatus.AnyStatus
         };
     }
 
+    hasFilter = () => {
+        return this.state.sourceRegex ||
+            this.state.translationRegex ||
+            this.state.key ||
+            this.state.translationStatus ||
+            this.state.suggestionsStatus ||
+            this.state.pushStatus;
+    }
+
+    componentDidMount() {
+        if (this.hasFilter()) {
+            this.submitForm();
+        }
+    }
+
     handleField = (updatedState: FiltersState) => {
-        this.setState(updatedState, () => this.submitForm());
+        this.setState(updatedState, () => {
+            this.submitForm();
+
+            const newPath = '/filters?' + this.currentPath();
+            if (location.pathname.startsWith('/filters')) {
+                history.replace(newPath);
+            } else {
+                history.push(newPath);
+            }
+        });
     }
 
     reset = () => {
         this.setState({
             sourceRegex: "",
             translationRegex: "",
+            key: "",
             translationStatus: TranslationStatus.AnyStatus,
-            suggestionsStatus: SuggestionsStatus.AnyStatus
+            suggestionsStatus: SuggestionsStatus.AnyStatus,
+            pushStatus: PushStatus.AnyStatus
         }, () => {
-            this.props.goBackToResults();
             this.props.onResultsFetched([]);
         })
     }
@@ -76,6 +107,8 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                 _that.props.showErrorMessage(null, error.response.status);
             });
     }, 1000);
+
+    currentPath = () => stringify(_.pickBy(this.state, e => e));
 
     render() {
         return <>
@@ -154,9 +187,15 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             </div>
             <div className="row text-center mb-5">
                 <div className="col">
-                    <button className="btn btn-secondary" onClick={this.reset}>Reset</button>
+                    <Link to='/' className="btn btn-secondary" onClick={this.reset}>Reset</Link>
                 </div>
             </div>
+            {location.pathname == '/filters' && location.search == '' && this.hasFilter() ?
+                <Redirect
+                    to={{
+                        pathname: '/filters',
+                        search: this.currentPath()
+                    }} /> : null}
         </>
     }
 }

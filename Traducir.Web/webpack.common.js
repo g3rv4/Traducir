@@ -15,7 +15,8 @@ module.exports = {
     },
     output: {
         filename: "[name].bundle.js",
-        path: __dirname + "/dist"
+        path: __dirname + "/dist",
+        publicPath: '/'
     },
 
     resolve: {
@@ -26,7 +27,7 @@ module.exports = {
         new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({
             template: "./src/index.ejs",
-            chunks: ['manifest', 'vendor', 'index']
+            chunks: ['vendor', 'index']
         }),
         new CopyWebpackPlugin([
             { from: 'lib', to: 'lib/' }

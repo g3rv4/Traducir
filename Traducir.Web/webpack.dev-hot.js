@@ -8,7 +8,8 @@ let merged = merge(dev, {
         index: './src/index-hot.tsx',
     },
     devServer: {
-        hot: true
+        hot: true,
+        historyApiFallback: true
     },
     plugins: [
         new webpack.NamedModulesPlugin()

@@ -1,5 +1,7 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
+import { Link } from 'react-router-dom';
+import history from '../../history';
 import UserInfo, { UserType } from "../../Models/UserInfo";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
 
@@ -24,11 +26,14 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
     }
 
     postSuggestion = (approve: boolean) => {
-        axios.put('app/api/suggestions', {
+        axios.put('/app/api/suggestions', {
             StringId: this.props.stringId,
             Suggestion: this.state.suggestion,
             Approve: approve
-        }).then(r => this.props.goBackToResults(this.props.stringId))
+        }).then(r => {
+            this.props.goBackToResults(this.props.stringId);
+            history.push('/filters');
+        })
             .catch(e => {
                 if (e.response.status == 400) {
                     this.props.showErrorMessage("Failed sending the suggestion. Are you missing a variable?");
@@ -63,8 +68,7 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
                                 onClick={e => this.postSuggestion(true)}>Send final translation</button>
                             : null}
                     </div>
-                    <button type="button" className="btn btn-secondary float-right"
-                        onClick={e => this.props.goBackToResults(null)}>Go back</button>
+                    <Link to='/filters' className="btn btn-secondary float-right">Go Back</Link>
                 </div>
             </div>
         </form>

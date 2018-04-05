@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as _ from 'lodash';
+import { Link } from 'react-router-dom';
 import SOString from "../../Models/SOString"
 import UserInfo from "../../Models/UserInfo"
 import { StringSuggestionState } from "../../Models/SOStringSuggestion"
@@ -37,8 +38,10 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
         const pending = _.filter(str.suggestions, s => s.state == StringSuggestionState.Created).length;
 
         return (this.props.user && this.props.user.canSuggest) || (approved + pending > 0) ?
-                <button type="button" className="btn btn-sm btn-primary" onClick={e => this.props.loadSuggestions(str)}>Suggestions</button>
-                : null
+            <Link to={`/string/${str.id}`}
+                className="btn btn-sm btn-primary"
+                onClick={e => this.props.loadSuggestions(str)}>Suggestions</Link>
+            : null
     }
     renderRows(strings: SOString[]): React.ReactFragment {
         if (strings.length == 0) {
