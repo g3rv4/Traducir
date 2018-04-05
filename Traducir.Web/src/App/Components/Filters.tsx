@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as _ from 'lodash';
 import axios from 'axios';
+import history from '../../history'
 import { stringify, parse } from 'query-string';
 import { Redirect, Link } from 'react-router-dom';
 
@@ -65,13 +66,22 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     }
 
     componentDidMount() {
-        if(this.hasFilter()){
+        if (this.hasFilter()) {
             this.submitForm();
         }
     }
 
     handleField = (updatedState: FiltersState) => {
-        this.setState(updatedState, () => this.submitForm());
+        this.setState(updatedState, () => {
+            this.submitForm();
+
+            const newPath = '/filters?' + this.currentPath();
+            if (location.pathname.startsWith('/filters')) {
+                history.replace(newPath);
+            } else {
+                history.push(newPath);
+            }
+        });
     }
 
     reset = () => {
@@ -98,11 +108,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             });
     }, 1000);
 
-    shouldRedirect = () => {
-        const s = location.search;
-        const d = stringify(this.state);
-        return this.hasFilter() && s.substring(1) != d;
-    }
+    currentPath = () => stringify(_.pickBy(this.state, e => e));
 
     render() {
         return <>
@@ -184,13 +190,12 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                     <Link to='/' className="btn btn-secondary" onClick={this.reset}>Reset</Link>
                 </div>
             </div>
-            {this.shouldRedirect() ?
+            {location.pathname == '/filters' && location.search == '' && this.hasFilter() ?
                 <Redirect
                     to={{
                         pathname: '/filters',
-                        search: stringify(_.pickBy(this.state, e=>e))
-                    }} />
-                : null}
+                        search: this.currentPath()
+                    }} /> : null}
         </>
     }
 }

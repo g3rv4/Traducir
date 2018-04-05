@@ -1,12 +1,13 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { BrowserRouter } from 'react-router-dom'
+import { Router } from 'react-router-dom'
 
 import Traducir from "./App/Traducir";
+import history from './history'
 
 ReactDOM.render(
-  <BrowserRouter>
+  <Router history={history}>
     <Traducir />
-  </BrowserRouter>,
+  </Router>,
   document.getElementById("root")
 );

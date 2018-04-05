@@ -1,4 +1,6 @@
 import * as React from "react";
+import { Link } from 'react-router-dom';
+import history from '../../history';
 import SOString from "../../Models/SOString"
 import UserInfo from "../../Models/UserInfo"
 import Config from "../../Models/Config"
@@ -48,8 +50,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
             />
 
             <div className="mt-1 text-right">
-                <button type="button" className="btn btn-secondary"
-                    onClick={e => this.props.goBackToResults(null)}>Go back</button>
+                <Link to='/filters' className="btn btn-secondary">Go Back</Link>
             </div>
             <SuggestionNew
                 user={this.props.user}
