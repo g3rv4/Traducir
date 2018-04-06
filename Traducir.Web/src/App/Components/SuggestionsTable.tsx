@@ -33,7 +33,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         }
     }
     render(): JSX.Element {
-        if (!this.props.suggestions || !this.props.suggestions.length) {
+        if (!this.props.suggestions || !this.props.suggestions.length || !this.props.config) {
             return null;
         }
 
