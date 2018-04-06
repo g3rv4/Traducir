@@ -1,5 +1,6 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
+import history from '../../history';
 import SOStringSuggestion, { StringSuggestionState } from "../../Models/SOStringSuggestion"
 import Config from "../../Models/Config"
 import UserInfo, { UserType } from "../../Models/UserInfo"
@@ -113,7 +114,10 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         axios.put('/app/api/review', {
             SuggestionId: this.state.aboutToReviewId,
             Approve: this.state.actionToPerform == ReviewAction.Accept
-        }).then(r => _that.props.goBackToResults(sug.stringId))
+        }).then(r => {
+            _that.props.goBackToResults(sug.stringId);
+            history.push('/filters');
+        })
             .catch(e => {
                 if (e.response.status == 400) {
                     this.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
