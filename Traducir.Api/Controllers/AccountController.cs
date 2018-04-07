@@ -35,7 +35,7 @@ namespace Traducir.Controllers
 
         string GetOauthReturnUrl()
         {
-            return Url.Action("OauthCallback", null, null, "https");
+            return Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS") ? "https" : "http");
         }
 
         [Route("app/login")]
