@@ -53,14 +53,19 @@ export default class Traducir extends React.Component<{}, TraducirState> {
     }
 
     renderUser() {
+        const returnUrl = encodeURIComponent(location.pathname + location.search);
         if (!this.state || this.state.user === null) {
             return <NavItem>
-                <a href="/app/login" className="nav-link">Anonymous - Log in!</a>
+                <a href={`/app/login?returnUrl=${returnUrl}`}
+                    className="nav-link">
+                    Anonymous - Log in!
+                    </a>
             </NavItem>
         } else if (this.state.user) {
             return <>
                 <NavItem className="navbar-text">
-                    {this.state.user.name} ({userTypeToString(this.state.user.userType)}) - <a href="/app/logout">Log out</a>
+                    {this.state.user.name} ({userTypeToString(this.state.user.userType)}) - 
+                    <a href={`/app/logout?returnUrl=${returnUrl}`}>Log out</a>
                 </NavItem>
             </>
         }
@@ -100,7 +105,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         } else {
             if (code == 401) {
                 alert('Your session has expired... you will be redirected to the log in page');
-                window.location.href = '/app/login';
+                window.location.href = `/app/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`;
             } else {
                 alert('Unknown error. Code: ' + code);
             }

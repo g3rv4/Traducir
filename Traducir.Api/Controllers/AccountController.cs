@@ -20,7 +20,7 @@ namespace Traducir.Controllers
         private ISEApiService _seApiService { get; }
         private IConfiguration _configuration { get; }
         private IUserService _userService { get; }
-        private IAuthorizationService _authorizationService{get;}
+        private IAuthorizationService _authorizationService { get; }
 
         public AccountController(IConfiguration configuration,
             ISEApiService seApiService,
@@ -30,12 +30,12 @@ namespace Traducir.Controllers
             _seApiService = seApiService;
             _configuration = configuration;
             _userService = userService;
-            _authorizationService=authorizationService;
+            _authorizationService = authorizationService;
         }
 
         string GetOauthReturnUrl()
         {
-            return Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS") ? "https" : "http");
+            return Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS")? "https" : "http");
         }
 
         [Route("app/login")]
@@ -45,14 +45,14 @@ namespace Traducir.Controllers
         }
 
         [Route("app/logout")]
-        public async Task<IActionResult> LogOut()
+        public async Task<IActionResult> LogOut(string returnUrl = null)
         {
             await HttpContext.SignOutAsync();
-            return Redirect("/");
+            return Redirect(returnUrl ?? "/");
         }
 
         [Route("app/oauth-callback")]
-        public async Task<IActionResult> OauthCallback(string code)
+        public async Task<IActionResult> OauthCallback(string code, string state = null)
         {
             var siteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN");
 
@@ -101,7 +101,7 @@ namespace Traducir.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(identity));
 
-            return Redirect("/");
+            return Redirect(state ?? "/");
         }
 
         [Authorize]
@@ -111,11 +111,12 @@ namespace Traducir.Controllers
             var canSuggest = await _authorizationService.AuthorizeAsync(User, "CanSuggest");
             var canReview = await _authorizationService.AuthorizeAsync(User, "CanReview");
 
-            return Json(new UserInfo{
+            return Json(new UserInfo
+            {
                 Name = User.GetClaim<string>(ClaimType.Name),
-                UserType = User.GetClaim<UserType>(ClaimType.UserType),
-                CanSuggest = canSuggest.Succeeded,
-                CanReview = canReview.Succeeded
+                    UserType = User.GetClaim<UserType>(ClaimType.UserType),
+                    CanSuggest = canSuggest.Succeeded,
+                    CanReview = canReview.Succeeded
             });
         }
     }
