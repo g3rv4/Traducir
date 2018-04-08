@@ -514,6 +514,7 @@ Index      IX_SODumpTable_NormalizedHash NonClustered (NormalizedHash)
         {
             using(var db = _dbService.GetConnection())
             {
+                // update the ones in the db that are not in Transifex
                 await db.ExecuteAsync(@"
 Insert Into StringHistory
             (StringId, HistoryTypeId, CreationDate)
@@ -527,6 +528,22 @@ Set    s.Translation = dump.Translation
 From   Strings s
 Join   SODumpTable dump On dump.Hash = s.[Key]
 Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
+
+                // update the ones in the db that have a translation with a different variant order
+                await db.ExecuteAsync(@"
+Insert Into StringHistory
+            (StringId, HistoryTypeId, CreationDate)
+Select s.Id, {=TranslationUpdatedFromDump}, @now
+From   Strings s
+Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
+Where  s.Translation Is Null;
+
+Update s
+Set    s.Translation = dump.Translation
+From   Strings s
+Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
+Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
+
             }
         }
     }
