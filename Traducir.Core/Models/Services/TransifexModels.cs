@@ -10,7 +10,7 @@ namespace Traducir.Core.Models.Services
         public string Key { get; set; }
 
         private string _NormalizedKey;
-        public string NormalizedKey => _NormalizedKey ?? (_NormalizedKey = GetNormalizedKey(Key));
+        public string NormalizedKey => _NormalizedKey ?? (_NormalizedKey = Key.ToNormalizedKey());
 
         [DataMember(Name = "reviewed")]
         public bool Reviewed { get; set; }
@@ -26,19 +26,6 @@ namespace Traducir.Core.Models.Services
 
         public string Variant => Comment.HasValue()? Comment : null;
         public string Translation => Reviewed ? UnreviewedTranslation : null;
-
-        private static string GetNormalizedKey(string key)
-        {
-            if (!key.Contains("|"))
-            {
-                return key;
-            }
-
-            var parts = key.Split('|');
-            var variables = parts[1].Split(',').OrderBy(v => v);
-
-            return $"{parts[0]}|{string.Join(",", variables)}";
-        }
     }
 
     public class TransifexStringToPush

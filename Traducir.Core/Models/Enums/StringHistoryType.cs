@@ -6,5 +6,6 @@ namespace Traducir.Core.Models.Enums
         Updated = 2,
         Deleted = 3,
         Undeleted = 4,
+        TranslationUpdatedFromDump = 5,
     }
 }

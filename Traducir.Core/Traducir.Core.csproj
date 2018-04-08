@@ -5,6 +5,7 @@
   </PropertyGroup>
 
 <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="7.1.0" />
     <PackageReference Include="Dapper" Version="1.50.4" />
     <PackageReference Include="Jil" Version="2.15.4" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.0-alpha9-00206" />

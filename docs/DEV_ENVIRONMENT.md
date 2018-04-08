@@ -13,7 +13,7 @@ In order to run this project on your computer entirely, you're going to need:
        * [C# Extensions](https://marketplace.visualstudio.com/items?itemName=jchannon.csharpextensions)
        * [C# FixFormat](https://marketplace.visualstudio.com/items?itemName=Leopotam.csharpfixformat)
 2. A SQL Server instance. You can use Microsoft's docker image. [I put together some instructions to set it up using docker-compose](https://github.com/g3rv4/Traducir/blob/master/docs/MSSQL_DOCKER.md).
-3. A [StackApp](https://stackapps.com/) that has `localhost:8080` as the OAuth Domain.
+3. A [StackApp](https://stackapps.com/) that has `localhost` as the OAuth Domain.
 4. [.NET Core](https://www.microsoft.com/net/) and [Node.js](https://nodejs.org/en/) set up.
 5. A Transifex account with access to the project you want to work with. I'm assuming it's SOes because it's the first one. You're going to need an API key that you can generate [on their site](https://www.transifex.com/user/settings/api/).
 

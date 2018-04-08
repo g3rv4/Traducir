@@ -53,5 +53,18 @@ namespace Traducir.Core.Helpers
             var converter = System.ComponentModel.TypeDescriptor.GetConverter(typeof(T));
             return (T)converter.ConvertFromString(value);
         }
+
+        public static string ToNormalizedKey(this string key)
+        {
+            if (!key.Contains("|"))
+            {
+                return key;
+            }
+
+            var parts = key.Split('|');
+            var variables = parts[1].Split(',').OrderBy(v => v);
+
+            return $"{parts[0]}|{string.Join(",", variables)}";
+        }
     }
 }

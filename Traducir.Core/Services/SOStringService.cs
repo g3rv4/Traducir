@@ -4,9 +4,12 @@ using System.Collections.Immutable;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CsvHelper;
 using Dapper;
 using StackExchange.Profiling;
 using Traducir.Core.Models;
@@ -22,6 +25,8 @@ namespace Traducir.Core.Services
         Task<int?> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
         Task UpdateStringsPushed();
+        Task PullSODump(string dumpUrl);
+        Task UpdateTranslationsFromSODump();
     }
     public class SOStringService : ISOStringService
     {
@@ -430,6 +435,98 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                 {
                     ExpireCache();
                 }
+            }
+        }
+
+        private Task ResetDumpTable(DbConnection db)
+        {
+            return db.ExecuteAsync(@"
+Drop Table If Exists dbo.SODumpTable;
+Create Table dbo.SODumpTable
+(
+Id                  Int Not Null,
+LocaleId            SmallInt Not Null,
+Hash                VarChar(255) Not Null,
+NormalizedHash      VarChar(255) Not Null,
+Translation         NVarChar(Max) Null,
+CreationDate        DateTime Not Null,
+ModifiedDate        DateTime Null,
+LastSeenDate        DateTime Not Null,
+TranslationOverride NVarChar(Max) Null,
+
+Constraint PK_SODumpTable Primary Key Clustered (Id),
+Constraint IX_SODumpTable_Hash Unique (Hash),
+Index      IX_SODumpTable_NormalizedHash NonClustered (NormalizedHash)
+)");
+        }
+
+        public async Task PullSODump(string dumpUrl)
+        {
+            using(var httpClient = new HttpClient())
+            {
+                var response = await httpClient.GetAsync(dumpUrl);
+                response.EnsureSuccessStatusCode();
+
+                using(var stream = await response.Content.ReadAsStreamAsync())
+                using(var reader = new StreamReader(stream))
+                using(var csv = new CsvReader(reader))
+                using(var db = _dbService.GetConnection())
+                {
+                    await ResetDumpTable(db);
+                    var table = new DataTable();
+                    table.Columns.Add("Id", typeof(int));
+                    table.Columns.Add("LocaleId", typeof(int));
+                    table.Columns.Add("Hash", typeof(string));
+                    table.Columns.Add("NormalizedHash", typeof(string));
+                    table.Columns.Add("CreationDate", typeof(DateTime));
+                    table.Columns.Add("ModifiedDate", typeof(DateTime));
+                    table.Columns.Add("LastSeenDate", typeof(DateTime));
+                    table.Columns.Add("Translation", typeof(string));
+                    table.Columns.Add("TranslationOverride", typeof(string));
+
+                    var str = new SODumpString();
+
+                    foreach (var s in csv.EnumerateRecords(str))
+                    {
+                        table.Rows.Add(s.Id, s.LocaleId, s.Hash, s.NormalizedHash, s.CreationDate,
+                            s.ModifiedDate, s.LastSeenDate,
+                            s.Translation == "NULL" ? null : s.Translation,
+                            s.TranslationOverride == "NULL" ? null : s.TranslationOverride);
+                    }
+
+                    var copyDb = (SqlConnection)db.InnerConnection;
+                    using(var copy = new SqlBulkCopy(copyDb))
+                    {
+                        copy.DestinationTableName = "dbo.SODumpTable";
+                        foreach (DataColumn c in table.Columns)
+                        {
+                            copy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(c.ColumnName, c.ColumnName));
+                        }
+
+                        copyDb.Open();
+                        copy.WriteToServer(table);
+                    }
+                }
+            }
+        }
+
+        public async Task UpdateTranslationsFromSODump()
+        {
+            using(var db = _dbService.GetConnection())
+            {
+                await db.ExecuteAsync(@"
+Insert Into StringHistory
+            (StringId, HistoryTypeId, CreationDate)
+Select s.Id, {=TranslationUpdatedFromDump}, @now
+From   Strings s
+Join   SODumpTable dump On dump.Hash = s.[Key]
+Where  s.Translation Is Null;
+
+Update s
+Set    s.Translation = dump.Translation
+From   Strings s
+Join   SODumpTable dump On dump.Hash = s.[Key]
+Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
             }
         }
     }

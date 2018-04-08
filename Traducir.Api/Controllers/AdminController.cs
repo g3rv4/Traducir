@@ -32,6 +32,19 @@ namespace Traducir.Controllers
             return new EmptyResult();
         }
 
+        [Route("app/api/admin/pull-so-dump")]
+        public async Task<IActionResult> PullSODump(string dumpUrl)
+        {
+            await _soStringService.PullSODump(dumpUrl);
+            return new EmptyResult();
+        }
+
+        [Route("app/api/admin/update-translations-fron-so-dump")]
+        public async Task<IActionResult> UpdateTranslationsFromSODump(){
+            await _soStringService.UpdateTranslationsFromSODump();
+            return new EmptyResult();
+        }
+
         [Route("app/api/admin/push")]
         public async Task<IActionResult> PushStrings()
         {
@@ -59,7 +72,8 @@ namespace Traducir.Controllers
         }
 
         [Route("app/admin/throw")]
-        public IActionResult Throw(){
+        public IActionResult Throw()
+        {
             throw new InvalidOperationException();
         }
 
