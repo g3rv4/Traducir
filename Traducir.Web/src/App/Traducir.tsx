@@ -1,7 +1,7 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import * as _ from 'lodash';
-import { Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, NavItem } from 'reactstrap';
+import { Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { Route, Switch } from 'react-router-dom'
 import Filters from "./Components/Filters"
 import Results from "./Components/Results"
@@ -63,16 +63,12 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         const returnUrl = encodeURIComponent(location.pathname + location.search);
         if (!this.state || this.state.user === null) {
             return <NavItem>
-                <a href={`/app/login?returnUrl=${returnUrl}`}
-                    className="nav-link">
-                    Anonymous - Log in!
-                    </a>
+                <NavLink href={`/app/login?returnUrl=${returnUrl}`}>Log in!</NavLink>
             </NavItem>
         } else if (this.state.user) {
             return <>
-                <NavItem className="navbar-text">
-                    {this.state.user.name} ({userTypeToString(this.state.user.userType)}) -
-                    <a href={`/app/logout?returnUrl=${returnUrl}`}>Log out</a>
+                <NavItem>
+                    <NavLink href={`/app/logout?returnUrl=${returnUrl}`}>Log out</NavLink>
                 </NavItem>
             </>
         }
@@ -131,23 +127,36 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         return <>
             <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
-                    <div className="navbar-brand">{this.state.config && this.state.config.friendlyName} Translations</div>
+                    <div className="navbar-brand">{this.state.config && this.state.config.friendlyName} Translations{this.state.user && ` | ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</div>
                     <NavbarToggler onClick={this.toggle} className="mr-5" />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
+                            <UncontrolledDropdown nav inNavbar>
+                                <DropdownToggle nav caret>
+                                    Database
+                                </DropdownToggle>
+                                <DropdownMenu right>
+                                    <DropdownItem>
+                                        <a href="https://db.traducir.win" className="dropdown-item" target="_blank">Access to the Database</a>
+                                    </DropdownItem>
+                                    <DropdownItem>
+                                        <a href="https://github.com/g3rv4/Traducir/blob/master/docs/USING_REDASH.md" className="dropdown-item" target="_blank">Instructions</a>
+                                    </DropdownItem>
+                                </DropdownMenu>
+                            </UncontrolledDropdown>
                             {this.renderUser()}
                         </Nav>
                     </Collapse>
                 </div>
             </Navbar>
             <div className="container">
-                <Route render={p=>
-                <Filters
-                    onResultsFetched={this.resultsReceived}
-                    goBackToResults={this.goBackToResults}
-                    showErrorMessage={this.showErrorMessage}
-                    location={p.location}
-                />} />
+                <Route render={p =>
+                    <Filters
+                        onResultsFetched={this.resultsReceived}
+                        goBackToResults={this.goBackToResults}
+                        showErrorMessage={this.showErrorMessage}
+                        location={p.location}
+                    />} />
                 <Switch>
                     <Route path='/filters' render={p =>
                         <Results
