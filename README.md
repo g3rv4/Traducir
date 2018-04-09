@@ -16,7 +16,7 @@ I'm glad you asked... [I've written a doc about it](https://github.com/g3rv4/Tra
 
 A MA ZING! ZING! ZING! All kinds of contributions are accepted. Please read our [code of conduct first](https://github.com/g3rv4/Traducir/blob/master/docs/CODE_OF_CONDUCT.md) though. And before jumping to work on something, please discuss it on an issue.
 
-## Who built it?
-The first version was implemented by Gervasio Marchand. Gervasio (ugh, it's hard to write about myself in the third person) is currently a developer at Stack Overflow, but this project was started on his spare time and outside his dev role at Stack Overflow.
-
-The idea is that the community takes over! So feel free to [create issues](https://github.com/g3rv4/Traducir/issues) or work on them. Before working on a PR, create an issue and make sure that it's a place where we're looking for contributions.
+## Contributors (ordered alphabetically)
+[g3rv4](https://es.stackoverflow.com/users/11272/g3rv4)<br />
+[gbianchi](https://es.stackoverflow.com/users/324/gbianchi)<br />
+[Mariano](https://es.stackoverflow.com/users/127/mariano)

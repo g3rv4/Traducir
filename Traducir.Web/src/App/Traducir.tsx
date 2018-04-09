@@ -135,6 +135,9 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                     <NavbarToggler onClick={this.toggle} className="mr-5" />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
+                            <NavItem>
+                                <NavLink href="https://github.com/g3rv4/Traducir" target="_blank">Source Code</NavLink>
+                            </NavItem>
                             <UncontrolledDropdown nav inNavbar>
                                 <DropdownToggle nav caret>
                                     Database
