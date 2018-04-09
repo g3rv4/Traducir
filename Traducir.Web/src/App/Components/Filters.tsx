@@ -19,6 +19,7 @@ interface FiltersState {
 
 export interface FiltersProps {
     onResultsFetched: (strings: SOString[]) => void;
+    onLoading: () => void;
     goBackToResults: (stringIdToUpdate?: number) => void;
     showErrorMessage: (message?: string, code?: number) => void;
     location: Location;
@@ -48,6 +49,10 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     constructor(props: FiltersProps) {
         super(props);
         this.state = this.getStateFromLocation(this.props.location);
+        if (!this.hasFilter()) {
+            history.replace('/');
+            return;
+        }
     }
 
     hasFilter = () => {
@@ -75,6 +80,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     }
 
     getStateFromLocation(location: Location) {
+        this.props.onLoading();
         const parts: FiltersState = parse(location.search);
         return {
             sourceRegex: parts.sourceRegex || "",
@@ -82,12 +88,16 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             key: parts.key || "",
             translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
             suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
-            pushStatus: parts.pushStatus || PushStatus.AnyStatus
+            pushStatus: parts.pushStatus || PushStatus.AnyStatus,
         }
     }
 
     handleField = (updatedState: FiltersState) => {
         this.setState(updatedState, () => {
+            if (!this.hasFilter()) {
+                history.replace('/');
+                return;
+            }
             this.submitForm();
 
             const newPath = '/filters?' + this.currentPath();
@@ -113,6 +123,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     }
 
     submitForm = _.debounce(() => {
+        this.props.onLoading();
         const _that = this;
         axios.post<SOString[]>('/app/api/strings/query', this.state)
             .then(function (response) {

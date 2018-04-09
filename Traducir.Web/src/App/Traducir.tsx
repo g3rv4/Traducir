@@ -18,6 +18,7 @@ export interface TraducirState {
     currentString: SOString;
     config: Config;
     isOpen: boolean;
+    isLoading: boolean;
     stats: Stats;
 }
 
@@ -31,7 +32,8 @@ export default class Traducir extends React.Component<{}, TraducirState> {
             currentString: null,
             config: null,
             stats: null,
-            isOpen: false
+            isOpen: false,
+            isLoading: false
         };
     }
 
@@ -101,7 +103,8 @@ export default class Traducir extends React.Component<{}, TraducirState> {
 
     resultsReceived = (strings: SOString[]) => {
         this.setState({
-            strings
+            strings,
+            isLoading: false
         })
     }
 
@@ -127,7 +130,8 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         return <>
             <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
-                    <div className="navbar-brand">{this.state.config && this.state.config.friendlyName} Translations{this.state.user && ` | ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</div>
+                    <div className="navbar-brand d-none d-lg-block">{this.state.config && this.state.config.friendlyName} Translations 🦄{this.state.user && ` ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</div>
+                    <div className="navbar-brand d-lg-none">{this.state.config && this.state.config.friendlyName} Translations 🦄</div>
                     <NavbarToggler onClick={this.toggle} className="mr-5" />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
@@ -153,6 +157,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                 <Route render={p =>
                     <Filters
                         onResultsFetched={this.resultsReceived}
+                        onLoading={() => this.setState({ isLoading: true })}
                         goBackToResults={this.goBackToResults}
                         showErrorMessage={this.showErrorMessage}
                         location={p.location}
@@ -162,7 +167,8 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                         <Results
                             user={this.state.user}
                             results={this.state.strings}
-                            loadSuggestions={this.loadSuggestions} />
+                            loadSuggestions={this.loadSuggestions}
+                            isLoading={this.state.isLoading} />
                     } />
                     <Route path='/string' render={p =>
                         this.state.currentString ? <Suggestions

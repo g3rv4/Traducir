@@ -8,6 +8,7 @@ import { StringSuggestionState } from "../../Models/SOStringSuggestion"
 export interface ResultsProps {
     user: UserInfo;
     results: SOString[];
+    isLoading: boolean;
     loadSuggestions: (str: SOString) => void;
 }
 
@@ -44,6 +45,11 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
             : null
     }
     renderRows(strings: SOString[]): React.ReactFragment {
+        if (this.props.isLoading) {
+            return <tr>
+                <td colSpan={4} className="text-center">Loading...</td>
+            </tr>
+        }
         if (strings.length == 0) {
             return <tr>
                 <td colSpan={4} className="text-center">No results (sad trombone)</td>
