@@ -49,7 +49,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     constructor(props: FiltersProps) {
         super(props);
         this.state = this.getStateFromLocation(this.props.location);
-        if (!this.hasFilter()) {
+        if (!this.hasFilter() && !props.location.pathname.startsWith('/string')) {
             history.replace('/');
             return;
         }
