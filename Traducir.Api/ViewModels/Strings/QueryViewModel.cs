@@ -5,9 +5,10 @@ namespace Traducir.ViewModels.Strings
         public enum SuggestionApprovalStatus
         {
             AnyStatus = 0, // will default to this one
-            DoesNotHaveSuggestionsNeedingApproval = 1,
-            HasSuggestionsNeedingApproval = 2,
-            HasSuggestionsNeedingApprovalApprovedByTrustedUser = 3
+            DoesNotHaveSuggestions = 1,
+            HasSuggestionsNeedingReview = 2,
+            HasSuggestionsNeedingApproval = 3,
+            HasSuggestionsNeedingReviewApprovedByTrustedUser = 4
         }
 
         public enum TranslationStatuses

@@ -22,7 +22,27 @@ namespace Traducir.Controllers
         }
 
         [HttpGet]
-        [Route("app/api/strings/{stringId}")]
+        [Route("app/api/strings/stats")]
+        public async Task<IActionResult> GetStringStats()
+        {
+            return Json(new
+            {
+                TotalStrings = (await _soStringService.GetStringsAsync(s => true)).Length,
+                    WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.Translation.HasValue())).Length,
+                    WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.Suggestions != null && s.Suggestions.Any())).Length,
+                    WaitingApproval = (await _soStringService.GetStringsAsync(s =>
+                        s.Suggestions != null &&
+                        s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created)
+                    )).Length,
+                    WaitingReview = (await _soStringService.GetStringsAsync(s =>
+                        s.Suggestions != null &&
+                        s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser)
+                    )).Length,
+            });
+        }
+
+        [HttpGet]
+        [Route("app/api/strings/{stringId:INT}")]
         public async Task<IActionResult> GetString(int stringId)
         {
             return Json((await _soStringService.GetStringsAsync(s => s.Id == stringId)).FirstOrDefault());
@@ -52,17 +72,22 @@ namespace Traducir.Controllers
             {
                 switch (model.SuggestionsStatus)
                 {
-                    case QueryViewModel.SuggestionApprovalStatus.DoesNotHaveSuggestionsNeedingApproval:
+                    case QueryViewModel.SuggestionApprovalStatus.DoesNotHaveSuggestions:
                         composePredicate(s =>
                             s.Suggestions == null ||
-                            !s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                            s.Suggestions.Length == 0);
                         break;
-                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
+                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReview:
                         composePredicate(s =>
                             s.Suggestions != null &&
                             s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
-                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApprovalApprovedByTrustedUser:
+                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
+                        composePredicate(s =>
+                            s.Suggestions != null &&
+                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created));
+                        break;
+                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReviewApprovedByTrustedUser:
                         composePredicate(s =>
                             s.Suggestions != null &&
                             s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser));

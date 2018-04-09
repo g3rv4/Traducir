@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as _ from 'lodash';
 import axios from 'axios';
+import { Location } from 'history';
 import history from '../../history'
 import { stringify, parse } from 'query-string';
 import { Redirect, Link } from 'react-router-dom';
@@ -20,13 +21,15 @@ export interface FiltersProps {
     onResultsFetched: (strings: SOString[]) => void;
     goBackToResults: (stringIdToUpdate?: number) => void;
     showErrorMessage: (message?: string, code?: number) => void;
+    location: Location;
 }
 
 enum SuggestionsStatus {
     AnyStatus = 0,
-    DoesNotHaveSuggestionsNeedingApproval = 1,
-    HasSuggestionsNeedingApproval = 2,
-    HasSuggestionsNeedingApprovalApprovedByTrustedUser = 3
+    DoesNotHaveSuggestions = 1,
+    HasSuggestionsNeedingReview = 2,
+    HasSuggestionsNeedingApproval = 3,
+    HasSuggestionsNeedingReviewApprovedByTrustedUser = 4
 }
 
 enum TranslationStatus {
@@ -44,16 +47,7 @@ enum PushStatus {
 export default class Filters extends React.Component<FiltersProps, FiltersState> {
     constructor(props: FiltersProps) {
         super(props);
-
-        const parts: FiltersState = parse(location.search);
-        this.state = {
-            sourceRegex: parts.sourceRegex || "",
-            translationRegex: parts.translationRegex || "",
-            key: parts.key || "",
-            translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
-            suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
-            pushStatus: parts.pushStatus || PushStatus.AnyStatus
-        };
+        this.state = this.getStateFromLocation(this.props.location);
     }
 
     hasFilter = () => {
@@ -68,6 +62,27 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     componentDidMount() {
         if (this.hasFilter()) {
             this.submitForm();
+        }
+    }
+
+    componentWillReceiveProps(nextProps: FiltersProps, context: any) {
+        if (this.props.location.search == nextProps.location.search ||
+            this.props.location.pathname == '/filters') {
+            return;
+        }
+
+        this.setState(this.getStateFromLocation(nextProps.location), this.submitForm);
+    }
+
+    getStateFromLocation(location: Location) {
+        const parts: FiltersState = parse(location.search);
+        return {
+            sourceRegex: parts.sourceRegex || "",
+            translationRegex: parts.translationRegex || "",
+            key: parts.key || "",
+            translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
+            suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
+            pushStatus: parts.pushStatus || PushStatus.AnyStatus
         }
     }
 
@@ -155,9 +170,10 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                             onChange={e => this.handleField({ suggestionsStatus: parseInt(e.target.value) })}
                         >
                             <option value={SuggestionsStatus.AnyStatus}>Any string</option>
-                            <option value={SuggestionsStatus.HasSuggestionsNeedingApproval}>Strings with pending suggestions</option>
-                            <option value={SuggestionsStatus.HasSuggestionsNeedingApprovalApprovedByTrustedUser}>Strings with pending suggestions approved by a trusted user</option>
-                            <option value={SuggestionsStatus.DoesNotHaveSuggestionsNeedingApproval}>Strings without pending suggestions</option>
+                            <option value={SuggestionsStatus.DoesNotHaveSuggestions}>Strings without suggestions</option>
+                            <option value={SuggestionsStatus.HasSuggestionsNeedingApproval}>Strings with suggestions awaiting approval</option>
+                            <option value={SuggestionsStatus.HasSuggestionsNeedingReview}>Strings with suggestions awaiting review</option>
+                            <option value={SuggestionsStatus.HasSuggestionsNeedingReviewApprovedByTrustedUser}>Strings with approved suggestions awaiting review</option>
                         </select>
                     </div>
                 </div>

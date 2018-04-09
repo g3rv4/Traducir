@@ -2,13 +2,15 @@ import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import * as _ from 'lodash';
 import { Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, NavItem } from 'reactstrap';
-import { Route } from 'react-router-dom'
+import { Route, Switch } from 'react-router-dom'
 import Filters from "./Components/Filters"
 import Results from "./Components/Results"
 import Suggestions from "./Components/Suggestions"
+import StatsWithLinks from "./Components/StatsWithLinks"
 import SOString from "../Models/SOString"
 import UserInfo, { UserType, userTypeToString } from "../Models/UserInfo"
 import Config from "../Models/Config"
+import Stats from "../Models/Stats"
 
 export interface TraducirState {
     user: UserInfo;
@@ -16,6 +18,7 @@ export interface TraducirState {
     currentString: SOString;
     config: Config;
     isOpen: boolean;
+    stats: Stats;
 }
 
 export default class Traducir extends React.Component<{}, TraducirState> {
@@ -27,6 +30,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
             strings: [],
             currentString: null,
             config: null,
+            stats: null,
             isOpen: false
         };
     }
@@ -38,6 +42,9 @@ export default class Traducir extends React.Component<{}, TraducirState> {
             .catch(error => _that.setState({ user: null }));
         axios.get<Config>('/app/api/config')
             .then(response => _that.setState({ config: response.data }))
+            .catch(error => this.showErrorMessage(null, error.response.status));
+        axios.get<Stats>('/app/api/strings/stats')
+            .then(response => _that.setState({ stats: response.data }))
             .catch(error => this.showErrorMessage(null, error.response.status));
 
         const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/)
@@ -64,7 +71,7 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         } else if (this.state.user) {
             return <>
                 <NavItem className="navbar-text">
-                    {this.state.user.name} ({userTypeToString(this.state.user.userType)}) - 
+                    {this.state.user.name} ({userTypeToString(this.state.user.userType)}) -
                     <a href={`/app/logout?returnUrl=${returnUrl}`}>Log out</a>
                 </NavItem>
             </>
@@ -89,6 +96,9 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                     newState.strings[idx] = r.data;
 
                     this.setState(newState);
+                    axios.get<Stats>('/app/api/strings/stats')
+                        .then(response => _that.setState({ stats: response.data }))
+                        .catch(error => this.showErrorMessage(null, error.response.status));
                 })
         }
     }
@@ -131,26 +141,35 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                 </div>
             </Navbar>
             <div className="container">
+                <Route render={p=>
                 <Filters
                     onResultsFetched={this.resultsReceived}
                     goBackToResults={this.goBackToResults}
                     showErrorMessage={this.showErrorMessage}
-                />
-                <Route path='/filters' render={p =>
-                    <Results
-                        user={this.state.user}
-                        results={this.state.strings}
-                        loadSuggestions={this.loadSuggestions} />
-                } />
-                <Route path='/string' render={p =>
-                    this.state.currentString ? <Suggestions
-                        config={this.state.config}
-                        user={this.state.user}
-                        str={this.state.currentString}
-                        goBackToResults={this.goBackToResults}
-                        showErrorMessage={this.showErrorMessage} />
-                        : null
-                } />
+                    location={p.location}
+                />} />
+                <Switch>
+                    <Route path='/filters' render={p =>
+                        <Results
+                            user={this.state.user}
+                            results={this.state.strings}
+                            loadSuggestions={this.loadSuggestions} />
+                    } />
+                    <Route path='/string' render={p =>
+                        this.state.currentString ? <Suggestions
+                            config={this.state.config}
+                            user={this.state.user}
+                            str={this.state.currentString}
+                            goBackToResults={this.goBackToResults}
+                            showErrorMessage={this.showErrorMessage} />
+                            : null
+                    } />
+                    <Route render={p =>
+                        this.state.stats ?
+                            <StatsWithLinks stats={this.state.stats} />
+                            : null
+                    } />
+                </Switch>
             </div>
         </>
     }
