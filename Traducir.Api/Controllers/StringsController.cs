@@ -100,12 +100,28 @@ namespace Traducir.Controllers
             }
             if (model.SourceRegex.HasValue())
             {
-                var regex = new Regex(model.SourceRegex, RegexOptions.Compiled);
+                Regex regex;
+                try
+                {
+                    regex = new Regex(model.SourceRegex, RegexOptions.Compiled);
+                }
+                catch (ArgumentException)
+                {
+                    return BadRequest();
+                }
                 composePredicate(s => regex.IsMatch(s.OriginalString));
             }
             if (model.TranslationRegex.HasValue())
             {
-                var regex = new Regex(model.TranslationRegex, RegexOptions.Compiled);
+                Regex regex;
+                try
+                {
+                    regex = new Regex(model.TranslationRegex, RegexOptions.Compiled);
+                }
+                catch (ArgumentException)
+                {
+                    return BadRequest();
+                }
                 composePredicate(s => s.Translation.HasValue()&& regex.IsMatch(s.Translation));
             }
 

@@ -130,7 +130,12 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                 _that.props.onResultsFetched(response.data);
             })
             .catch(function (error) {
-                _that.props.showErrorMessage(null, error.response.status);
+                if (error.response.status == 400) {
+                    _that.props.onResultsFetched([]);
+                    _that.props.showErrorMessage('Error processing the filter. Are your regular expressions ok?');
+                } else {
+                    _that.props.showErrorMessage(null, error.response.status);
+                }
             });
     }, 1000);
 
