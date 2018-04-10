@@ -15,6 +15,7 @@ interface FiltersState {
     translationStatus?: TranslationStatus;
     suggestionsStatus?: SuggestionsStatus;
     pushStatus?: PushStatus;
+    hasError?: boolean;
 }
 
 export interface FiltersProps {
@@ -93,7 +94,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     }
 
     handleField = (updatedState: FiltersState) => {
-        this.setState(updatedState, () => {
+        this.setState({ ...updatedState, hasError: false }, () => {
             if (!this.hasFilter()) {
                 history.replace('/');
                 return;
@@ -127,12 +128,13 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
         const _that = this;
         axios.post<SOString[]>('/app/api/strings/query', this.state)
             .then(function (response) {
+                _that.setState({ hasError: false });
                 _that.props.onResultsFetched(response.data);
             })
             .catch(function (error) {
                 if (error.response.status == 400) {
+                    _that.setState({ hasError: true });
                     _that.props.onResultsFetched([]);
-                    _that.props.showErrorMessage('Error processing the filter. Are your regular expressions ok?');
                 } else {
                     _that.props.showErrorMessage(null, error.response.status);
                 }
@@ -217,6 +219,15 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                     </div>
                 </div>
             </div>
+            {this.state.hasError &&
+            <div className="row">
+                <div className="col">
+                    <div className="alert alert-danger" role="alert">
+                        Error when performing the filter... are the regular expressions ok?
+                    </div>
+                </div>
+            </div>
+            }
             <div className="row text-center mb-5">
                 <div className="col">
                     <Link to='/' className="btn btn-secondary" onClick={this.reset}>Reset</Link>
