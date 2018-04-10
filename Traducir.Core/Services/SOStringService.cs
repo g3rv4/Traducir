@@ -245,6 +245,12 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
                     return null;
                 }
 
+                // empty suggestion
+                if (suggestion == null || suggestion.Length == 0)
+                {
+                    return null;
+                }
+
                 // if there's another suggestion with the same value
                 if (str.Suggestions != null && str.Suggestions.Any(sug => sug.Suggestion == suggestion))
                 {

@@ -36,7 +36,7 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
         })
             .catch(e => {
                 if (e.response.status == 400) {
-                    this.props.showErrorMessage("Failed sending the suggestion. Are you missing a variable?");
+                    this.props.showErrorMessage("Failed sending the suggestion. Do you have all the variables? does it have a value?");
                 } else {
                     this.props.showErrorMessage(null, e.response.status);
                 }
