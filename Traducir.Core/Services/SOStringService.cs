@@ -421,11 +421,7 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                         DismissedByOtherStringState = StringSuggestionState.DismissedByOtherString,
                     });
 
-                    if (newState == StringSuggestionState.ApprovedByReviewer || newState == StringSuggestionState.Rejected)
-                    {
-                        ExpireCache();
-                    }
-
+                    ExpireCache();
                     return true;
                 }
                 return false;
