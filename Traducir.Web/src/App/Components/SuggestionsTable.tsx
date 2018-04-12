@@ -13,25 +13,12 @@ export interface SuggestionsTableProps {
     showErrorMessage: (message?: string, code?: number) => void;
 }
 
-interface SuggestionsTableState {
-    aboutToReviewId?: number;
-    actionToPerform?: ReviewAction;
-}
-
 enum ReviewAction {
     Accept = 1,
     Reject = 2
 }
 
-export default class SuggestionsTable extends React.Component<SuggestionsTableProps, SuggestionsTableState> {
-    constructor(props: SuggestionsTableProps) {
-        super(props);
-
-        this.state = {
-            aboutToReviewId: null,
-            actionToPerform: null
-        }
-    }
+export default class SuggestionsTable extends React.Component<SuggestionsTableProps, {}> {
     render(): JSX.Element {
         if (!this.props.suggestions || !this.props.suggestions.length || !this.props.config) {
             return null;
@@ -74,46 +61,21 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             return null;
         }
 
-        if (!this.state.actionToPerform) {
-            return <div className="btn-group" role="group">
-                <button type="button" className="btn btn-sm btn-success" onClick={e => this.setState({
-                    actionToPerform: ReviewAction.Accept,
-                    aboutToReviewId: sug.id
-                })}><i className="fas fa-thumbs-up"></i></button>
-                <button type="button" className="btn btn-sm btn-danger" onClick={e => this.setState({
-                    actionToPerform: ReviewAction.Reject,
-                    aboutToReviewId: sug.id
-                })}><i className="fas fa-thumbs-down"></i></button>
-            </div>;
-        }
-
-        if (this.state.aboutToReviewId != sug.id) {
-            return null;
-        }
-
-        return <div className="text-center">
-            <div>
-                {this.state.actionToPerform == ReviewAction.Accept ? 'Approve' : 'Reject'} this suggestion?
-            </div>
-            <div className="btn-group" role="group">
-                <button type="button" className="btn btn-sm btn-primary" onClick={e => this.processReview(sug)}>Yes</button>
-                <button type="button" className="btn btn-sm btn-secondary" onClick={e => this.setState({
-                    actionToPerform: null,
-                    aboutToReviewId: null
-                })}>No</button>
-            </div>
-        </div>
+        return <div className="btn-group" role="group">
+            <button type="button" className="btn btn-sm btn-success" onClick={e => this.processReview(sug, ReviewAction.Accept)}>
+                <i className="fas fa-thumbs-up"></i>
+            </button>
+            <button type="button" className="btn btn-sm btn-danger" onClick={e => this.processReview(sug, ReviewAction.Reject)}>
+                <i className="fas fa-thumbs-down"></i>
+            </button>
+        </div>;
     }
 
-    processReview(sug: SOStringSuggestion) {
-        if (!this.state.aboutToReviewId || !this.state.actionToPerform) {
-            return;
-        }
-
+    processReview(sug: SOStringSuggestion, action: ReviewAction) {
         const _that = this;
         axios.put('/app/api/review', {
-            SuggestionId: this.state.aboutToReviewId,
-            Approve: this.state.actionToPerform == ReviewAction.Accept
+            SuggestionId: sug.id,
+            Approve: action == ReviewAction.Accept
         }).then(r => {
             _that.props.goBackToResults(sug.stringId);
             history.push('/filters');
