@@ -61,6 +61,53 @@ Open the `.vscode/launch.json` and replace the existing `env` key with the follo
 
 Now... if you run it, it should work. Visit `http://localhost:5000/app/api/admin/migrate` to run the migrations. That should create all the tables the system uses for you (or run migrations that were created since you last pulled). If you visit `http://localhost:5000/app/api/admin/pull` that should populate the strings on your database. Give it a try :)
 
+### Set up the backend on Visual Studio 2017
+
+Open the folder Traducir. Once there, double click Traducir.sln. This will open the backend solution. Before we can continue, we have to configure the enviroment variables. This variables are stored on traducir.api property pages. There are two ways to configure this variables. 
+
+The hard way, is setting them up manually one by one on the property page of the project. Rigth Click on the project name (Traducir.Api) and click on properties. Go to debug tab, and select the profile IIS Express (should be selected by default). Once there, you can set up this variables on the grid that said environment variables
+
+![Image to environment variables](Images/enviromentvariables.PNG)
+
+The easy way, is to modify the file launchSettings.json inside the properties folder on the project
+
+![Image to launchSettings](Images/launchSettings.PNG )
+
+Under profiles, you will see something like this:
+
+```
+ "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+```
+
+Replace the "environmentVariables" to (changing whatever is between `<>` with the appropriate values for you):
+
+```
+"environmentVariables": {
+    "ASPNETCORE_ENVIRONMENT": "Development",
+    "FRIENDLY_NAME": "SOes",
+    "CONNECTION_STRING": "Server=<SQL SERVER ADDRESS>;Database=Traducir;User Id=<SQL SERVER USER>;Password=<SQL SERVER PASSWORD>;Min Pool Size=5;",
+
+    "USE_HTTPS": "False",
+    "STACKAPP_SECRET": "<YOUR STACKAPP SECRET>",
+    "STACKAPP_CLIENT_ID": "<YOUR STACKAPP CLIENT ID>",
+    "STACKAPP_KEY": "<YOUR STACKAPP KEY>",
+    "STACKAPP_SITEDOMAIN": "es.stackoverflow.com",
+
+    "TRANSIFEX_APIKEY": "<YOUR TRANSIFEX API KEY>",
+    "TRANSIFEX_RESOURCE_PATH": "api/2/project/stack-overflow-es/resource/english/translation/es/strings/",
+    "TRANSIFEX_LINK_PATH": "stack-exchange/stack-overflow-es/translate/#es/english"
+    }
+```
+When this file is created it will select a default for your application. This port is inside this file, under "iisSettings",  on "applicationUrl". That will be the default port for the application.
+
+Now... if you run it, it should work. Visit `http://localhost:[yourport]/app/api/admin/migrate` to run the migrations. That should create all the tables the system uses for you (or run migrations that were created since you last pulled). If you visit `http://localhost:[yourport]/app/api/admin/pull` that should populate the strings on your database. Give it a try :)
+
 ### Set up the frontend
 
 On the terminal, go to whatever the project is set up and then into the `Traducir.Web` folder. Then type `npm install`. It should take a little while to install the javascript dependencies, but it's only once.
