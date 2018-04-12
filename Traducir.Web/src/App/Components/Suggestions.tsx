@@ -51,9 +51,6 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
                 showErrorMessage={this.props.showErrorMessage}
             />
 
-            <div className="mt-1 text-right">
-                <Link to='/filters' className="btn btn-secondary">Go Back</Link>
-            </div>
             <SuggestionNew
                 user={this.props.user}
                 stringId={this.props.str.id}

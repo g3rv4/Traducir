@@ -1,8 +1,13 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import * as _ from 'lodash';
-import { Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { Route, Switch } from 'react-router-dom'
+import {
+    Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, NavItem, NavLink,
+    UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem,
+    Modal, ModalHeader, ModalBody, ModalFooter
+} from 'reactstrap';
+import { Route, Switch, withRouter, RouteComponentProps } from 'react-router-dom'
+import history from '../history'
 import Filters from "./Components/Filters"
 import Results from "./Components/Results"
 import Suggestions from "./Components/Suggestions"
@@ -22,8 +27,8 @@ export interface TraducirState {
     stats: Stats;
 }
 
-export default class Traducir extends React.Component<{}, TraducirState> {
-    constructor(props: any) {
+class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
+    constructor(props: RouteComponentProps<{}>) {
         super(props);
 
         this.state = {
@@ -126,6 +131,14 @@ export default class Traducir extends React.Component<{}, TraducirState> {
         });
     }
 
+    isOpen = () => {
+        return this.props.location.pathname.startsWith('/string/')
+    }
+
+    onToggle = () => {
+        history.push('/filters');
+    }
+
     render() {
         return <>
             <Navbar color="dark" dark expand="lg" className="fixed-top">
@@ -166,29 +179,32 @@ export default class Traducir extends React.Component<{}, TraducirState> {
                         location={p.location}
                     />} />
                 <Switch>
-                    <Route path='/filters' render={p =>
+                    <Route path='/' exact render={p =>
+                        this.state.stats &&
+                        <StatsWithLinks stats={this.state.stats} />} />
+                    <Route render={p =>
                         <Results
                             user={this.state.user}
                             results={this.state.strings}
                             loadSuggestions={this.loadSuggestions}
                             isLoading={this.state.isLoading} />
                     } />
-                    <Route path='/string' render={p =>
-                        this.state.currentString ? <Suggestions
+                </Switch>
+                <Modal isOpen={this.isOpen()} toggle={this.onToggle} className="w-75">
+                    <ModalHeader toggle={this.onToggle}>Modal title</ModalHeader>
+                    <ModalBody>
+                        {this.state.currentString && <Suggestions
                             config={this.state.config}
                             user={this.state.user}
                             str={this.state.currentString}
                             goBackToResults={this.goBackToResults}
-                            showErrorMessage={this.showErrorMessage} />
-                            : null
-                    } />
-                    <Route render={p =>
-                        this.state.stats ?
-                            <StatsWithLinks stats={this.state.stats} />
-                            : null
-                    } />
-                </Switch>
+                            showErrorMessage={this.showErrorMessage}
+                        />}
+                    </ModalBody>
+                </Modal>
             </div>
         </>
     }
 }
+
+export default withRouter(Traducir);
