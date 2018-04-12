@@ -29,7 +29,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
             </div>
                 : null}
             <div>
-                <span className="font-weight-bold">Original String:</span> <pre className="pre-scrollable">
+                <span className="font-weight-bold">Original String:</span> <pre className="d-inline">
 <br />
 {this.props.str.originalString.replace('\n', '⏎<br />')}
 <br />
