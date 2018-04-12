@@ -72,12 +72,25 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
     }
 
     componentWillReceiveProps(nextProps: FiltersProps, context: any) {
+        if (nextProps.location.pathname == '/filters' &&
+            !nextProps.location.search &&
+            !this.hasFilter()) {
+            history.replace('/');
+            return;
+        }
         if (this.props.location.search == nextProps.location.search ||
             this.props.location.pathname == '/filters') {
             return;
         }
 
-        this.setState(this.getStateFromLocation(nextProps.location), this.submitForm);
+        this.setState(this.getStateFromLocation(nextProps.location), () => {
+            if (!this.hasFilter() && !nextProps.location.pathname.startsWith('/string')) {
+                history.replace('/');
+                return;
+            }
+            console.log(this.hasFilter());
+            this.submitForm();
+        });
     }
 
     getStateFromLocation(location: Location) {
@@ -220,13 +233,13 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                 </div>
             </div>
             {this.state.hasError &&
-            <div className="row">
-                <div className="col">
-                    <div className="alert alert-danger" role="alert">
-                        Error when performing the filter... are the regular expressions ok?
+                <div className="row">
+                    <div className="col">
+                        <div className="alert alert-danger" role="alert">
+                            Error when performing the filter... are the regular expressions ok?
+                    </div>
                     </div>
                 </div>
-            </div>
             }
             <div className="row text-center mb-5">
                 <div className="col">

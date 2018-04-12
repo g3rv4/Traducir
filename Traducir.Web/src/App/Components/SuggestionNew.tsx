@@ -68,7 +68,6 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
                                 onClick={e => this.postSuggestion(true)}>Send final translation</button>
                             : null}
                     </div>
-                    <Link to='/filters' className="btn btn-secondary float-right">Go Back</Link>
                 </div>
             </div>
         </form>
