@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -36,7 +35,7 @@ namespace Traducir.Controllers
 
         string GetOauthReturnUrl()
         {
-            return Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS")? "https" : "http");
+            return Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS") ? "https" : "http");
         }
 
         [Route("app/login")]
@@ -74,10 +73,10 @@ namespace Traducir.Controllers
             await _userService.UpsertUserAsync(new User
             {
                 Id = currentUser.UserId,
-                    DisplayName = currentUser.DisplayName,
-                    IsModerator = currentUser.UserType == "moderator",
-                    CreationDate = DateTime.UtcNow,
-                    LastSeenDate = DateTime.UtcNow
+                DisplayName = currentUser.DisplayName,
+                IsModerator = currentUser.UserType == "moderator",
+                CreationDate = DateTime.UtcNow,
+                LastSeenDate = DateTime.UtcNow
             });
 
             var user = await _userService.GetUserAsync(currentUser.UserId);
@@ -114,10 +113,10 @@ namespace Traducir.Controllers
 
             return Json(new UserInfo
             {
-                Name = WebUtility.HtmlDecode(User.GetClaim<string>(ClaimType.Name)),
-                    UserType = User.GetClaim<UserType>(ClaimType.UserType),
-                    CanSuggest = canSuggest.Succeeded,
-                    CanReview = canReview.Succeeded
+                Name = User.GetClaim<string>(ClaimType.Name),
+                UserType = User.GetClaim<UserType>(ClaimType.UserType),
+                CanSuggest = canSuggest.Succeeded,
+                CanReview = canReview.Succeeded
             });
         }
     }
