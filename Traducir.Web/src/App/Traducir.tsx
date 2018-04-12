@@ -182,6 +182,9 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                     <Route path='/' exact render={p =>
                         this.state.stats &&
                         <StatsWithLinks stats={this.state.stats} />} />
+                    {this.state.strings.length == 0 && <Route path='/string/' render={p =>
+                        this.state.stats &&
+                        <StatsWithLinks stats={this.state.stats} />} />}
                     <Route render={p =>
                         <Results
                             user={this.state.user}
@@ -190,8 +193,8 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                             isLoading={this.state.isLoading} />
                     } />
                 </Switch>
-                <Modal isOpen={this.isOpen()} toggle={this.onToggle} className="w-75">
-                    <ModalHeader toggle={this.onToggle}>Modal title</ModalHeader>
+                <Modal isOpen={this.isOpen()} toggle={this.onToggle} className="w-95 mw-100">
+                    <ModalHeader toggle={this.onToggle}>Suggestions</ModalHeader>
                     <ModalBody>
                         {this.state.currentString && <Suggestions
                             config={this.state.config}

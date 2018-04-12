@@ -21,9 +21,6 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
     }
     render() {
         return <>
-            <div className="m-2 text-center">
-                <h2>Suggestions</h2>
-            </div>
             <div>
                 <span className="font-weight-bold">Key:</span> <pre className="d-inline">{this.props.str.key}</pre>
             </div>
@@ -32,7 +29,12 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
             </div>
                 : null}
             <div>
-                <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
+                <span className="font-weight-bold">Original String:</span> <pre className="pre-scrollable">
+<br />
+{this.props.str.originalString.replace('\n', '⏎<br />')}
+<br />
+<br />
+</pre>
             </div>
             {this.props.str.variant ? <div>
                 <span className="font-weight-bold">Variant:</span> {this.props.str.variant.replace('VARIANT: ', '')}
