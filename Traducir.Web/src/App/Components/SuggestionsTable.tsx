@@ -16,6 +16,7 @@ export interface SuggestionsTableProps {
 interface SuggestionsTableState {
     aboutToReviewId?: number;
     actionToPerform?: ReviewAction;
+    isButtonDisabled?: boolean;
 }
 
 enum ReviewAction {
@@ -29,7 +30,8 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
 
         this.state = {
             aboutToReviewId: null,
-            actionToPerform: null
+            actionToPerform: null,
+            isButtonDisabled: false
         }
     }
     render(): JSX.Element {
@@ -96,11 +98,11 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                 {this.state.actionToPerform == ReviewAction.Accept ? 'Approve' : 'Reject'} this suggestion?
             </div>
             <div className="btn-group" role="group">
-                <button type="button" className="btn btn-sm btn-primary" onClick={e => this.processReview(sug)}>Yes</button>
+                <button type="button" className="btn btn-sm btn-primary" onClick={e => this.processReview(sug)} disabled={this.state.isButtonDisabled}>Yes</button>
                 <button type="button" className="btn btn-sm btn-secondary" onClick={e => this.setState({
                     actionToPerform: null,
                     aboutToReviewId: null
-                })}>No</button>
+                })} disabled={this.state.isButtonDisabled}>No</button>
             </div>
         </div>
     }
@@ -109,13 +111,16 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         if (!this.state.aboutToReviewId || !this.state.actionToPerform) {
             return;
         }
-
+        this.setState({
+            isButtonDisabled: true
+        });
         const _that = this;
         axios.put('/app/api/review', {
             SuggestionId: this.state.aboutToReviewId,
             Approve: this.state.actionToPerform == ReviewAction.Accept
         }).then(r => {
             _that.props.goBackToResults(sug.stringId);
+            console.debug("paso ok la review")
             history.push('/filters');
         })
             .catch(e => {
@@ -124,6 +129,9 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                 } else {
                     this.props.showErrorMessage(null, e.response.status);
                 }
+                this.setState({
+                    isButtonDisabled: false
+                });
             });
     }
 }
