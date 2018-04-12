@@ -79,11 +79,11 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                 <button type="button" className="btn btn-sm btn-success" onClick={e => this.setState({
                     actionToPerform: ReviewAction.Accept,
                     aboutToReviewId: sug.id
-                })}>Approve</button>
+                })}><i className="fas fa-thumbs-up"></i></button>
                 <button type="button" className="btn btn-sm btn-danger" onClick={e => this.setState({
                     actionToPerform: ReviewAction.Reject,
                     aboutToReviewId: sug.id
-                })}>Reject</button>
+                })}><i className="fas fa-thumbs-down"></i></button>
             </div>;
         }
 
