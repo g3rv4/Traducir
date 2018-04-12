@@ -146,7 +146,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                 <div className="container">
                     <div className="navbar-brand d-none d-lg-block">{this.state.config && this.state.config.friendlyName} Translations 🦄{this.state.user && ` ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</div>
                     <div className="navbar-brand d-lg-none">{this.state.config && this.state.config.friendlyName} Translations 🦄</div>
-                    <NavbarToggler onClick={this.toggle} className="mr-5" />
+                    <NavbarToggler onClick={this.toggle} />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
                             <NavItem>
