@@ -104,7 +104,13 @@ Replace the "environmentVariables" to (changing whatever is between `<>` with th
     "TRANSIFEX_LINK_PATH": "stack-exchange/stack-overflow-es/translate/#es/english"
     }
 ```
-When this file is created it will select a default for your application. This port is inside this file, under "iisSettings",  on "applicationUrl". That will be the default port for the application.
+When this file is created it will select a default port for your application. This port is inside this file, under "iisSettings",  on "applicationUrl". We need to change it to 5000, so the frontend could find it.
+
+So, we need to change:
+
+```
+"applicationUrl": "http://localhost:5000/"
+```
 
 Now... if you run it, it should work. Visit `http://localhost:[yourport]/app/api/admin/migrate` to run the migrations. That should create all the tables the system uses for you (or run migrations that were created since you last pulled). If you visit `http://localhost:[yourport]/app/api/admin/pull` that should populate the strings on your database. Give it a try :)
 
