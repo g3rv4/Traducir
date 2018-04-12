@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -113,7 +114,7 @@ namespace Traducir.Controllers
 
             return Json(new UserInfo
             {
-                Name = User.GetClaim<string>(ClaimType.Name),
+                Name = WebUtility.HtmlDecode(User.GetClaim<string>(ClaimType.Name)),
                     UserType = User.GetClaim<UserType>(ClaimType.UserType),
                     CanSuggest = canSuggest.Succeeded,
                     CanReview = canReview.Succeeded
