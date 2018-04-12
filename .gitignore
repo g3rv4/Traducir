@@ -5,3 +5,4 @@ obj/
 *.csproj.user
 Traducir.Web/node_modules/
 Traducir.Web/dist/
+/Traducir.Api/Properties/launchSettings.json
