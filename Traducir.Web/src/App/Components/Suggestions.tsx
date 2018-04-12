@@ -29,12 +29,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
             </div>
                 : null}
             <div>
-                <span className="font-weight-bold">Original String:</span> <pre className="d-inline">
-<br />
-{this.props.str.originalString.replace('\n', '⏎<br />')}
-<br />
-<br />
-</pre>
+                <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
             </div>
             {this.props.str.variant ? <div>
                 <span className="font-weight-bold">Variant:</span> {this.props.str.variant.replace('VARIANT: ', '')}
