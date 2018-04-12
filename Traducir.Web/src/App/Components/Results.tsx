@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as _ from 'lodash';
 import { Link } from 'react-router-dom';
+import history from '../../history'
 import SOString from "../../Models/SOString"
 import UserInfo from "../../Models/UserInfo"
 import { StringSuggestionState } from "../../Models/SOStringSuggestion"
@@ -34,33 +35,28 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
             {pending > 0 ? <span className="text-danger">{pending}</span> : null}
         </>
     }
-    renderActions(str: SOString): React.ReactFragment {
-        const approved = _.filter(str.suggestions, s => s.state == StringSuggestionState.ApprovedByTrustedUser).length;
-        const pending = _.filter(str.suggestions, s => s.state == StringSuggestionState.Created).length;
 
-        return (this.props.user && this.props.user.canSuggest) || (approved + pending > 0) ?
-            <Link to={`/string/${str.id}`}
-                className="btn btn-sm btn-primary"
-                onClick={e => this.props.loadSuggestions(str)}>Suggestions</Link>
-            : null
+    goToString = (str: SOString) => {
+        this.props.loadSuggestions(str);
+        history.push('/string/' + str.id);
     }
+
     renderRows(strings: SOString[]): React.ReactFragment {
         if (this.props.isLoading) {
             return <tr>
-                <td colSpan={4} className="text-center">Loading...</td>
+                <td colSpan={3} className="text-center">Loading...</td>
             </tr>
         }
         if (strings.length == 0) {
             return <tr>
-                <td colSpan={4} className="text-center">No results (sad trombone)</td>
+                <td colSpan={3} className="text-center">No results (sad trombone)</td>
             </tr>
         }
         return <>
-            {strings.map(str => <tr key={str.id}>
+            {strings.map(str => <tr key={str.id} onClick={e => this.goToString(str)} className={str.touched ? 'table-success': ''}>
                 <td>{str.originalString}</td>
                 <td>{str.translation}</td>
                 <td>{this.renderSuggestions(str)}</td>
-                <td>{this.renderActions(str)}</td>
             </tr>)}
         </>
     }
@@ -69,13 +65,12 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
             <div className="m-2 text-center">
                 <h2>Results</h2>
             </div>
-            <table className="table table-hover">
+            <table className="table">
                 <thead className="thead-light">
                     <tr>
                         <th>String</th>
                         <th>Translation</th>
                         <th>Suggestions</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>

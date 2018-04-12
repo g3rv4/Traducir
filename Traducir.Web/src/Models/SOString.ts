@@ -8,4 +8,5 @@ export default interface SOString {
     variant: string;
     creationDate: string;
     suggestions: SOStringSuggestion[];
+    touched?: boolean;
 }

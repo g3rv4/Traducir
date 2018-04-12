@@ -94,8 +94,9 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             axios.get<SOString>(`/app/api/strings/${stringIdToUpdate}`)
                 .then(r => {
                     let newState = {
-                        strings: this.state.strings
+                        strings: this.state.strings.slice()
                     }
+                    r.data.touched = true;
                     newState.strings[idx] = r.data;
 
                     this.setState(newState);
