@@ -124,9 +124,9 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         })
             .catch(e => {
                 if (e.response.status == 400) {
-                    this.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
+                    _that.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
                 } else {
-                    this.props.showErrorMessage(null, e.response.status);
+                    _that.props.showErrorMessage(null, e.response.status);
                 }
                 this.setState({
                     isButtonDisabled: false
