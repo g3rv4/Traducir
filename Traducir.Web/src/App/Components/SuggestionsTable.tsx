@@ -120,7 +120,6 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             Approve: this.state.actionToPerform == ReviewAction.Accept
         }).then(r => {
             _that.props.goBackToResults(sug.stringId);
-            console.debug("paso ok la review")
             history.push('/filters');
         })
             .catch(e => {
