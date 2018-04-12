@@ -24,7 +24,7 @@ namespace Traducir.Core.Services
 
     public class SEApiService : ISEApiService
     {
-        private const string FilterId = "!)iuLOYsiL7DYw9VYzWRER";
+        private const string FilterId = "SY(8)VHj.3*xaOr3N*GB)B";
 
         private string ClientId { get; }
         private string AppKey { get; }
