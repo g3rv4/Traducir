@@ -15,8 +15,3 @@ I'm glad you asked... [I've written a doc about it](https://github.com/g3rv4/Tra
 ## Would you like to contribute?
 
 A MA ZING! ZING! ZING! All kinds of contributions are accepted. Please read our [code of conduct first](https://github.com/g3rv4/Traducir/blob/master/docs/CODE_OF_CONDUCT.md) though. And before jumping to work on something, please discuss it on an issue.
-
-## Contributors (ordered alphabetically)
-[g3rv4](https://es.stackoverflow.com/users/11272/g3rv4)<br />
-[gbianchi](https://es.stackoverflow.com/users/324/gbianchi)<br />
-[Mariano](https://es.stackoverflow.com/users/127/mariano)

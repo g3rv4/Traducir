@@ -158,7 +158,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                                 </DropdownToggle>
                                 <DropdownMenu right>
                                     <DropdownItem>
-                                        <a href="https://db.traducir.win" className="dropdown-item" target="_blank">Access to the Database</a>
+                                        <a href="https://db.traducir.win" className="dropdown-item" target="_blank">Access the Database</a>
                                     </DropdownItem>
                                     <DropdownItem>
                                         <a href="https://github.com/g3rv4/Traducir/blob/master/docs/USING_REDASH.md" className="dropdown-item" target="_blank">Instructions</a>
