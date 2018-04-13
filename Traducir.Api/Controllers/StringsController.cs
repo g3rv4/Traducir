@@ -45,7 +45,7 @@ namespace Traducir.Controllers
         [Route("app/api/strings/{stringId:INT}")]
         public async Task<IActionResult> GetString(int stringId)
         {
-            return Json((await _soStringService.GetStringsAsync(s => s.Id == stringId)).FirstOrDefault());
+            return Json(await _soStringService.GetStringByIdAsync(stringId));
         }
 
         [HttpPost]

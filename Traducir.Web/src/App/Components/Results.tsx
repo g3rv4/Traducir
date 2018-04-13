@@ -63,7 +63,10 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
     render() {
         return <>
             <div className="m-2 text-center">
-                <h2>Results {this.props.results && `(${this.props.results.length})`}</h2>
+                <h2>Results {this.props.results &&
+                             this.props.results.length > 0 &&
+                             !this.props.isLoading &&
+                             `(${this.props.results.length})`}</h2>
             </div>
             <table className="table">
                 <thead className="thead-light">

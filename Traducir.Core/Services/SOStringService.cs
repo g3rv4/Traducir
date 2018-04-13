@@ -21,6 +21,7 @@ namespace Traducir.Core.Services
     public interface ISOStringService
     {
         Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings);
+        Task<SOString> GetStringByIdAsync(int stringId);
         Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
         Task<int?> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
@@ -32,6 +33,7 @@ namespace Traducir.Core.Services
     {
         private IDbService _dbService { get; set; }
         private List<SOString> _strings { get; set; }
+        private Dictionary<int, SOString> _stringsById { get; set; }
         public SOStringService(IDbService dbService)
         {
             _dbService = dbService;
@@ -173,12 +175,14 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
             _strings = null;
         }
 
-        private async Task RefreshCacheAsync()
+        private async Task RefreshCacheAsync(int? stringId = null)
         {
             const string sql = @"
 Select Id, [Key], OriginalString, Translation, NeedsPush, Variant, CreationDate
 From   Strings
-Where  DeletionDate Is Null;
+Where  DeletionDate Is Null
+-- And Id = @stringId
+;
 
 Select    ss.Id, ss.StringId, ss.Suggestion, ss.StateId State,
           ss.CreatedById, u.DisplayName CreatedByName,
@@ -188,18 +192,26 @@ From      StringSuggestions ss
 Join      Strings s On s.Id = ss.StringId And s.DeletionDate Is Null
 Join      Users u On ss.CreatedById = u.Id
 Left Join Users uu On uu.Id = ss.LastStateUpdatedById
-Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
+Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
+-- And s.Id = @stringId";
+            var finalSql = stringId.HasValue ? sql.Replace("--", ""): sql;
 
             using(MiniProfiler.Current.Step("Refreshing the strings cache"))
             using(var db = _dbService.GetConnection())
-            using(var reader = await db.QueryMultipleAsync(sql, new { StringSuggestionState.Created, StringSuggestionState.ApprovedByTrustedUser }))
+            using(var reader = await db.QueryMultipleAsync(finalSql, new
             {
-                _strings = (await reader.ReadAsync<SOString>()).AsList();
+                StringSuggestionState.Created,
+                StringSuggestionState.ApprovedByTrustedUser,
+                stringId
+            }))
+            {
+                var strings = (await reader.ReadAsync<SOString>()).AsList();
                 var suggestions = (await reader.ReadAsync<SOStringSuggestion>()).AsList();
+                Dictionary<int, SOString> stringsById;
 
                 using(MiniProfiler.Current.Step("Attaching the suggestions to the strings"))
                 {
-                    var stringsById = _strings.ToDictionary(s => s.Id);
+                    stringsById = strings.ToDictionary(s => s.Id);
                     foreach (var g in suggestions.GroupBy(g => g.StringId))
                     {
                         if (stringsById.TryGetValue(g.Key, out var str))
@@ -207,6 +219,17 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
                             str.Suggestions = g.ToArray();
                         }
                     }
+                }
+
+                if (stringId.HasValue)
+                {
+                    _stringsById[stringId.Value] = stringsById[stringId.Value];
+                    _strings = _stringsById.Values.ToList();
+                }
+                else
+                {
+                    _stringsById = stringsById;
+                    _strings = strings;
                 }
             }
         }
@@ -226,12 +249,25 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})";
             return result;
         }
 
+        public async Task<SOString> GetStringByIdAsync(int stringId)
+        {
+            if (_strings == null)
+            {
+                await RefreshCacheAsync();
+            }
+            if (_stringsById.TryGetValue(stringId, out var res))
+            {
+                return res;
+            }
+            return null;
+        }
+
         private Regex _variablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
         public async Task<int?> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve)
         {
             using(var db = _dbService.GetConnection())
             {
-                var str = (await GetStringsAsync(s => s.Id == stringId)).FirstOrDefault();
+                var str = await GetStringByIdAsync(stringId);
 
                 // if the string id is invalid
                 if (str == null)
@@ -305,7 +341,7 @@ Select @suggestionId;", new
                     return null;
                 }
 
-                ExpireCache();
+                await RefreshCacheAsync(stringId);
                 return suggestionId;
             }
         }
@@ -319,8 +355,8 @@ Select @suggestionId;", new
             using(var db = _dbService.GetConnection())
             {
                 // is this suggestion eligible for review?
-                bool eligible = await db.QuerySingleOrDefaultAsync<bool>($@"
-Select 1
+                int? stringId = await db.QuerySingleOrDefaultAsync<int?>($@"
+Select StringId
 From   StringSuggestions
 Where  Id = @suggestionId
 And    StateId In @validStates", new
@@ -330,7 +366,7 @@ And    StateId In @validStates", new
                     validStates = userType == UserType.Reviewer ? new [] { StringSuggestionState.Created, StringSuggestionState.ApprovedByTrustedUser } : new [] { StringSuggestionState.Created }
                 });
 
-                if (eligible)
+                if (stringId.HasValue)
                 {
                     StringSuggestionState newState;
                     StringSuggestionHistoryType historyType;
@@ -421,7 +457,7 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                         DismissedByOtherStringState = StringSuggestionState.DismissedByOtherString,
                     });
 
-                    ExpireCache();
+                    await RefreshCacheAsync(stringId.Value);
                     return true;
                 }
                 return false;
