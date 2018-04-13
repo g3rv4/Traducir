@@ -9,12 +9,14 @@ using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
 using Traducir.ViewModels.Strings;
+using Traducir.Api.Models.Enums;
 
 namespace Traducir.Controllers
 {
     public class StringsController : Controller
     {
         private ISOStringService _soStringService { get; set; }
+        private Regex _variablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
 
         public StringsController(ISOStringService soStringService)
         {
@@ -133,15 +135,52 @@ namespace Traducir.Controllers
         [Route("app/api/suggestions")]
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
-            var suggestionId = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion,
+
+            //Verify that everything is valid before calling the service
+            var str = await _soStringService.GetStringByIdAsync(model.StringId);
+            
+            // if the string id is invalid
+            if (str == null)
+            {
+                return BadRequest(SuggestionCreationResult.InvalidStringId);
+            }
+
+            // if the suggestion is the same as the current translation
+            if (str.Translation == model.Suggestion)
+            {
+                return BadRequest(SuggestionCreationResult.SuggestionEqualsOriginal);
+            }
+
+            // empty suggestion
+            if (model.Suggestion == null || model.Suggestion.Length == 0)
+            {
+                return BadRequest(SuggestionCreationResult.EmptySuggestion);
+            }
+
+            // if there's another suggestion with the same value
+            if (str.Suggestions != null && str.Suggestions.Any(sug => sug.Suggestion == model.Suggestion))
+            {
+                return BadRequest(SuggestionCreationResult.SuggestionAlreadyThere);
+            }
+
+            // if there are missing or extra values
+            var variablesInOriginal = _variablesRegex.Matches(str.OriginalString).Cast<Match>().Select(m => m.Value).ToArray();
+            var variablesInSuggestion = _variablesRegex.Matches(model.Suggestion).Cast<Match>().Select(m => m.Value).ToArray();
+            if (variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)) ||
+                variablesInSuggestion.Any(v => !variablesInOriginal.Contains(v)))
+            {
+                return BadRequest(SuggestionCreationResult.QuantityOfVariableValuesNotEqual);
+            }
+
+            var suggestionResult = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion,
                 User.GetClaim<int>(ClaimType.Id),
                 User.GetClaim<UserType>(ClaimType.UserType),
                 model.Approve);
-            if (suggestionId.HasValue)
+            if (suggestionResult)
             {
                 return new EmptyResult();
             }
-            return BadRequest();
+            return BadRequest(SuggestionCreationResult.DatabaseError);
         }
 
         [HttpPut]

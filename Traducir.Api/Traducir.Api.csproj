@@ -8,8 +8,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.3" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.0-alpha9-00206" />
-    <PackageReference Include="StackExchange.Exceptional.AspNetCore" Version="2.0.0-rc2.12" />
     <PackageReference Include="Simple.Migrations" Version="0.9.19" />
+    <PackageReference Include="StackExchange.Exceptional.AspNetCore" Version="2.0.0-rc1-00187" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.2" />
   </ItemGroup>
 
