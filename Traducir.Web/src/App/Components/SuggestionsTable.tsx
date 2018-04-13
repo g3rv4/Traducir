@@ -99,7 +99,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                 } else {
                     _that.props.showErrorMessage(null, e.response.status);
                 }
-                this.setState({
+                _that.setState({
                     isButtonDisabled: false
                 });
             });
