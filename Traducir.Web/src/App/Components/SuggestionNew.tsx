@@ -8,7 +8,7 @@ import { StringSuggestionState } from "../../Models/SOStringSuggestion";
 export interface SuggestionNewProps {
     user: UserInfo;
     stringId: number;
-    goBackToResults: (stringIdToUpdate?: number) => void;
+    refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (message?: string, code?: number) => void;
 }
 
@@ -31,7 +31,7 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
             Suggestion: this.state.suggestion,
             Approve: approve
         }).then(r => {
-            this.props.goBackToResults(this.props.stringId);
+            this.props.refreshString(this.props.stringId);
             history.push('/filters');
         })
             .catch(e => {

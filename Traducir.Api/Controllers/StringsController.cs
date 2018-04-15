@@ -38,6 +38,7 @@ namespace Traducir.Controllers
                         s.Suggestions != null &&
                         s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser)
                     )).Length,
+                    UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent)).Length,
             });
         }
 
@@ -67,6 +68,10 @@ namespace Traducir.Controllers
             if (model.PushStatus != QueryViewModel.PushStatuses.AnyStatus)
             {
                 composePredicate(s => s.NeedsPush == (model.PushStatus == QueryViewModel.PushStatuses.NeedsPush));
+            }
+            if (model.UrgencyStatus != QueryViewModel.UrgencyStatuses.AnyStatus)
+            {
+                composePredicate(s => s.IsUrgent == (model.UrgencyStatus == QueryViewModel.UrgencyStatuses.IsUrgent));
             }
             if (model.SuggestionsStatus != QueryViewModel.SuggestionApprovalStatus.AnyStatus)
             {
@@ -162,5 +167,20 @@ namespace Traducir.Controllers
             }
             return BadRequest();
         }
+
+        [HttpPut]
+        [Authorize(Policy = "CanSuggest")]
+        [Route("app/api/manage-urgency")]
+        public async Task<IActionResult> ManageUrgency([FromBody] ManageUrgencyViewModel model)
+        {
+            var success = await _soStringService.ManageUrgencyAsync(model.StringId, model.IsUrgent,
+                User.GetClaim<int>(ClaimType.Id));
+            if (success)
+            {
+                return new EmptyResult();
+            }
+            return BadRequest();
+        }
+
     }
 }
