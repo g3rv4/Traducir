@@ -27,8 +27,8 @@ namespace Traducir.Controllers
         {
             return Json(new
             {
-                TotalStrings = (await _soStringService.GetStringsAsync(s => true)).Length,
-                    WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.Translation.HasValue())).Length,
+                TotalStrings = (await _soStringService.GetStringsAsync()).Length,
+                    WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation)).Length,
                     WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.Suggestions != null && s.Suggestions.Any())).Length,
                     WaitingApproval = (await _soStringService.GetStringsAsync(s =>
                         s.Suggestions != null &&
@@ -53,17 +53,22 @@ namespace Traducir.Controllers
         [Route("app/api/strings/query")]
         public async Task<IActionResult> Query([FromBody] QueryViewModel model)
         {
-            Func<SOString, bool> predicate = s => true;
+            Func<SOString, bool> predicate = null;
 
             void composePredicate(Func<SOString, bool> newPredicate)
             {
+                if (predicate == null)
+                {
+                    predicate = newPredicate;
+                    return;
+                }
                 var oldPredicate = predicate;
                 predicate = s => oldPredicate(s)&& newPredicate(s);
             }
 
             if (model.TranslationStatus != QueryViewModel.TranslationStatuses.AnyStatus)
             {
-                predicate = s => s.Translation.IsNullOrEmpty()== (model.TranslationStatus == QueryViewModel.TranslationStatuses.WithoutTranslation);
+                composePredicate(s => s.HasTranslation == (model.TranslationStatus == QueryViewModel.TranslationStatuses.WithTranslation));
             }
             if (model.PushStatus != QueryViewModel.PushStatuses.AnyStatus)
             {
@@ -127,10 +132,13 @@ namespace Traducir.Controllers
                 {
                     return BadRequest();
                 }
-                composePredicate(s => s.Translation.HasValue()&& regex.IsMatch(s.Translation));
+                composePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
             }
 
-            return Json((await _soStringService.GetStringsAsync(predicate)).Take(2000));
+            var result = predicate != null ? await _soStringService.GetStringsAsync(predicate):
+                await _soStringService.GetStringsAsync();
+
+            return Json(result.Take(2000));
         }
 
         [HttpPut]

@@ -22,6 +22,7 @@ namespace Traducir.Core.Services
     {
         Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings);
         Task<SOString> GetStringByIdAsync(int stringId);
+        Task<ImmutableArray<SOString>> GetStringsAsync();
         Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
         Task<int?> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
@@ -33,7 +34,7 @@ namespace Traducir.Core.Services
     public class SOStringService : ISOStringService
     {
         private IDbService _dbService { get; set; }
-        private List<SOString> _strings { get; set; }
+        private ImmutableArray<SOString> _strings { get; set; }
         private Dictionary<int, SOString> _stringsById { get; set; }
         public SOStringService(IDbService dbService)
         {
@@ -173,7 +174,7 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
 
         private void ExpireCache()
         {
-            _strings = null;
+            _strings = ImmutableArray<SOString>.Empty;
         }
 
         private async Task RefreshCacheAsync(int? stringId = null)
@@ -225,19 +226,19 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
                 if (stringId.HasValue)
                 {
                     _stringsById[stringId.Value] = stringsById[stringId.Value];
-                    _strings = _stringsById.Values.ToList();
+                    _strings = _stringsById.Values.ToImmutableArray();
                 }
                 else
                 {
                     _stringsById = stringsById;
-                    _strings = strings;
+                    _strings = strings.ToImmutableArray();
                 }
             }
         }
 
         public async Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate)
         {
-            if (_strings == null)
+            if (_strings == null || _strings.Length == 0)
             {
                 await RefreshCacheAsync();
             }
@@ -619,6 +620,15 @@ Where  Id = @stringId", new {
 
             await RefreshCacheAsync(stringId);
             return true;
+        }
+
+        public async Task<ImmutableArray<SOString>> GetStringsAsync()
+        {
+            if (_strings == null || _strings.Length == 0)
+            {
+                await RefreshCacheAsync();
+            }
+            return _strings;
         }
     }
 }
