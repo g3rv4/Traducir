@@ -25,11 +25,19 @@ namespace Traducir.ViewModels.Strings
             DoesNotNeedPush = 2
         }
 
+        public enum UrgencyStatuses
+        {
+            AnyStatus = 0,
+            IsUrgent = 1,
+            IsNotUrgent = 2
+        }
+
         public string SourceRegex { get; set; }
         public string TranslationRegex { get; set; }
         public string Key { get; set; }
         public TranslationStatuses TranslationStatus { get; set; }
         public SuggestionApprovalStatus SuggestionsStatus { get; set; }
         public PushStatuses PushStatus { get; set; }
+        public UrgencyStatuses UrgencyStatus { get; set; }
     }
 }

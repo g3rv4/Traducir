@@ -15,13 +15,13 @@ interface FiltersState {
     translationStatus?: TranslationStatus;
     suggestionsStatus?: SuggestionsStatus;
     pushStatus?: PushStatus;
+    urgencyStatus?: UrgencyStatus;
     hasError?: boolean;
 }
 
 export interface FiltersProps {
     onResultsFetched: (strings: SOString[]) => void;
     onLoading: () => void;
-    goBackToResults: (stringIdToUpdate?: number) => void;
     showErrorMessage: (message?: string, code?: number) => void;
     location: Location;
 }
@@ -46,6 +46,12 @@ enum PushStatus {
     DoesNotNeedPush = 2
 }
 
+enum UrgencyStatus {
+    AnyStatus = 0,
+    IsUrgent = 1,
+    IsNotUrgent = 2
+}
+
 export default class Filters extends React.Component<FiltersProps, FiltersState> {
     constructor(props: FiltersProps) {
         super(props);
@@ -62,7 +68,8 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             this.state.key ||
             this.state.translationStatus ||
             this.state.suggestionsStatus ||
-            this.state.pushStatus;
+            this.state.pushStatus ||
+            this.state.urgencyStatus;
     }
 
     componentDidMount() {
@@ -103,6 +110,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
             suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
             pushStatus: parts.pushStatus || PushStatus.AnyStatus,
+            urgencyStatus: parts.urgencyStatus || UrgencyStatus.AnyStatus
         }
     }
 
@@ -130,7 +138,8 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             key: "",
             translationStatus: TranslationStatus.AnyStatus,
             suggestionsStatus: SuggestionsStatus.AnyStatus,
-            pushStatus: PushStatus.AnyStatus
+            pushStatus: PushStatus.AnyStatus,
+            urgencyStatus: UrgencyStatus.AnyStatus
         }, () => {
             this.props.onResultsFetched([]);
         })
@@ -220,14 +229,14 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                 </div>
                 <div className="col">
                     <div className="form-group">
-                        <label htmlFor="suggestionsStatus">Strings with pending push</label>
-                        <select className="form-control" id="pushStatus"
-                            value={this.state.pushStatus}
-                            onChange={e => this.handleField({ pushStatus: parseInt(e.target.value) })}
+                        <label htmlFor="suggestionsStatus">Strings with urgency status</label>
+                        <select className="form-control" id="urgencyStatus"
+                            value={this.state.urgencyStatus}
+                            onChange={e => this.handleField({ urgencyStatus: parseInt(e.target.value) })}
                         >
-                            <option value={PushStatus.AnyStatus}>Any string</option>
-                            <option value={PushStatus.NeedsPush}>Needs push</option>
-                            <option value={PushStatus.DoesNotNeedPush}>Is updated</option>
+                            <option value={UrgencyStatus.AnyStatus}>Any string</option>
+                            <option value={UrgencyStatus.IsUrgent}>Is urgent</option>
+                            <option value={UrgencyStatus.IsNotUrgent}>Is not urgent</option>
                         </select>
                     </div>
                 </div>

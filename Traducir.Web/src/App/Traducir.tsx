@@ -87,24 +87,24 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         });
     }
 
-    goBackToResults = (stringIdToUpdate?: number) => {
-        if (stringIdToUpdate) {
-            const idx = _.findIndex(this.state.strings, s => s.id == stringIdToUpdate);
-            const _that = this;
-            axios.get<SOString>(`/app/api/strings/${stringIdToUpdate}`)
-                .then(r => {
-                    let newState = {
-                        strings: this.state.strings.slice()
-                    }
-                    r.data.touched = true;
-                    newState.strings[idx] = r.data;
+    refreshString = (stringIdToUpdate: number) => {
+        const idx = _.findIndex(this.state.strings, s => s.id == stringIdToUpdate);
+        const _that = this;
+        axios.get<SOString>(`/app/api/strings/${stringIdToUpdate}`)
+            .then(r => {
+                r.data.touched = true;
 
-                    this.setState(newState);
-                    axios.get<Stats>('/app/api/strings/stats')
-                        .then(response => _that.setState({ stats: response.data }))
-                        .catch(error => this.showErrorMessage(null, error.response.status));
-                })
-        }
+                const newStrings = this.state.strings.slice();
+                newStrings[idx] = r.data;
+
+                this.setState({
+                    strings: newStrings,
+                    currentString: r.data
+                });
+                axios.get<Stats>('/app/api/strings/stats')
+                    .then(response => _that.setState({ stats: response.data }))
+                    .catch(error => this.showErrorMessage(null, error.response.status));
+            })
     }
 
     resultsReceived = (strings: SOString[]) => {
@@ -175,7 +175,6 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                     <Filters
                         onResultsFetched={this.resultsReceived}
                         onLoading={() => this.setState({ isLoading: true })}
-                        goBackToResults={this.goBackToResults}
                         showErrorMessage={this.showErrorMessage}
                         location={p.location}
                     />} />
@@ -201,7 +200,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                             config={this.state.config}
                             user={this.state.user}
                             str={this.state.currentString}
-                            goBackToResults={this.goBackToResults}
+                            refreshString={this.refreshString}
                             showErrorMessage={this.showErrorMessage}
                         />}
                     </ModalBody>

@@ -7,5 +7,7 @@ namespace Traducir.Core.Models.Enums
         Deleted = 3,
         Undeleted = 4,
         TranslationUpdatedFromDump = 5,
+        MadeUrgent = 6,
+        MadeNotUrgent = 7,
     }
 }

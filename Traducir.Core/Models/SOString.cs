@@ -9,6 +9,7 @@ namespace Traducir.Core.Models
         public string OriginalString { get; set; }
         public string Translation { get; set; }
         public bool NeedsPush { get; set; }
+        public bool IsUrgent { get; set; }
         public string Variant { get; set; }
         public DateTime CreationDate { get; set; }
 
