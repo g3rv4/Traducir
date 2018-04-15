@@ -29,15 +29,9 @@ namespace Traducir.Controllers
             {
                 TotalStrings = (await _soStringService.GetStringsAsync()).Length,
                     WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation)).Length,
-                    WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.Suggestions != null && s.Suggestions.Any())).Length,
-                    WaitingApproval = (await _soStringService.GetStringsAsync(s =>
-                        s.Suggestions != null &&
-                        s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created)
-                    )).Length,
-                    WaitingReview = (await _soStringService.GetStringsAsync(s =>
-                        s.Suggestions != null &&
-                        s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser)
-                    )).Length,
+                    WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions)).Length,
+                    WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval)).Length,
+                    WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview)).Length,
                     UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent)).Length,
             });
         }
@@ -83,9 +77,7 @@ namespace Traducir.Controllers
                 switch (model.SuggestionsStatus)
                 {
                     case QueryViewModel.SuggestionApprovalStatus.DoesNotHaveSuggestions:
-                        composePredicate(s =>
-                            s.Suggestions == null ||
-                            s.Suggestions.Length == 0);
+                        composePredicate(s => !s.HasSuggestions);
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReview:
                         composePredicate(s =>
@@ -93,14 +85,10 @@ namespace Traducir.Controllers
                             s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
-                        composePredicate(s =>
-                            s.Suggestions != null &&
-                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created));
+                        composePredicate(s => s.HasSuggestionsWaitingApproval);
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReviewApprovedByTrustedUser:
-                        composePredicate(s =>
-                            s.Suggestions != null &&
-                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                        composePredicate(s => s.HasApprovedSuggestionsWaitingReview);
                         break;
                 }
             }
