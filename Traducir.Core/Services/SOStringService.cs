@@ -605,14 +605,15 @@ Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.T
             using(var db = _dbService.GetConnection()){
                 await db.ExecuteAsync(@"
 Insert Into StringHistory
-            (StringId, HistoryTypeId, CreationDate)
-Values      (@stringId, @historyType, @now);
+            (StringId, UserId, HistoryTypeId, CreationDate)
+Values      (@stringId, @userId, @historyType, @now);
 
 Update Strings
 Set    IsUrgent = @isUrgent
 Where  Id = @stringId", new {
                             stringId,
                             isUrgent,
+                            userId,
                             historyType = isUrgent ? StringHistoryType.MadeUrgent : StringHistoryType.MadeNotUrgent,
                             now = DateTime.UtcNow
                         });
