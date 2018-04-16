@@ -253,7 +253,7 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
 
         public async Task<SOString> GetStringByIdAsync(int stringId)
         {
-            if (_strings == null)
+            if (_strings == null || _strings.Length == 0)
             {
                 await RefreshCacheAsync();
             }
