@@ -22,17 +22,19 @@ namespace Traducir.Core.Services
     {
         Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings);
         Task<SOString> GetStringByIdAsync(int stringId);
+        Task<ImmutableArray<SOString>> GetStringsAsync();
         Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
         Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
         Task UpdateStringsPushed();
         Task PullSODump(string dumpUrl);
         Task UpdateTranslationsFromSODump();
+        Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId);
     }
     public class SOStringService : ISOStringService
     {
         private IDbService _dbService { get; set; }
-        private List<SOString> _strings { get; set; }
+        private ImmutableArray<SOString> _strings { get; set; }
         private Dictionary<int, SOString> _stringsById { get; set; }
         public SOStringService(IDbService dbService)
         {
@@ -172,17 +174,17 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
 
         private void ExpireCache()
         {
-            _strings = null;
+            _strings = ImmutableArray<SOString>.Empty;
         }
 
         private async Task RefreshCacheAsync(int? stringId = null)
         {
             const string sql = @"
-Select Id, [Key], OriginalString, Translation, NeedsPush, Variant, CreationDate
-From   Strings
-Where  DeletionDate Is Null
--- And Id = @stringId
-;
+Select   Id, [Key], OriginalString, Translation, NeedsPush, IsUrgent, Variant, CreationDate
+From     Strings
+Where    DeletionDate Is Null
+-- And   Id = @stringId
+Order By IsUrgent Desc, OriginalString Asc;
 
 Select    ss.Id, ss.StringId, ss.Suggestion, ss.StateId State,
           ss.CreatedById, u.DisplayName CreatedByName,
@@ -224,19 +226,19 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
                 if (stringId.HasValue)
                 {
                     _stringsById[stringId.Value] = stringsById[stringId.Value];
-                    _strings = _stringsById.Values.ToList();
+                    _strings = _stringsById.Values.OrderByDescending(s => s.IsUrgent).ThenBy(s => s.OriginalString).ToImmutableArray();
                 }
                 else
                 {
                     _stringsById = stringsById;
-                    _strings = strings;
+                    _strings = strings.ToImmutableArray();
                 }
             }
         }
 
         public async Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate)
         {
-            if (_strings == null)
+            if (_strings == null || _strings.Length == 0)
             {
                 await RefreshCacheAsync();
             }
@@ -251,7 +253,7 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
 
         public async Task<SOString> GetStringByIdAsync(int stringId)
         {
-            if (_strings == null)
+            if (_strings == null || _strings.Length == 0)
             {
                 await RefreshCacheAsync();
             }
@@ -387,7 +389,8 @@ Where  h.Id = @historyId;
 
 Update str
 Set    str.Translation = sug.Suggestion,
-       str.NeedsPush = 1
+       str.NeedsPush = 1,
+       str.IsUrgent = 0
 From   Strings str
 Join   StringSuggestions sug On sug.StringId = str.Id
 Where  sug.Id = @suggestionId;
@@ -527,7 +530,8 @@ Join   SODumpTable dump On dump.Hash = s.[Key]
 Where  s.Translation Is Null;
 
 Update s
-Set    s.Translation = dump.Translation
+Set    s.Translation = dump.Translation,
+       s.IsUrgent = 0
 From   Strings s
 Join   SODumpTable dump On dump.Hash = s.[Key]
 Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
@@ -542,12 +546,54 @@ Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
 Where  s.Translation Is Null;
 
 Update s
-Set    s.Translation = dump.Translation
+Set    s.Translation = dump.Translation,
+       s.IsUrgent = 0
 From   Strings s
 Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
 Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
 
             }
+        }
+
+        public async Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId)
+        {
+            var str = await GetStringByIdAsync(stringId);
+            if (str == null)
+            {
+                return false;
+            }
+            if (str.IsUrgent == isUrgent)
+            {
+                return true;
+            }
+
+            using(var db = _dbService.GetConnection()){
+                await db.ExecuteAsync(@"
+Insert Into StringHistory
+            (StringId, HistoryTypeId, CreationDate)
+Values      (@stringId, @historyType, @now);
+
+Update Strings
+Set    IsUrgent = @isUrgent
+Where  Id = @stringId", new {
+                            stringId,
+                            isUrgent,
+                            historyType = isUrgent ? StringHistoryType.MadeUrgent : StringHistoryType.MadeNotUrgent,
+                            now = DateTime.UtcNow
+                        });
+            }
+
+            await RefreshCacheAsync(stringId);
+            return true;
+        }
+
+        public async Task<ImmutableArray<SOString>> GetStringsAsync()
+        {
+            if (_strings == null || _strings.Length == 0)
+            {
+                await RefreshCacheAsync();
+            }
+            return _strings;
         }
     }
 }

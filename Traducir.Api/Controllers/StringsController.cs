@@ -29,17 +29,12 @@ namespace Traducir.Controllers
         {
             return Json(new
             {
-                TotalStrings = (await _soStringService.GetStringsAsync(s => true)).Length,
-                    WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.Translation.HasValue())).Length,
-                    WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.Suggestions != null && s.Suggestions.Any())).Length,
-                    WaitingApproval = (await _soStringService.GetStringsAsync(s =>
-                        s.Suggestions != null &&
-                        s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created)
-                    )).Length,
-                    WaitingReview = (await _soStringService.GetStringsAsync(s =>
-                        s.Suggestions != null &&
-                        s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser)
-                    )).Length,
+                TotalStrings = (await _soStringService.GetStringsAsync()).Length,
+                    WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation)).Length,
+                    WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions)).Length,
+                    WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval)).Length,
+                    WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview)).Length,
+                    UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent)).Length,
             });
         }
 
@@ -54,30 +49,37 @@ namespace Traducir.Controllers
         [Route("app/api/strings/query")]
         public async Task<IActionResult> Query([FromBody] QueryViewModel model)
         {
-            Func<SOString, bool> predicate = s => true;
+            Func<SOString, bool> predicate = null;
 
             void composePredicate(Func<SOString, bool> newPredicate)
             {
+                if (predicate == null)
+                {
+                    predicate = newPredicate;
+                    return;
+                }
                 var oldPredicate = predicate;
                 predicate = s => oldPredicate(s)&& newPredicate(s);
             }
 
             if (model.TranslationStatus != QueryViewModel.TranslationStatuses.AnyStatus)
             {
-                predicate = s => s.Translation.IsNullOrEmpty()== (model.TranslationStatus == QueryViewModel.TranslationStatuses.WithoutTranslation);
+                composePredicate(s => s.HasTranslation == (model.TranslationStatus == QueryViewModel.TranslationStatuses.WithTranslation));
             }
             if (model.PushStatus != QueryViewModel.PushStatuses.AnyStatus)
             {
                 composePredicate(s => s.NeedsPush == (model.PushStatus == QueryViewModel.PushStatuses.NeedsPush));
+            }
+            if (model.UrgencyStatus != QueryViewModel.UrgencyStatuses.AnyStatus)
+            {
+                composePredicate(s => s.IsUrgent == (model.UrgencyStatus == QueryViewModel.UrgencyStatuses.IsUrgent));
             }
             if (model.SuggestionsStatus != QueryViewModel.SuggestionApprovalStatus.AnyStatus)
             {
                 switch (model.SuggestionsStatus)
                 {
                     case QueryViewModel.SuggestionApprovalStatus.DoesNotHaveSuggestions:
-                        composePredicate(s =>
-                            s.Suggestions == null ||
-                            s.Suggestions.Length == 0);
+                        composePredicate(s => !s.HasSuggestions);
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReview:
                         composePredicate(s =>
@@ -85,14 +87,10 @@ namespace Traducir.Controllers
                             s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
-                        composePredicate(s =>
-                            s.Suggestions != null &&
-                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created));
+                        composePredicate(s => s.HasSuggestionsWaitingApproval);
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReviewApprovedByTrustedUser:
-                        composePredicate(s =>
-                            s.Suggestions != null &&
-                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser));
+                        composePredicate(s => s.HasApprovedSuggestionsWaitingReview);
                         break;
                 }
             }
@@ -124,10 +122,13 @@ namespace Traducir.Controllers
                 {
                     return BadRequest();
                 }
-                composePredicate(s => s.Translation.HasValue()&& regex.IsMatch(s.Translation));
+                composePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
             }
 
-            return Json((await _soStringService.GetStringsAsync(predicate)).Take(2000));
+            var result = predicate != null ? await _soStringService.GetStringsAsync(predicate):
+                await _soStringService.GetStringsAsync();
+
+            return Json(result.Take(2000));
         }
 
         [HttpPut]
@@ -201,5 +202,20 @@ namespace Traducir.Controllers
             }
             return BadRequest();
         }
+
+        [HttpPut]
+        [Authorize(Policy = "CanSuggest")]
+        [Route("app/api/manage-urgency")]
+        public async Task<IActionResult> ManageUrgency([FromBody] ManageUrgencyViewModel model)
+        {
+            var success = await _soStringService.ManageUrgencyAsync(model.StringId, model.IsUrgent,
+                User.GetClaim<int>(ClaimType.Id));
+            if (success)
+            {
+                return new EmptyResult();
+            }
+            return BadRequest();
+        }
+
     }
 }

@@ -9,7 +9,7 @@ export interface SuggestionsTableProps {
     suggestions: SOStringSuggestion[];
     config: Config;
     user: UserInfo;
-    goBackToResults: (stringIdToUpdate?: number) => void;
+    refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (message?: string, code?: number) => void;
 }
 
@@ -90,7 +90,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             SuggestionId: sug.id,
             Approve: action == ReviewAction.Accept
         }).then(r => {
-            _that.props.goBackToResults(sug.stringId);
+            _that.props.refreshString(sug.stringId);
             history.push('/filters');
         })
             .catch(e => {

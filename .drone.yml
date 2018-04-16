@@ -22,5 +22,5 @@ pipeline:
 
       - "cd output-image"
       - "git add app"
-      - "git commit -m \"Source update: ${DRONE_COMMIT_SHA} - ${DRONE_COMMIT_MESSAGE}\""
+      - "git commit -m \"Source update: ${DRONE_COMMIT_SHA}\""
       - "git push"
