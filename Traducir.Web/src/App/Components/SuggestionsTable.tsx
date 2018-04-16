@@ -48,7 +48,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                     <tr key={sug.id} className={sug.state == StringSuggestionState.ApprovedByTrustedUser ? 'table-success' : ''}>
                         <td><pre>{sug.suggestion}</pre></td>
                         <td>{sug.lastStateUpdatedByName ?
-                            <a href={`https://${this.props.config.siteDomain}/users/${sug.createdById}`}
+                            <a href={`https://${this.props.config.siteDomain}/users/${sug.lastStateUpdatedById}`}
                                 target="_blank">{sug.lastStateUpdatedByName}</a>
                             : null}</td>
                         <td><a href={`https://${this.props.config.siteDomain}/users/${sug.createdById}`}
