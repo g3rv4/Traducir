@@ -16,14 +16,14 @@ interface SuggestionNewState {
     suggestion: string;
 }
 
-const SuggestionCreationResult = {
-    CreationOk : 1,
-    InvalidStringId : 2,
-    SuggestionEqualsOriginal : 3,
-    EmptySuggestion : 4,
-    SuggestionAlreadyThere : 5,
-    QuantityOfVariableValuesNotEqual : 6,
-    DatabaseError : 7
+enum SuggestionCreationResult {
+    CreationOk = 1,
+    InvalidStringId = 2,
+    SuggestionEqualsOriginal = 3,
+    EmptySuggestion = 4,
+    SuggestionAlreadyThere = 5,
+    QuantityOfVariableValuesNotEqual = 6,
+    DatabaseError = 7
 }
 
 export default class SuggestionNew extends React.Component<SuggestionNewProps, SuggestionNewState> {
@@ -69,9 +69,6 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
                             this.props.showErrorMessage("The server encountered an error, but we don't know what happened");
                             break;
                     }
-                    //this.props.showErrorMessage(e.response.)
-                    //this.props.showErrorMessage(null, e.response.data);
-                    //this.props.showErrorMessage("Failed sending the suggestion. Do you have all the variables? does it have a value?");
                 } else {
                     this.props.showErrorMessage(null, e.response.status);
                 }

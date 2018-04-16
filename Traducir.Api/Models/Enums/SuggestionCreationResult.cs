@@ -1,7 +1,5 @@
 ﻿namespace Traducir.Api.Models.Enums
-
 {
-
 	public enum SuggestionCreationResult : int
 	{
 		CreationOk = 1,

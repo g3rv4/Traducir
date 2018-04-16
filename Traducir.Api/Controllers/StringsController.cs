@@ -16,7 +16,6 @@ namespace Traducir.Controllers
     public class StringsController : Controller
     {
         private ISOStringService _soStringService { get; set; }
-        private Regex _variablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
 
         public StringsController(ISOStringService soStringService)
         {
@@ -131,12 +130,13 @@ namespace Traducir.Controllers
             return Json(result.Take(2000));
         }
 
+        private Regex _variablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
+
         [HttpPut]
         [Authorize(Policy = "CanSuggest")]
         [Route("app/api/suggestions")]
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
-
             //Verify that everything is valid before calling the service
             var str = await _soStringService.GetStringByIdAsync(model.StringId);
             
