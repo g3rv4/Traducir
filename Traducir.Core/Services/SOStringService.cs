@@ -180,11 +180,11 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
         private async Task RefreshCacheAsync(int? stringId = null)
         {
             const string sql = @"
-Select Id, [Key], OriginalString, Translation, NeedsPush, IsUrgent, Variant, CreationDate
-From   Strings
-Where  DeletionDate Is Null
--- And Id = @stringId
-;
+Select   Id, [Key], OriginalString, Translation, NeedsPush, IsUrgent, Variant, CreationDate
+From     Strings
+Where    DeletionDate Is Null
+-- And   Id = @stringId
+Order By IsUrgent Desc, OriginalString Asc;
 
 Select    ss.Id, ss.StringId, ss.Suggestion, ss.StateId State,
           ss.CreatedById, u.DisplayName CreatedByName,
@@ -226,7 +226,7 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
                 if (stringId.HasValue)
                 {
                     _stringsById[stringId.Value] = stringsById[stringId.Value];
-                    _strings = _stringsById.Values.ToImmutableArray();
+                    _strings = _stringsById.Values.OrderByDescending(s => s.IsUrgent).ThenBy(s => s.OriginalString).ToImmutableArray();
                 }
                 else
                 {
@@ -246,7 +246,7 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
             ImmutableArray<SOString> result;
             using(MiniProfiler.Current.Step("Filtering the strings"))
             {
-                result = _strings.Where(predicate).OrderByDescending(s => s.IsUrgent).ThenBy(s => s.OriginalString).ToImmutableArray();
+                result = _strings.Where(predicate).ToImmutableArray();
             }
             return result;
         }
