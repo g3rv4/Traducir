@@ -30,7 +30,7 @@ namespace Traducir.Core.Services
         Task PullSODump(string dumpUrl);
         Task UpdateTranslationsFromSODump();
         Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId);
-        Task<bool> DeleteSuggestionAsync(int suggestionId);
+        Task<bool> DeleteSuggestionAsync(int stringId, int suggestionId, int userId);
     }
     public class SOStringService : ISOStringService
     {
@@ -598,7 +598,7 @@ Where  Id = @stringId", new {
             return _strings;
         }
 
-        public async Task<bool> DeleteSuggestionAsync(int stringId, int suggestionId)
+        public async Task<bool> DeleteSuggestionAsync(int stringId, int suggestionId, int userId)
         {
             //we don't delete the suggestion, we mark it as deleted for historic porpousse
             var str = await GetStringByIdAsync(stringId);
@@ -626,7 +626,7 @@ Values      (@suggestionID, {=DeletedByOwner}, @userId, @comment, @now);",
                 {
                     suggestionId = suggestion.Id,
                     StringSuggestionState.DeletedByOwner,
-                    userId = 1,
+                    userId,
                     comment = "Deleted by user",
                     now = DateTime.UtcNow
                 });

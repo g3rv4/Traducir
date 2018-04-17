@@ -219,9 +219,10 @@ namespace Traducir.Controllers
 
         [HttpDelete]
         [Route("app/api/delete-suggestion")]
-        public async Task<IActionResult> DeleteSuggestion([FromBody] ReviewViewModel model)
+        public async Task<IActionResult> DeleteSuggestion([FromBody] DeleteSuggestionViewModel model)
         {
-            var success = await _soStringService.DeleteSuggestionAsync(model.SuggestionId.Value);
+            var success = await _soStringService.DeleteSuggestionAsync(model.StringId.Value,model.SuggestionId.Value,
+                User.GetClaim<int>(ClaimType.Id));
             if (success)
             {
                 return new EmptyResult();
