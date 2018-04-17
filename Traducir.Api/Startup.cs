@@ -69,6 +69,7 @@ namespace Traducir
                     args.Error.CustomData = args.Error.CustomData ?? new Dictionary<string, string>();
                     args.Error.CustomData.Add("MiniProfiler", miniProfilerUrl);
                 };
+                settings.LogFilters.Cookie[".AspNetCore.Cookies"] = "hidden";
             });
         }
 
