@@ -217,5 +217,17 @@ namespace Traducir.Controllers
             return BadRequest();
         }
 
+        [HttpDelete]
+        [Route("app/api/delete-suggestion")]
+        public async Task<IActionResult> DeleteSuggestion([FromBody] ReviewViewModel model)
+        {
+            var success = await _soStringService.DeleteSuggestionAsync(model.SuggestionId.Value);
+            if (success)
+            {
+                return new EmptyResult();
+            }
+            return BadRequest();
+        }
+
     }
 }

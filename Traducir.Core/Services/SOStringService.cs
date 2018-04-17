@@ -30,6 +30,7 @@ namespace Traducir.Core.Services
         Task PullSODump(string dumpUrl);
         Task UpdateTranslationsFromSODump();
         Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId);
+        Task<bool> DeleteSuggestionAsync(int suggestionId);
     }
     public class SOStringService : ISOStringService
     {
@@ -595,6 +596,43 @@ Where  Id = @stringId", new {
                 await RefreshCacheAsync();
             }
             return _strings;
+        }
+
+        public async Task<bool> DeleteSuggestionAsync(int stringId, int suggestionId)
+        {
+            //we don't delete the suggestion, we mark it as deleted for historic porpousse
+            var str = await GetStringByIdAsync(stringId);
+            if (str == null)
+            {
+                return false;
+            }
+            //Check if the string has this suggestion
+            var suggestion = str.Suggestions.Single(x => x.Id == suggestionId);
+            if (suggestion == null)
+            {
+                return false;
+            }
+            using (var db = _dbService.GetConnection())
+            {
+                await db.ExecuteAsync(@"
+Update StringSuggestions
+Set StateId = {=DeletedByOwner}
+Where Id = @suggestionId;
+
+Insert Into StringSuggestionHistory
+            (StringSuggestionId, HistoryTypeId, UserId, Comment, CreationDate)
+Values      (@suggestionID, {=DeletedByOwner}, @userId, @comment, @now);",
+                new
+                {
+                    suggestionId = suggestion.Id,
+                    StringSuggestionState.DeletedByOwner,
+                    userId = 1,
+                    comment = "Deleted by user",
+                    now = DateTime.UtcNow
+                });
+            }
+            await RefreshCacheAsync();
+            return true;
         }
     }
 }
