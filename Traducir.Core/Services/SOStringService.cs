@@ -24,7 +24,7 @@ namespace Traducir.Core.Services
         Task<SOString> GetStringByIdAsync(int stringId);
         Task<ImmutableArray<SOString>> GetStringsAsync();
         Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
-        Task<int?> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
+        Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
         Task UpdateStringsPushed();
         Task PullSODump(string dumpUrl);
@@ -264,45 +264,10 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
             return null;
         }
 
-        private Regex _variablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
-        public async Task<int?> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve)
+        public async Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve)
         {
             using(var db = _dbService.GetConnection())
             {
-                var str = await GetStringByIdAsync(stringId);
-
-                // if the string id is invalid
-                if (str == null)
-                {
-                    return null;
-                }
-
-                // if the suggestion is the same as the current translation
-                if (str.Translation == suggestion)
-                {
-                    return null;
-                }
-
-                // empty suggestion
-                if (suggestion == null || suggestion.Length == 0)
-                {
-                    return null;
-                }
-
-                // if there's another suggestion with the same value
-                if (str.Suggestions != null && str.Suggestions.Any(sug => sug.Suggestion == suggestion))
-                {
-                    return null;
-                }
-
-                // if there are missing or extra values
-                var variablesInOriginal = _variablesRegex.Matches(str.OriginalString).Cast<Match>().Select(m => m.Value).ToArray();
-                var variablesInSuggestion = _variablesRegex.Matches(suggestion).Cast<Match>().Select(m => m.Value).ToArray();
-                if (variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v))||
-                    variablesInSuggestion.Any(v => !variablesInOriginal.Contains(v)))
-                {
-                    return null;
-                }
 
                 int? suggestionId;
                 try
@@ -340,11 +305,11 @@ Select @suggestionId;", new
                 }
                 catch (SqlException e)when(e.Number == 547)
                 {
-                    return null;
+                    return false;
                 }
 
                 await RefreshCacheAsync(stringId);
-                return suggestionId;
+                return true;
             }
         }
 
