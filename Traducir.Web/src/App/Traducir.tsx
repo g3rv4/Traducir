@@ -146,7 +146,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
                     <Link to='/' className="navbar-brand d-none d-lg-block">{this.state.config && this.state.config.friendlyName} Translations 🦄{this.state.user && ` ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</Link>
-                    <Link to='/' className='navbar-brand d-lg-none'>{this.state.config && this.state.config.friendlyName} Translations 🦄</Link> 
+                    <Link to='/' className='navbar-brand d-lg-none'>{this.state.config && this.state.config.friendlyName} Translations 🦄</Link>
                     <NavbarToggler onClick={this.toggle} />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
@@ -178,19 +178,19 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             </Navbar>
             <div className="container">
                 <Switch>
-                    <Route path='/users' render={p=>
+                    <Route path='/users' exact render={p =>
                         <Users
                             showErrorMessage={this.showErrorMessage}
                             currentUser={this.state.user}
                         />
                     } />
-                    <Route render={p=>
+                    <Route render={p => <>
                         <Filters
                             onResultsFetched={this.resultsReceived}
                             onLoading={() => this.setState({ isLoading: true })}
                             showErrorMessage={this.showErrorMessage}
                             location={p.location}
-                        />} />
+                        />
                         <Switch>
                             <Route path='/' exact render={p =>
                                 this.state.stats &&
@@ -206,7 +206,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                                     isLoading={this.state.isLoading} />
                             } />
                         </Switch>
-                    }
+                    </>} />
                 </Switch>
                 <Modal isOpen={this.isOpen()} toggle={this.onToggle} className="w-95 mw-100">
                     <ModalHeader toggle={this.onToggle}>Suggestions</ModalHeader>
