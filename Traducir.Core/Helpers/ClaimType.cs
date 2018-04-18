@@ -7,5 +7,6 @@ namespace Traducir.Core.Helpers
         public const string UserType = "UserType";
         public const string CanSuggest = "CanSuggest";
         public const string CanReview = "CanReview";
+        public const string IsModerator = "IsModerator";
     }
 }

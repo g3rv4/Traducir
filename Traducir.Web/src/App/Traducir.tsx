@@ -6,16 +6,17 @@ import {
     UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem,
     Modal, ModalHeader, ModalBody, ModalFooter
 } from 'reactstrap';
-import { Route, Switch, withRouter, RouteComponentProps } from 'react-router-dom'
-import history from '../history'
-import Filters from "./Components/Filters"
-import Results from "./Components/Results"
-import Suggestions from "./Components/Suggestions"
-import StatsWithLinks from "./Components/StatsWithLinks"
-import SOString from "../Models/SOString"
-import UserInfo, { UserType, userTypeToString } from "../Models/UserInfo"
-import Config from "../Models/Config"
-import Stats from "../Models/Stats"
+import { Route, Switch, withRouter, RouteComponentProps, Link } from 'react-router-dom';
+import history from '../history';
+import Filters from "./Components/Filters";
+import Results from "./Components/Results";
+import Suggestions from "./Components/Suggestions";
+import StatsWithLinks from "./Components/StatsWithLinks";
+import Users from "./Components/Users";
+import SOString from "../Models/SOString";
+import UserInfo, { userTypeToString } from "../Models/UserInfo";
+import Config from "../Models/Config";
+import Stats from "../Models/Stats";
 
 export interface TraducirState {
     user: UserInfo;
@@ -66,7 +67,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         }
     }
 
-    renderUser() {
+    renderLogInLogOut() {
         const returnUrl = encodeURIComponent(location.pathname + location.search);
         if (!this.state || this.state.user === null) {
             return <NavItem>
@@ -144,8 +145,8 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         return <>
             <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
-                    <div className="navbar-brand d-none d-lg-block">{this.state.config && this.state.config.friendlyName} Translations 🦄{this.state.user && ` ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</div>
-                    <div className="navbar-brand d-lg-none">{this.state.config && this.state.config.friendlyName} Translations 🦄</div>
+                    <Link to='/' className="navbar-brand d-none d-lg-block">{this.state.config && this.state.config.friendlyName} Translations 🦄{this.state.user && ` ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</Link>
+                    <Link to='/' className='navbar-brand d-lg-none'>{this.state.config && this.state.config.friendlyName} Translations 🦄</Link>
                     <NavbarToggler onClick={this.toggle} />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
@@ -165,33 +166,47 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                                     </DropdownItem>
                                 </DropdownMenu>
                             </UncontrolledDropdown>
-                            {this.renderUser()}
+                            {this.state.user &&
+                                <NavItem>
+                                    <Link to="/users" className="nav-link">Users</Link>
+                                </NavItem>
+                            }
+                            {this.renderLogInLogOut()}
                         </Nav>
                     </Collapse>
                 </div>
             </Navbar>
             <div className="container">
-                <Route render={p =>
-                    <Filters
-                        onResultsFetched={this.resultsReceived}
-                        onLoading={() => this.setState({ isLoading: true })}
-                        showErrorMessage={this.showErrorMessage}
-                        location={p.location}
-                    />} />
                 <Switch>
-                    <Route path='/' exact render={p =>
-                        this.state.stats &&
-                        <StatsWithLinks stats={this.state.stats} />} />
-                    {this.state.strings.length == 0 && <Route path='/string/' render={p =>
-                        this.state.stats &&
-                        <StatsWithLinks stats={this.state.stats} />} />}
-                    <Route render={p =>
-                        <Results
-                            user={this.state.user}
-                            results={this.state.strings}
-                            loadSuggestions={this.loadSuggestions}
-                            isLoading={this.state.isLoading} />
+                    <Route path='/users' exact render={p =>
+                        <Users
+                            showErrorMessage={this.showErrorMessage}
+                            currentUser={this.state.user}
+                        />
                     } />
+                    <Route render={p => <>
+                        <Filters
+                            onResultsFetched={this.resultsReceived}
+                            onLoading={() => this.setState({ isLoading: true })}
+                            showErrorMessage={this.showErrorMessage}
+                            location={p.location}
+                        />
+                        <Switch>
+                            <Route path='/' exact render={p =>
+                                this.state.stats &&
+                                <StatsWithLinks stats={this.state.stats} />} />
+                            {this.state.strings.length == 0 && <Route path='/string/' render={p =>
+                                this.state.stats &&
+                                <StatsWithLinks stats={this.state.stats} />} />}
+                            <Route render={p =>
+                                <Results
+                                    user={this.state.user}
+                                    results={this.state.strings}
+                                    loadSuggestions={this.loadSuggestions}
+                                    isLoading={this.state.isLoading} />
+                            } />
+                        </Switch>
+                    </>} />
                 </Switch>
                 <Modal isOpen={this.isOpen()} toggle={this.onToggle} className="w-95 mw-100">
                     <ModalHeader toggle={this.onToggle}>Suggestions</ModalHeader>

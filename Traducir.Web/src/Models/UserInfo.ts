@@ -1,17 +1,12 @@
+import { UserType } from "./UserType";
+
 export default interface UserInfo {
     name: string;
     userType: UserType;
     canSuggest: boolean;
     canReview: boolean;
+    canManageUsers: boolean;
     id: number;
-}
-
-export enum UserType {
-    Unknown = 0,
-    Banned = 1,
-    User = 2,
-    TrustedUser = 3,
-    Reviewer = 4
 }
 
 export function userTypeToString(userType: UserType) {
