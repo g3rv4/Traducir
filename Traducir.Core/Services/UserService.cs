@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
 using Traducir.Core.Models;
@@ -8,8 +10,9 @@ namespace Traducir.Core.Services
     public interface IUserService
     {
         Task UpsertUserAsync(User user);
-
         Task<User> GetUserAsync(int userId);
+        Task<List<User>> GetUsersAsync();
+        Task<bool> ChangeUserTypeAsync(int userId, UserType userType, int editorId);
     }
     public class UserService : IUserService
     {
@@ -49,21 +52,60 @@ Where    Id = @Id", user);
             using(var db = _dbService.GetConnection())
             {
                 return await db.QueryFirstOrDefaultAsync<User>(@"
-Select Id, DisplayName, CreationDate, LastSeenDate,
-       Case When IsBanned = 1 Then {=Banned}
-            When IsReviewer = 1 Then {=Reviewer}
-            When IsTrusted = 1 Then {=TrustedUser}
-            Else {=User}
-       End UserType
+Select *
 From   Users
 Where  Id = @userId", new
                 {
-                    userId,
-                    UserType.Banned,
-                    UserType.Reviewer,
-                    UserType.TrustedUser,
-                    UserType.User
+                    userId
                 });
+            }
+        }
+
+        public async Task<List<User>> GetUsersAsync()
+        {
+            using(var db = _dbService.GetConnection())
+            {
+                return (await db.QueryAsync<User>("Select * From Users")).AsList();
+            }
+        }
+
+        public async Task<bool> ChangeUserTypeAsync(int userId, UserType userType, int editorId)
+        {
+            using(var db = _dbService.GetConnection())
+            {
+                var rows = await db.ExecuteAsync(@"
+Insert Into UserHistory
+            (UserId, UpdatedById, CreationDate, HistoryTypeId)
+Select Id, @editorId, @now,
+       Case When @userType = {=TrustedUser} Then {=HistoryMadeTrustedUser}
+            When @userType = {=Banned} Then {=HistoryBanned}
+            When @userType = {=User} And IsBanned = 1 Then {=HistoryBanLifted}
+            When @userType = {=User} And IsTrusted = 1 Then {=HistoryDemotedToRegularUser} End
+From   Users
+Where  Id = @userId
+And    IsModerator = 0
+And    IsReviewer = 0;
+
+Update Users
+Set    IsTrusted = Case When @userType = {=TrustedUser} Then 1 Else 0 End,
+       IsBanned = Case When @userType = {=Banned} Then 1 Else 0 End
+Where  Id = @userId
+And    IsModerator = 0
+And    IsReviewer = 0;", new
+            {
+                userId,
+                editorId,
+                userType,
+                UserType.TrustedUser,
+                UserType.Banned,
+                UserType.User,
+                now = DateTime.UtcNow,
+                HistoryMadeTrustedUser = UserHistoryType.MadeTrustedUser,
+                HistoryBanned = UserHistoryType.Banned,
+                HistoryBanLifted = UserHistoryType.BanLifted,
+                HistoryDemotedToRegularUser = UserHistoryType.DemotedToRegularUser
+            });
+                return rows > 0;
             }
         }
     }

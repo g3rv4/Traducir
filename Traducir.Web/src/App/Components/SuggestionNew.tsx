@@ -2,7 +2,8 @@ import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 import history from '../../history';
-import UserInfo, { UserType } from "../../Models/UserInfo";
+import UserInfo from "../../Models/UserInfo";
+import { UserType } from "../../Models/UserType";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
 
 export interface SuggestionNewProps {

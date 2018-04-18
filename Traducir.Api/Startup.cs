@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Profiling;
+using Traducir.Core.Helpers;
 using Traducir.Core.Services;
 
 namespace Traducir
@@ -54,8 +55,9 @@ namespace Traducir
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("CanSuggest", policy => policy.RequireClaim("CanSuggest"));
-                options.AddPolicy("CanReview", policy => policy.RequireClaim("CanReview"));
+                options.AddPolicy("CanSuggest", policy => policy.RequireClaim(ClaimType.CanSuggest));
+                options.AddPolicy("CanReview", policy => policy.RequireClaim(ClaimType.CanReview));
+                options.AddPolicy("CanManageUsers", policy => policy.RequireClaim(ClaimType.IsModerator));
             });
 
             services.AddExceptional(settings =>
