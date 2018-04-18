@@ -1,12 +1,16 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Profiling;
+using Traducir.Core.Helpers;
 using Traducir.Core.Services;
 
 namespace Traducir
@@ -54,8 +58,9 @@ namespace Traducir
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("CanSuggest", policy => policy.RequireClaim("CanSuggest"));
-                options.AddPolicy("CanReview", policy => policy.RequireClaim("CanReview"));
+                options.AddPolicy("CanSuggest", policy => policy.RequireClaim(ClaimType.CanSuggest));
+                options.AddPolicy("CanReview", policy => policy.RequireClaim(ClaimType.CanReview));
+                options.AddPolicy("CanManageUsers", policy => policy.RequireClaim(ClaimType.IsModerator));
             });
 
             services.AddExceptional(settings =>
@@ -71,6 +76,15 @@ namespace Traducir
                 };
                 settings.LogFilters.Cookie[".AspNetCore.Cookies"] = "hidden";
             });
+
+            var keysLocation = Configuration.GetValue<string>("KEYS_LOCATION_FOLDER");
+            if (keysLocation != null)
+            {
+                services.AddDataProtection()
+                    .PersistKeysToFileSystem(new DirectoryInfo(keysLocation))
+                    .SetApplicationName("Traducir")
+                    .SetDefaultKeyLifetime(TimeSpan.FromDays(7));
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

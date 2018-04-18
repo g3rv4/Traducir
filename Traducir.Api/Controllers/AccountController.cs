@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -95,6 +96,10 @@ namespace Traducir.Controllers
                     claims.Add(new Claim(ClaimType.CanReview, "1"));
                 }
             }
+            if (user.IsModerator)
+            {
+                claims.Add(new Claim(ClaimType.IsModerator, "1"));
+            }
             var identity = new ClaimsIdentity(claims, "login");
 
             await HttpContext.SignInAsync(
@@ -110,14 +115,43 @@ namespace Traducir.Controllers
         {
             var canSuggest = await _authorizationService.AuthorizeAsync(User, "CanSuggest");
             var canReview = await _authorizationService.AuthorizeAsync(User, "CanReview");
+            var canManageUsers = await _authorizationService.AuthorizeAsync(User, "CanManageUsers");
 
             return Json(new UserInfo
             {
                 Name = User.GetClaim<string>(ClaimType.Name),
                 UserType = User.GetClaim<UserType>(ClaimType.UserType),
                 CanSuggest = canSuggest.Succeeded,
-                CanReview = canReview.Succeeded
+                CanReview = canReview.Succeeded,
+                CanManageUsers = canManageUsers.Succeeded
             });
         }
+
+        [Authorize]
+        [Route("app/api/users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            return Json((await _userService.GetUsersAsync()).OrderByDescending(u => u.UserType));
+        }
+
+        [HttpPut]
+        [Authorize(Policy = "CanManageUsers")]
+        [Route("app/api/users/change-type")]
+        public async Task<IActionResult> ChangeUserType([FromBody] ChangeUserTypeViewModel model)
+        {
+            // explicitly whitelist accepted types
+            if (model.UserType != UserType.Banned && model.UserType != UserType.User && model.UserType != UserType.TrustedUser)
+            {
+                return BadRequest();
+            }
+
+            var success = await _userService.ChangeUserTypeAsync(model.UserId, model.UserType, User.GetClaim<int>(ClaimType.Id));
+            if (!success)
+            {
+                return BadRequest();
+            }
+            return new EmptyResult();
+        }
+
     }
 }

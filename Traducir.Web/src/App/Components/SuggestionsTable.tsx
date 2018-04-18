@@ -1,9 +1,10 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import history from '../../history';
-import SOStringSuggestion, { StringSuggestionState } from "../../Models/SOStringSuggestion"
-import Config from "../../Models/Config"
-import UserInfo, { UserType } from "../../Models/UserInfo"
+import SOStringSuggestion, { StringSuggestionState } from "../../Models/SOStringSuggestion";
+import Config from "../../Models/Config";
+import UserInfo from "../../Models/UserInfo";
+import { UserType } from "../../Models/UserType";
 
 export interface SuggestionsTableProps {
     suggestions: SOStringSuggestion[];
