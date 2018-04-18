@@ -16,10 +16,13 @@ namespace Traducir.Controllers
     public class StringsController : Controller
     {
         private ISOStringService _soStringService { get; set; }
+        private IAuthorizationService _authorizationService { get; }
 
-        public StringsController(ISOStringService soStringService)
+        public StringsController(ISOStringService soStringService,
+            IAuthorizationService authorizationService)
         {
             _soStringService = soStringService;
+            _authorizationService = authorizationService;
         }
 
         [HttpGet]
@@ -160,8 +163,10 @@ namespace Traducir.Controllers
                 return BadRequest(SuggestionCreationResult.EmptySuggestion);
             }
 
+            var canReview = await _authorizationService.AuthorizeAsync(User, "CanReview");
+
             // fix whitespaces unless user is reviewer and selected raw string
-            if (!(model.RawString && User.GetClaim<bool>(ClaimType.CanReview)))
+            if (!(model.RawString && canReview.Succeeded))
             {
                 model.Suggestion = FixWhitespaces(model.Suggestion, str.OriginalString);
             }
@@ -182,7 +187,7 @@ namespace Traducir.Controllers
             var variablesInOriginal = _variablesRegex.Matches(str.OriginalString).Select(m => m.Value).ToArray();
             var variablesInSuggestion = _variablesRegex.Matches(model.Suggestion).Select(m => m.Value).ToArray();
 
-            if ((!model.RawString || !User.GetClaim<bool>(ClaimType.CanReview)) && variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)))
+            if ((!model.RawString || !canReview.Succeeded) && variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)))
             {
                 return BadRequest(SuggestionCreationResult.TooFewVariables);
             }
