@@ -27,7 +27,7 @@ namespace Traducir.Core.Helpers
         public static string CalculateMd5(this string str)
         {
             // Use input string to calculate MD5 hash
-            using(System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
             {
                 byte[] inputBytes = System.Text.Encoding.UTF8.GetBytes(str);
                 byte[] hashBytes = md5.ComputeHash(inputBytes);
@@ -44,7 +44,7 @@ namespace Traducir.Core.Helpers
 
         public static T GetClaim<T>(this ClaimsPrincipal user, string type)
         {
-            var value = user.Claims.FirstOrDefault(c => c.Type == type)? .Value;
+            var value = user.Claims.FirstOrDefault(c => c.Type == type)?.Value;
             if (value == null)
             {
                 return default(T);

@@ -1,4 +1,3 @@
-using System.Linq;
 using System.Runtime.Serialization;
 using Traducir.Core.Helpers;
 
@@ -24,7 +23,7 @@ namespace Traducir.Core.Models.Services
         [DataMember(Name = "comment")]
         public string Comment { get; set; }
 
-        public string Variant => Comment.HasValue()? Comment : null;
+        public string Variant => Comment.HasValue() ? Comment : null;
         public string Translation => Reviewed ? UnreviewedTranslation : null;
     }
 

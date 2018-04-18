@@ -66,7 +66,7 @@ namespace Traducir
             services.AddExceptional(settings =>
             {
                 settings.UseExceptionalPageOnThrow = HostingEnvironment.IsDevelopment();
-                settings.OnBeforeLog += (sender, args)=>
+                settings.OnBeforeLog += (sender, args) =>
                 {
                     var match = Regex.Match(args.Error.FullUrl, "^(([^/]+)//([^/]+))/", RegexOptions.Compiled);
                     var miniProfilerUrl = match.Groups[1].Value + "/app/mini-profiler-resources/results?id=" + MiniProfiler.Current.Id.ToString();

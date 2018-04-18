@@ -29,11 +29,11 @@ namespace Traducir.Controllers
             return Json(new
             {
                 TotalStrings = (await _soStringService.GetStringsAsync()).Length,
-                    WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation)).Length,
-                    WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions)).Length,
-                    WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval)).Length,
-                    WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview)).Length,
-                    UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent)).Length,
+                WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation)).Length,
+                WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions)).Length,
+                WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval)).Length,
+                WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview)).Length,
+                UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent)).Length,
             });
         }
 
@@ -58,7 +58,7 @@ namespace Traducir.Controllers
                     return;
                 }
                 var oldPredicate = predicate;
-                predicate = s => oldPredicate(s)&& newPredicate(s);
+                predicate = s => oldPredicate(s) && newPredicate(s);
             }
 
             if (model.TranslationStatus != QueryViewModel.TranslationStatuses.AnyStatus)
@@ -124,7 +124,7 @@ namespace Traducir.Controllers
                 composePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
             }
 
-            var result = predicate != null ? await _soStringService.GetStringsAsync(predicate):
+            var result = predicate != null ? await _soStringService.GetStringsAsync(predicate) :
                 await _soStringService.GetStringsAsync();
 
             return Json(result.Take(2000));
@@ -139,7 +139,7 @@ namespace Traducir.Controllers
         {
             //Verify that everything is valid before calling the service
             var str = await _soStringService.GetStringByIdAsync(model.StringId);
-            
+
             // if the string id is invalid
             if (str == null)
             {

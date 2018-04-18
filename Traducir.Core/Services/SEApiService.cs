@@ -48,7 +48,7 @@ namespace Traducir.Core.Services
 
         Task<HttpResponseMessage> GetFromApi(string url, string accessToken)
         {
-            var glue = url.Contains("?")? "&" : "?";
+            var glue = url.Contains("?") ? "&" : "?";
             return _httpClient.GetAsync($"{url}{glue}key={AppKey}&access_token={accessToken}&filter={FilterId}");
         }
 
@@ -60,10 +60,10 @@ namespace Traducir.Core.Services
 
         public async Task<string> GetAccessTokenFromCodeAsync(string code, string returnUrl)
         {
-            using(var client = new HttpClient())
+            using (var client = new HttpClient())
             {
                 client.BaseAddress = new Uri("https://stackoverflow.com");
-                var content = new FormUrlEncodedContent(new []
+                var content = new FormUrlEncodedContent(new[]
                 {
                     ("client_id", ClientId),
                     ("client_secret", AppSecret),
@@ -84,8 +84,8 @@ namespace Traducir.Core.Services
             var result = await GetFromApi("/2.2/me/associated", accessToken);
             result.EnsureSuccessStatusCode();
 
-            using(var stream = await result.Content.ReadAsStreamAsync())
-            using(var reader = new StreamReader(stream))
+            using (var stream = await result.Content.ReadAsStreamAsync())
+            using (var reader = new StreamReader(stream))
             {
                 return Jil.JSON.Deserialize<PaginatedResponse<NetworkUser>>(reader, Jil.Options.MillisecondsSinceUnixEpochUtc)
                     .Items;
@@ -97,8 +97,8 @@ namespace Traducir.Core.Services
             var result = await GetFromApi("/2.2/me?site=" + site, accessToken);
             result.EnsureSuccessStatusCode();
 
-            using(var stream = await result.Content.ReadAsStreamAsync())
-            using(var reader = new StreamReader(stream))
+            using (var stream = await result.Content.ReadAsStreamAsync())
+            using (var reader = new StreamReader(stream))
             {
                 return Jil.JSON.Deserialize<PaginatedResponse<User>>(reader, Jil.Options.MillisecondsSinceUnixEpochUtc)
                     .Items.FirstOrDefault();
