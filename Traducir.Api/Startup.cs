@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -73,6 +76,15 @@ namespace Traducir
                 };
                 settings.LogFilters.Cookie[".AspNetCore.Cookies"] = "hidden";
             });
+
+            var keysLocation = Configuration.GetValue<string>("KEYS_LOCATION_FOLDER");
+            if (keysLocation != null)
+            {
+                services.AddDataProtection()
+                    .PersistKeysToFileSystem(new DirectoryInfo(keysLocation))
+                    .SetApplicationName("Traducir")
+                    .SetDefaultKeyLifetime(TimeSpan.FromDays(7));
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
