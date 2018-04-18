@@ -8,6 +8,7 @@ import { StringSuggestionState } from "../../Models/SOStringSuggestion";
 export interface SuggestionNewProps {
     user: UserInfo;
     stringId: number;
+    rawString: boolean;
     refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (message?: string, code?: number) => void;
 }
@@ -22,8 +23,9 @@ enum SuggestionCreationResult {
     SuggestionEqualsOriginal = 3,
     EmptySuggestion = 4,
     SuggestionAlreadyThere = 5,
-    QuantityOfVariableValuesNotEqual = 6,
-    DatabaseError = 7
+    TooFewVariables = 6,
+    TooManyVariables = 7,
+    DatabaseError = 8
 }
 
 export default class SuggestionNew extends React.Component<SuggestionNewProps, SuggestionNewState> {
@@ -39,7 +41,8 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
         axios.put('/app/api/suggestions', {
             StringId: this.props.stringId,
             Suggestion: this.state.suggestion,
-            Approve: approve
+            Approve: approve,
+            RawString: this.props.rawString
         }).then(r => {
             this.props.refreshString(this.props.stringId);
             history.push('/filters');
@@ -56,8 +59,11 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
                         case SuggestionCreationResult.InvalidStringId:
                             this.props.showErrorMessage("We couldn't find the id you send, did you need to refresh your page?");
                             break;
-                        case SuggestionCreationResult.QuantityOfVariableValuesNotEqual:
-                            this.props.showErrorMessage("Failed sending the suggestion. Do you have all the variables?");
+                        case SuggestionCreationResult.TooFewVariables:
+                            this.props.showErrorMessage("Failed sending the suggestion. You are missing some variables");
+                            break;
+                        case SuggestionCreationResult.TooManyVariables:
+                            this.props.showErrorMessage("Failed sending the suggestion. You have included unrecognized variables");
                             break;
                         case SuggestionCreationResult.SuggestionAlreadyThere:
                             this.props.showErrorMessage("The suggestion you are sending is already suggested. Maybe you need to refresh?");
