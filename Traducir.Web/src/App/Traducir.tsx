@@ -182,6 +182,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                         <Users
                             showErrorMessage={this.showErrorMessage}
                             currentUser={this.state.user}
+                            config={this.state.config}
                         />
                     } />
                     <Route render={p => <>

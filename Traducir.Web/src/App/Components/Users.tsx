@@ -1,12 +1,14 @@
 import * as React from "react";
 import axios, { AxiosError } from 'axios';
 import User from "../../Models/User";
+import Config from "../../Models/Config";
 import UserInfo from "../../Models/UserInfo";
 import { userTypeToString, UserType } from "../../Models/UserType";
 
 export interface UsersProps {
     showErrorMessage: (message?: string, code?: number) => void;
     currentUser: UserInfo;
+    config: Config;
 }
 
 interface UsersState {
@@ -67,7 +69,11 @@ export default class Users extends React.Component<UsersProps, UsersState> {
                 <tbody>
                     {this.state.users.map(u =>
                         <tr key={u.id}>
-                            <td>{u.displayName} {u.isModerator ? '♦' : ''}</td>
+                            <td>
+                                <a href={`https://${this.props.config.siteDomain}/users/${u.id}`} target="_blank">
+                                    {u.displayName} {u.isModerator ? '♦' : ''}
+                                </a>
+                            </td>
                             <td>{userTypeToString(u.userType)}</td>
                             <td>{this.props.currentUser && this.props.currentUser.canManageUsers &&
                                 <div className="btn-group" role="group">
