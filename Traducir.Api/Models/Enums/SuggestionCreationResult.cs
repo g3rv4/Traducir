@@ -7,8 +7,9 @@
         SuggestionEqualsOriginal = 3,
         EmptySuggestion = 4,
         SuggestionAlreadyThere = 5,
-        QuantityOfVariableValuesNotEqual = 6,
-        DatabaseError = 7
+        TooFewVariables = 6,
+        TooManyVariables = 7,
+        DatabaseError = 8
     }
 }
 

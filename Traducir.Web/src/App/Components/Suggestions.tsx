@@ -16,9 +16,17 @@ export interface SuggestionsProps {
     showErrorMessage: (message?: string, code?: number) => void;
 }
 
-export default class Suggestions extends React.Component<SuggestionsProps, {}> {
+export interface SuggestionsState {
+    rawString: boolean;
+}
+
+export default class Suggestions extends React.Component<SuggestionsProps, SuggestionsState> {
     constructor(props: SuggestionsProps) {
         super(props);
+
+        this.state = {
+            rawString: false
+        };
     }
     updateUrgency = (isUrgent: boolean) => {
         axios.put('/app/api/manage-urgency', {
@@ -44,6 +52,10 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
             ? <span>Yes <a href="#" className="btn btn-sm btn-warning" onClick={e => this.updateUrgency(false)}>Mark as non urgent</a></span>
             : <span>No <a href="#" className="btn btn-sm btn-danger" onClick={e => this.updateUrgency(true)}>Mark as urgent</a></span>
     }
+    onCheckboxChange = () => {
+        this.setState({ rawString: !this.state.rawString });
+    }
+
     render() {
         return <>
             <div>
@@ -55,6 +67,9 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
             <div>
                 <span className="font-weight-bold">This string needs a new translation ASAP: </span> {this.renderUrgency()}
             </div>
+            {this.props.user.canReview && <div>
+                <span className="font-weight-bold">Raw string?: </span> <input type="checkbox" checked={this.state.rawString} onChange={this.onCheckboxChange} />
+            </div>}
             <div>
                 <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
             </div>
@@ -77,6 +92,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, {}> {
             <SuggestionNew
                 user={this.props.user}
                 stringId={this.props.str.id}
+                rawString={this.state.rawString}
                 refreshString={this.props.refreshString}
                 showErrorMessage={this.props.showErrorMessage}
             />

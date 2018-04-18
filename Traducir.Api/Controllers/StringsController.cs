@@ -132,6 +132,14 @@ namespace Traducir.Controllers
 
         private Regex _variablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
 
+        private static readonly Regex WhitespacesRegex = new Regex(@"^(?<start>\s*).*?(?<end>\s*)$", RegexOptions.Singleline | RegexOptions.Compiled);
+
+        private static string FixWhitespaces(string suggestion, string original)
+        {
+            var match = WhitespacesRegex.Match(original);
+            return match.Groups["start"] + suggestion.Trim() + match.Groups["end"];
+        }
+
         [HttpPut]
         [Authorize(Policy = "CanSuggest")]
         [Route("app/api/suggestions")]
@@ -146,16 +154,22 @@ namespace Traducir.Controllers
                 return BadRequest(SuggestionCreationResult.InvalidStringId);
             }
 
-            // if the suggestion is the same as the current translation
-            if (str.Translation == model.Suggestion)
-            {
-                return BadRequest(SuggestionCreationResult.SuggestionEqualsOriginal);
-            }
-
             // empty suggestion
             if (model.Suggestion == null || model.Suggestion.Length == 0)
             {
                 return BadRequest(SuggestionCreationResult.EmptySuggestion);
+            }
+
+            // fix whitespaces unless user is reviewer and selected raw string
+            if (!(model.RawString && User.GetClaim<bool>(ClaimType.CanReview)))
+            {
+                model.Suggestion = FixWhitespaces(model.Suggestion, str.OriginalString);
+            }
+
+            // if the suggestion is the same as the current translation
+            if (str.Translation == model.Suggestion)
+            {
+                return BadRequest(SuggestionCreationResult.SuggestionEqualsOriginal);
             }
 
             // if there's another suggestion with the same value
@@ -165,12 +179,17 @@ namespace Traducir.Controllers
             }
 
             // if there are missing or extra values
-            var variablesInOriginal = _variablesRegex.Matches(str.OriginalString).Cast<Match>().Select(m => m.Value).ToArray();
-            var variablesInSuggestion = _variablesRegex.Matches(model.Suggestion).Cast<Match>().Select(m => m.Value).ToArray();
-            if (variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)) ||
-                variablesInSuggestion.Any(v => !variablesInOriginal.Contains(v)))
+            var variablesInOriginal = _variablesRegex.Matches(str.OriginalString).Select(m => m.Value).ToArray();
+            var variablesInSuggestion = _variablesRegex.Matches(model.Suggestion).Select(m => m.Value).ToArray();
+
+            if ((!model.RawString || !User.GetClaim<bool>(ClaimType.CanReview)) && variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)))
             {
-                return BadRequest(SuggestionCreationResult.QuantityOfVariableValuesNotEqual);
+                return BadRequest(SuggestionCreationResult.TooFewVariables);
+            }
+
+            if (variablesInSuggestion.Any(v => !variablesInOriginal.Contains(v)))
+            {
+                return BadRequest(SuggestionCreationResult.TooManyVariables);
             }
 
             var suggestionResult = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion,
