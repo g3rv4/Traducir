@@ -40,7 +40,8 @@ namespace Traducir.Controllers
         }
 
         [Route("app/api/admin/update-translations-fron-so-dump")]
-        public async Task<IActionResult> UpdateTranslationsFromSODump(){
+        public async Task<IActionResult> UpdateTranslationsFromSODump()
+        {
             await _soStringService.UpdateTranslationsFromSODump();
             return new EmptyResult();
         }
@@ -60,7 +61,7 @@ namespace Traducir.Controllers
         public IActionResult Migrate()
         {
             var migrationsAssembly = typeof(Traducir.Migrations.Program).Assembly;
-            using(var db = new SqlConnection(_configuration.GetValue<string>("CONNECTION_STRING")))
+            using (var db = new SqlConnection(_configuration.GetValue<string>("CONNECTION_STRING")))
             {
                 var databaseProvider = new MssqlDatabaseProvider(db);
                 var migrator = new SimpleMigrator(migrationsAssembly, databaseProvider);
@@ -78,6 +79,6 @@ namespace Traducir.Controllers
         }
 
         [Route("app/admin/errors/{path?}/{subPath?}")]
-        public async Task Exceptions()=> await ExceptionalMiddleware.HandleRequestAsync(HttpContext);
+        public async Task Exceptions() => await ExceptionalMiddleware.HandleRequestAsync(HttpContext);
     }
 }

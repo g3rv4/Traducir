@@ -24,7 +24,7 @@ namespace Traducir.Core.Services
 
         public async Task UpsertUserAsync(User user)
         {
-            using(var db = _dbService.GetConnection())
+            using (var db = _dbService.GetConnection())
             {
                 await db.ExecuteAsync(@"
 Declare @wasReviewer Bit, @wasTrusted Bit;
@@ -49,7 +49,7 @@ Where    Id = @Id", user);
 
         public async Task<User> GetUserAsync(int userId)
         {
-            using(var db = _dbService.GetConnection())
+            using (var db = _dbService.GetConnection())
             {
                 return await db.QueryFirstOrDefaultAsync<User>(@"
 Select *
@@ -63,7 +63,7 @@ Where  Id = @userId", new
 
         public async Task<List<User>> GetUsersAsync()
         {
-            using(var db = _dbService.GetConnection())
+            using (var db = _dbService.GetConnection())
             {
                 return (await db.QueryAsync<User>("Select * From Users")).AsList();
             }
@@ -71,7 +71,7 @@ Where  Id = @userId", new
 
         public async Task<bool> ChangeUserTypeAsync(int userId, UserType userType, int editorId)
         {
-            using(var db = _dbService.GetConnection())
+            using (var db = _dbService.GetConnection())
             {
                 var rows = await db.ExecuteAsync(@"
 Insert Into UserHistory
@@ -92,19 +92,19 @@ Set    IsTrusted = Case When @userType = {=TrustedUser} Then 1 Else 0 End,
 Where  Id = @userId
 And    IsModerator = 0
 And    IsReviewer = 0;", new
-            {
-                userId,
-                editorId,
-                userType,
-                UserType.TrustedUser,
-                UserType.Banned,
-                UserType.User,
-                now = DateTime.UtcNow,
-                HistoryMadeTrustedUser = UserHistoryType.MadeTrustedUser,
-                HistoryBanned = UserHistoryType.Banned,
-                HistoryBanLifted = UserHistoryType.BanLifted,
-                HistoryDemotedToRegularUser = UserHistoryType.DemotedToRegularUser
-            });
+                {
+                    userId,
+                    editorId,
+                    userType,
+                    UserType.TrustedUser,
+                    UserType.Banned,
+                    UserType.User,
+                    now = DateTime.UtcNow,
+                    HistoryMadeTrustedUser = UserHistoryType.MadeTrustedUser,
+                    HistoryBanned = UserHistoryType.Banned,
+                    HistoryBanLifted = UserHistoryType.BanLifted,
+                    HistoryDemotedToRegularUser = UserHistoryType.DemotedToRegularUser
+                });
                 return rows > 0;
             }
         }

@@ -13,8 +13,10 @@ namespace Traducir.Api.Controllers
         }
 
         [Route("app/api/config")]
-        public IActionResult GetConfig(){
-            return Json(new ConfigViewModel{
+        public IActionResult GetConfig()
+        {
+            return Json(new ConfigViewModel
+            {
                 SiteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN"),
                 FriendlyName = _configuration.GetValue<string>("FRIENDLY_NAME"),
                 TransifexPath = _configuration.GetValue<string>("TRANSIFEX_LINK_PATH")

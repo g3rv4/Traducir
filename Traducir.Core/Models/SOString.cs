@@ -22,10 +22,10 @@ namespace Traducir.Core.Models
         private bool? _HasSuggestions;
         public bool HasSuggestions => _HasSuggestions ?? (_HasSuggestions = Suggestions != null && Suggestions.Any()).Value;
         private bool? _HasSuggestionsWaitingApproval;
-        public bool HasSuggestionsWaitingApproval => _HasSuggestionsWaitingApproval ?? 
+        public bool HasSuggestionsWaitingApproval => _HasSuggestionsWaitingApproval ??
             (_HasSuggestionsWaitingApproval = Suggestions != null && Suggestions.Any(sug => sug.State == StringSuggestionState.Created)).Value;
         private bool? _HasApprovedSuggestionsWaitingReview;
-        public bool HasApprovedSuggestionsWaitingReview => _HasApprovedSuggestionsWaitingReview ?? 
+        public bool HasApprovedSuggestionsWaitingReview => _HasApprovedSuggestionsWaitingReview ??
             (_HasApprovedSuggestionsWaitingReview = Suggestions != null && Suggestions.Any(sug => sug.State == StringSuggestionState.ApprovedByTrustedUser)).Value;
     }
 }

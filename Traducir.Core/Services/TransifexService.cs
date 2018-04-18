@@ -49,14 +49,14 @@ namespace Traducir.Core.Services
 
         public async Task<ImmutableArray<TransifexString>> GetStringsFromTransifexAsync()
         {
-            using(MiniProfiler.Current.Step("Fetching strings from Transifex"))
+            using (MiniProfiler.Current.Step("Fetching strings from Transifex"))
             {
                 var client = GetHttpClient();
                 var response = await client.GetAsync(_resourcePath);
                 response.EnsureSuccessStatusCode();
 
-                using(var stream = await response.Content.ReadAsStreamAsync())
-                using(var reader = new StreamReader(stream))
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var reader = new StreamReader(stream))
                 {
                     return Jil.JSON.Deserialize<TransifexString[]>(reader).ToImmutableArray();
                 }
@@ -65,15 +65,15 @@ namespace Traducir.Core.Services
 
         public async Task<bool> PushStringsToTransifexAsync(ImmutableArray<SOString> strings)
         {
-            using(MiniProfiler.Current.Step("Pushing strings to Transifex"))
+            using (MiniProfiler.Current.Step("Pushing strings to Transifex"))
             {
                 ByteArrayContent byteContent;
-                using(MiniProfiler.Current.Step("Serializing the payload"))
+                using (MiniProfiler.Current.Step("Serializing the payload"))
                 {
                     var content = Jil.JSON.Serialize(strings.Select(s => new TransifexStringToPush
                     {
                         Key = s.Key,
-                            Translation = s.Translation
+                        Translation = s.Translation
                     }));
 
                     var buffer = System.Text.Encoding.UTF8.GetBytes(content);
@@ -82,7 +82,7 @@ namespace Traducir.Core.Services
                 }
 
                 bool success;
-                using(MiniProfiler.Current.Step("Posting to Transifex"))
+                using (MiniProfiler.Current.Step("Posting to Transifex"))
                 {
                     var client = GetHttpClient();
                     var response = await client.PutAsync(_resourcePath, byteContent);
