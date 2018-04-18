@@ -5,7 +5,6 @@ import SOStringSuggestion, { StringSuggestionState } from "../../Models/SOString
 import Config from "../../Models/Config";
 import UserInfo from "../../Models/UserInfo";
 import { UserType } from "../../Models/UserType";
-import { userInfo } from "os";
 
 export interface SuggestionsTableProps {
     suggestions: SOStringSuggestion[];
@@ -126,11 +125,9 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             isButtonDisabled: true
         });
         const _that = this;
-        axios.delete('/app/api/delete-suggestion', {
+        axios.delete('/app/api/suggestions', {
             params: {
-                StringId: sug.stringId,
-                SuggestionId: sug.id,
-                UserId: this.props.user.id
+                suggestionId: sug.id
             }
         }).then(r => {
             _that.props.refreshString(sug.stringId);

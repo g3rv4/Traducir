@@ -30,7 +30,8 @@ namespace Traducir.Core.Services
         Task PullSODump(string dumpUrl);
         Task UpdateTranslationsFromSODump();
         Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId);
-        Task<bool> DeleteSuggestionAsync(SOStringSuggestion suggestion);
+        Task<bool> DeleteSuggestionAsync(int suggestionId, int userId);
+        Task<SOStringSuggestion> GetStringSuggestionByIdAsync(int suggestionId);
     }
     public class SOStringService : ISOStringService
     {
@@ -60,10 +61,10 @@ Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
 
         public async Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings)
         {
-            using(var db = _dbService.GetConnection())
+            using (var db = _dbService.GetConnection())
             {
                 await CreateTemporaryTable(db);
-                using(MiniProfiler.Current.Step("Populate temp table"))
+                using (MiniProfiler.Current.Step("Populate temp table"))
                 {
                     var table = new DataTable();
                     table.Columns.Add("NormalizedKey", typeof(string));
@@ -78,7 +79,7 @@ Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
                     }
 
                     var copyDb = (SqlConnection)db.InnerConnection;
-                    using(var copy = new SqlBulkCopy(copyDb))
+                    using (var copy = new SqlBulkCopy(copyDb))
                     {
                         copy.DestinationTableName = "dbo.ImportTable";
                         foreach (DataColumn c in table.Columns)
@@ -91,7 +92,7 @@ Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
                     }
                 }
 
-                using(MiniProfiler.Current.Step("Delete strings"))
+                using (MiniProfiler.Current.Step("Delete strings"))
                 {
                     await db.ExecuteAsync(@"
 Insert Into StringHistory
@@ -110,7 +111,7 @@ Where     s.DeletionDate Is Null
 And       feed.NormalizedKey Is Null;", new { now = DateTime.UtcNow, StringHistoryType.Deleted });
                 }
 
-                using(MiniProfiler.Current.Step("Update strings"))
+                using (MiniProfiler.Current.Step("Update strings"))
                 {
                     await db.ExecuteAsync(@"
 Insert Into StringHistory
@@ -127,7 +128,7 @@ Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
 Where  s.[Key] <> feed.[Key];", new { now = DateTime.UtcNow, StringHistoryType.Updated });
                 }
 
-                using(MiniProfiler.Current.Step("Undelete strings"))
+                using (MiniProfiler.Current.Step("Undelete strings"))
                 {
                     await db.ExecuteAsync(@"
 Insert Into StringHistory
@@ -144,7 +145,7 @@ Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
 Where  s.DeletionDate Is Not Null;", new { now = DateTime.UtcNow, StringHistoryType.Undeleted });
                 }
 
-                using(MiniProfiler.Current.Step("Add new strings"))
+                using (MiniProfiler.Current.Step("Add new strings"))
                 {
                     await db.ExecuteAsync(@"
 Declare @NormalizedKeysToInsert Table (
@@ -197,11 +198,11 @@ Join      Users u On ss.CreatedById = u.Id
 Left Join Users uu On uu.Id = ss.LastStateUpdatedById
 Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
 -- And s.Id = @stringId";
-            var finalSql = stringId.HasValue ? sql.Replace("--", ""): sql;
+            var finalSql = stringId.HasValue ? sql.Replace("--", "") : sql;
 
-            using(MiniProfiler.Current.Step("Refreshing the strings cache"))
-            using(var db = _dbService.GetConnection())
-            using(var reader = await db.QueryMultipleAsync(finalSql, new
+            using (MiniProfiler.Current.Step("Refreshing the strings cache"))
+            using (var db = _dbService.GetConnection())
+            using (var reader = await db.QueryMultipleAsync(finalSql, new
             {
                 StringSuggestionState.Created,
                 StringSuggestionState.ApprovedByTrustedUser,
@@ -212,7 +213,7 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
                 var suggestions = (await reader.ReadAsync<SOStringSuggestion>()).AsList();
                 Dictionary<int, SOString> stringsById;
 
-                using(MiniProfiler.Current.Step("Attaching the suggestions to the strings"))
+                using (MiniProfiler.Current.Step("Attaching the suggestions to the strings"))
                 {
                     stringsById = strings.ToDictionary(s => s.Id);
                     foreach (var g in suggestions.GroupBy(g => g.StringId))
@@ -245,7 +246,7 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
             }
 
             ImmutableArray<SOString> result;
-            using(MiniProfiler.Current.Step("Filtering the strings"))
+            using (MiniProfiler.Current.Step("Filtering the strings"))
             {
                 result = _strings.Where(predicate).ToImmutableArray();
             }
@@ -267,7 +268,7 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
 
         public async Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve)
         {
-            using(var db = _dbService.GetConnection())
+            using (var db = _dbService.GetConnection())
             {
 
                 int? suggestionId;
@@ -304,7 +305,7 @@ Select @suggestionId;", new
                         await ReviewSuggestionAsync(suggestionId.Value, true, userId, userType);
                     }
                 }
-                catch (SqlException e)when(e.Number == 547)
+                catch (SqlException e) when (e.Number == 547)
                 {
                     return false;
                 }
@@ -320,7 +321,7 @@ Select @suggestionId;", new
             {
                 return false;
             }
-            using(var db = _dbService.GetConnection())
+            using (var db = _dbService.GetConnection())
             {
                 // is this suggestion eligible for review?
                 int? stringId = await db.QuerySingleOrDefaultAsync<int?>($@"
@@ -331,7 +332,7 @@ And    StateId In @validStates", new
                 {
                     userId,
                     suggestionId,
-                    validStates = userType == UserType.Reviewer ? new [] { StringSuggestionState.Created, StringSuggestionState.ApprovedByTrustedUser } : new [] { StringSuggestionState.Created }
+                    validStates = userType == UserType.Reviewer ? new[] { StringSuggestionState.Created, StringSuggestionState.ApprovedByTrustedUser } : new[] { StringSuggestionState.Created }
                 });
 
                 if (stringId.HasValue)
@@ -435,7 +436,7 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
 
         public async Task UpdateStringsPushed()
         {
-            using(var db = _dbService.GetConnection())
+            using (var db = _dbService.GetConnection())
             {
                 var rows = await db.ExecuteAsync(@"Update Strings Set NeedsPush = 0 Where NeedsPush = 1");
                 if (rows > 0)
@@ -469,15 +470,15 @@ Index      IX_SODumpTable_NormalizedHash NonClustered (NormalizedHash)
 
         public async Task PullSODump(string dumpUrl)
         {
-            using(var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient())
             {
                 var response = await httpClient.GetAsync(dumpUrl);
                 response.EnsureSuccessStatusCode();
 
-                using(var stream = await response.Content.ReadAsStreamAsync())
-                using(var reader = new StreamReader(stream))
-                using(var csv = new CsvReader(reader))
-                using(var db = _dbService.GetConnection())
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var reader = new StreamReader(stream))
+                using (var csv = new CsvReader(reader))
+                using (var db = _dbService.GetConnection())
                 {
                     await ResetDumpTable(db);
                     var table = new DataTable();
@@ -502,7 +503,7 @@ Index      IX_SODumpTable_NormalizedHash NonClustered (NormalizedHash)
                     }
 
                     var copyDb = (SqlConnection)db.InnerConnection;
-                    using(var copy = new SqlBulkCopy(copyDb))
+                    using (var copy = new SqlBulkCopy(copyDb))
                     {
                         copy.DestinationTableName = "dbo.SODumpTable";
                         foreach (DataColumn c in table.Columns)
@@ -519,7 +520,7 @@ Index      IX_SODumpTable_NormalizedHash NonClustered (NormalizedHash)
 
         public async Task UpdateTranslationsFromSODump()
         {
-            using(var db = _dbService.GetConnection())
+            using (var db = _dbService.GetConnection())
             {
                 // update the ones in the db that are not in Transifex
                 await db.ExecuteAsync(@"
@@ -568,7 +569,8 @@ Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.T
                 return true;
             }
 
-            using(var db = _dbService.GetConnection()){
+            using (var db = _dbService.GetConnection())
+            {
                 await db.ExecuteAsync(@"
 Insert Into StringHistory
             (StringId, UserId, HistoryTypeId, CreationDate)
@@ -576,13 +578,14 @@ Values      (@stringId, @userId, @historyType, @now);
 
 Update Strings
 Set    IsUrgent = @isUrgent
-Where  Id = @stringId", new {
-                            stringId,
-                            isUrgent,
-                            userId,
-                            historyType = isUrgent ? StringHistoryType.MadeUrgent : StringHistoryType.MadeNotUrgent,
-                            now = DateTime.UtcNow
-                        });
+Where  Id = @stringId", new
+                {
+                    stringId,
+                    isUrgent,
+                    userId,
+                    historyType = isUrgent ? StringHistoryType.MadeUrgent : StringHistoryType.MadeNotUrgent,
+                    now = DateTime.UtcNow
+                });
             }
 
             await RefreshCacheAsync(stringId);
@@ -598,8 +601,14 @@ Where  Id = @stringId", new {
             return _strings;
         }
 
-        public async Task<bool> DeleteSuggestionAsync(SOStringSuggestion suggestion)
+        public async Task<bool> DeleteSuggestionAsync(int suggestionId, int userId)
         {
+            var suggestion = await GetStringSuggestionByIdAsync(suggestionId);
+            //Delete fails if the user is not the owner
+            if (suggestion.CreatedById != userId)
+            {
+                return false;
+            }
             using (var db = _dbService.GetConnection())
             {
                 await db.ExecuteAsync(@"
@@ -608,19 +617,35 @@ Set StateId = {=DeletedByOwner}
 Where Id = @suggestionId;
 
 Insert Into StringSuggestionHistory
-            (StringSuggestionId, HistoryTypeId, UserId, Comment, CreationDate)
-Values      (@suggestionID, {=DeletedByOwner}, @userId, @comment, @now);",
+            (StringSuggestionId, HistoryTypeId, UserId, CreationDate)
+Values      (@suggestionId, {=DeletedByOwner}, @userId, @now);",
                 new
                 {
-                    suggestionId = suggestion.Id,
+                    suggestionId,
                     StringSuggestionState.DeletedByOwner,
-                    userId = suggestion.CreatedById,
-                    comment = "Deleted by user",
+                    userId, 
                     now = DateTime.UtcNow
                 });
             }
-            await RefreshCacheAsync();
+            await RefreshCacheAsync(suggestion.StringId);
             return true;
+        }
+
+        public async Task<SOStringSuggestion> GetStringSuggestionByIdAsync(int suggestionId)
+        {
+            SOStringSuggestion suggestion;
+            using (var db = _dbService.GetConnection())
+            {
+                suggestion = await db.QuerySingleOrDefault(@"
+Select * 
+From StringSuggestions
+Where Id = @suggestionId;",
+                new
+                {
+                    suggestionId
+                });
+            }
+            return suggestion;
         }
     }
 }

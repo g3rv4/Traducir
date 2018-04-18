@@ -218,33 +218,21 @@ namespace Traducir.Controllers
         }
 
         [HttpDelete]
-        [Route("app/api/delete-suggestion")]
-        public async Task<IActionResult> DeleteSuggestion([FromQuery] DeleteSuggestionViewModel model)
+        [Authorize(Policy = "CanSuggest")]
+        [Route("app/api/suggestions{suggestionId:INT}")]
+        public async Task<IActionResult> DeleteSuggestion([FromQuery] int suggestionId)
         {
-            //Have to validate everything before continuing
-            var str = await _soStringService.GetStringByIdAsync(model.StringId);
-
-            //validate that a string exists
-            if (str == null)
-            {
-                return BadRequest();
-            }
-            //Get the suggestion and validate it and his user
-            var suggestion = str.Suggestions.Single(x => x.Id == model.SuggestionId);
+            //Get the suggestion
+            var suggestion = await _soStringService.GetStringSuggestionByIdAsync(suggestionId);
             if (suggestion == null)
             {
                 return BadRequest();
             }
-            if(suggestion.CreatedById != model.UserId)
+            if (suggestion.CreatedById != User.GetClaim<int>(ClaimType.Id))
             {
                 return BadRequest();
             }
-            //Validate that the user is logged and is the one that is asking this
-            if (User.GetClaim<int>(ClaimType.Id) != model.UserId)
-            {
-                return BadRequest();
-            }
-            var success = await _soStringService.DeleteSuggestionAsync(suggestion);
+            var success = await _soStringService.DeleteSuggestionAsync(suggestionId,suggestion.CreatedById);
             if (success)
             {
                 return new EmptyResult();
