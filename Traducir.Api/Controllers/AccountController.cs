@@ -116,7 +116,8 @@ namespace Traducir.Controllers
                 Name = User.GetClaim<string>(ClaimType.Name),
                 UserType = User.GetClaim<UserType>(ClaimType.UserType),
                 CanSuggest = canSuggest.Succeeded,
-                CanReview = canReview.Succeeded
+                CanReview = canReview.Succeeded,
+                Id = User.GetClaim<int>(ClaimType.Id)
             });
         }
     }

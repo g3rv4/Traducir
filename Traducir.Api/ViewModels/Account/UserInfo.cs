@@ -8,5 +8,6 @@ namespace Traducir.Api.ViewModels.Account
         public UserType UserType { get; set; }
         public bool CanSuggest { get; set; }
         public bool CanReview { get; set; }
+        public int Id { get; set; }
     }
 }

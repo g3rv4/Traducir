@@ -112,7 +112,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         if (this.props.user == null) {
             return null;
         }
-        if (sug.createdByName == this.props.user.name) {
+        if (sug.createdById == this.props.user.id) {
             return <button type="button" className="btn btn-sm btn-danger" onClick={e => this.processDeleteReview(sug)} disabled={this.state.isButtonDisabled}>
                 DELETE
             </button>;
@@ -129,6 +129,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             params: {
                 StringId: sug.stringId,
                 SuggestionId: sug.id,
+                UserId: this.props.user.id
             }
         }).then(r => {
             _that.props.refreshString(sug.stringId);

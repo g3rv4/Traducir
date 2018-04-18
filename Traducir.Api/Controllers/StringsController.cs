@@ -219,10 +219,32 @@ namespace Traducir.Controllers
 
         [HttpDelete]
         [Route("app/api/delete-suggestion")]
-        public async Task<IActionResult> DeleteSuggestion([FromBody] DeleteSuggestionViewModel model)
+        public async Task<IActionResult> DeleteSuggestion([FromQuery] DeleteSuggestionViewModel model)
         {
-            var success = await _soStringService.DeleteSuggestionAsync(model.StringId.Value,model.SuggestionId.Value,
-                User.GetClaim<int>(ClaimType.Id));
+            //Have to validate everything before continuing
+            var str = await _soStringService.GetStringByIdAsync(model.StringId);
+
+            //validate that a string exists
+            if (str == null)
+            {
+                return BadRequest();
+            }
+            //Get the suggestion and validate it and his user
+            var suggestion = str.Suggestions.Single(x => x.Id == model.SuggestionId);
+            if (suggestion == null)
+            {
+                return BadRequest();
+            }
+            if(suggestion.CreatedById != model.UserId)
+            {
+                return BadRequest();
+            }
+            //Validate that the user is logged and is the one that is asking this
+            if (User.GetClaim<int>(ClaimType.Id) != model.UserId)
+            {
+                return BadRequest();
+            }
+            var success = await _soStringService.DeleteSuggestionAsync(suggestion);
             if (success)
             {
                 return new EmptyResult();

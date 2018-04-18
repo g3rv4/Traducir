@@ -3,6 +3,7 @@ export default interface UserInfo {
     userType: UserType;
     canSuggest: boolean;
     canReview: boolean;
+    id: number;
 }
 
 export enum UserType {
