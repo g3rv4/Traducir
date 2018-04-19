@@ -30,6 +30,7 @@ namespace Traducir.Core.Services
         Task PullSODump(string dumpUrl);
         Task UpdateTranslationsFromSODump();
         Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId);
+        Task<bool> DeleteSuggestionAsync(int suggestionId, int userId);
     }
     public class SOStringService : ISOStringService
     {
@@ -597,6 +598,48 @@ Where  Id = @stringId", new
                 await RefreshCacheAsync();
             }
             return _strings;
+        }
+
+        public async Task<bool> DeleteSuggestionAsync(int suggestionId, int userId)
+        {
+            using (var db = _dbService.GetConnection())
+            {
+                var idString = (int) await db.ExecuteScalarAsync(@"
+Declare @idString int = 0;
+
+Update StringSuggestions
+Set StateId = {=DeletedByOwner},
+    LastStateUpdatedById = @userId,
+    LastStateUpdatedDate = @now,
+    @idString = StringId
+Where Id = @suggestionId
+And CreatedById = @userId;
+
+Insert Into StringSuggestionHistory
+            (StringSuggestionId, HistoryTypeId, UserId, CreationDate)
+Select Id, {=DeletedByOwner}, CreatedById, LastStateUpdatedDate
+From StringSuggestions
+Where Id = @suggestionId
+And CreatedById = @userId
+And StateId = {=DeletedByOwner};
+
+Select @idString;",
+                new
+                {
+                    suggestionId,
+                    StringSuggestionState.DeletedByOwner,
+                    userId,
+                    now = DateTime.UtcNow
+                });
+                //If the Id returned is zero, then no data was updated, because there is no suggestion
+                //or the user is not the one who created it.
+                if (idString > 0)
+                {
+                    await RefreshCacheAsync(idString);
+                    return true;
+                }
+                return false;
+            }
         }
     }
 }

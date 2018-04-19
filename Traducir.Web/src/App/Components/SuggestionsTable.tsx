@@ -42,6 +42,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                     <th>Approved By</th>
                     <th>Created by</th>
                     <th></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -55,7 +56,8 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                         <td><a href={`https://${this.props.config.siteDomain}/users/${sug.createdById}`}
                             target="_blank"
                             title={'at ' + sug.creationDate + ' UTC'}>{sug.createdByName}</a></td>
-                        <td>{this.renderSuggestionActions(sug)}</td>
+                        <td>{this.renderDeleteButton(sug)}</td>
+                        <td>{this.renderSuggestionActions(sug)}</td>                        
                     </tr>)}
             </tbody>
         </table>
@@ -97,6 +99,40 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             .catch(e => {
                 if (e.response.status == 400) {
                     _that.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
+                } else {
+                    _that.props.showErrorMessage(null, e.response.status);
+                }
+                _that.setState({
+                    isButtonDisabled: false
+                });
+            });
+    }
+
+    renderDeleteButton(sug: SOStringSuggestion): JSX.Element {
+        if (this.props.user == null) {
+            return null;
+        }
+        if (sug.createdById == this.props.user.id) {
+            return <button type="button" className="btn btn-sm btn-danger" onClick={e => this.processDeleteReview(sug)} disabled={this.state.isButtonDisabled}>
+                DELETE
+            </button>;
+        }
+        return null;
+    }
+
+    processDeleteReview(sug: SOStringSuggestion) {
+        this.setState({
+            isButtonDisabled: true
+        });
+        const _that = this;
+        axios.delete('/app/api/suggestions/' + sug.id
+        ).then(r => {
+            _that.props.refreshString(sug.stringId);
+            history.push('/filters');
+        })
+            .catch(e => {
+                if (e.response.status == 400) {
+                    _that.props.showErrorMessage("Error deleting the suggestion. Do you have enough rights?");
                 } else {
                     _that.props.showErrorMessage(null, e.response.status);
                 }

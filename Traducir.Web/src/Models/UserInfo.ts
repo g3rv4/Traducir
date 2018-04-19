@@ -6,6 +6,7 @@ export default interface UserInfo {
     canSuggest: boolean;
     canReview: boolean;
     canManageUsers: boolean;
+    id: number;
 }
 
 export function userTypeToString(userType: UserType) {
