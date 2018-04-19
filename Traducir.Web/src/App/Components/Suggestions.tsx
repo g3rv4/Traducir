@@ -67,7 +67,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
             <div>
                 <span className="font-weight-bold">This string needs a new translation ASAP: </span> {this.renderUrgency()}
             </div>
-            {this.props.user.canReview && <div>
+            {this.props.user && this.props.user.canReview && <div>
                 <span className="font-weight-bold">Raw string?: </span> <input type="checkbox" checked={this.state.rawString} onChange={this.onCheckboxChange} />
             </div>}
             <div>
