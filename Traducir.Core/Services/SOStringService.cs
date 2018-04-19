@@ -605,7 +605,7 @@ Where  Id = @stringId", new
             using (var db = _dbService.GetConnection())
             {
                 var idString = (int) await db.ExecuteScalarAsync(@"
-Declare @idString INT = 0;
+Declare @idString int = 0;
 
 Update StringSuggestions
 Set StateId = {=DeletedByOwner},
