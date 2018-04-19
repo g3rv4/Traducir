@@ -95,7 +95,6 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                 history.replace('/');
                 return;
             }
-            console.log(this.hasFilter());
             this.submitForm();
         });
     }
