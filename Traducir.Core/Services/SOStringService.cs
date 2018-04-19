@@ -602,11 +602,9 @@ Where  Id = @stringId", new
 
         public async Task<bool> DeleteSuggestionAsync(int suggestionId, int userId)
         {
-
-
             using (var db = _dbService.GetConnection())
             {
-                var rows = (int) await db.ExecuteScalarAsync(@"
+                var idString = (int) await db.ExecuteScalarAsync(@"
 DECLARE @idString INT = 0;
 
 Update StringSuggestions
@@ -633,14 +631,15 @@ Select @idString;",
                     userId,
                     now = DateTime.UtcNow
                 });
-                if (rows > 0)
+                //If the Id returned is zero, then no data was updated, because there is no suggestion
+                //or the user is not the one who created it.
+                if (idString > 0)
                 {
-                    await RefreshCacheAsync(rows);
+                    await RefreshCacheAsync(idString);
                     return true;
                 }
                 return false;
             }
         }
-
     }
 }
