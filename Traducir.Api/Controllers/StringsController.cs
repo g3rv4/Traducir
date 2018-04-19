@@ -219,20 +219,10 @@ namespace Traducir.Controllers
 
         [HttpDelete]
         [Authorize(Policy = "CanSuggest")]
-        [Route("app/api/suggestions{suggestionId:INT}")]
-        public async Task<IActionResult> DeleteSuggestion([FromQuery] int suggestionId)
+        [Route("app/api/suggestions/{suggestionId:INT}")]
+        public async Task<IActionResult> DeleteSuggestion([FromRoute] int suggestionId)
         {
-            //Get the suggestion
-            var suggestion = await _soStringService.GetStringSuggestionByIdAsync(suggestionId);
-            if (suggestion == null)
-            {
-                return BadRequest();
-            }
-            if (suggestion.CreatedById != User.GetClaim<int>(ClaimType.Id))
-            {
-                return BadRequest();
-            }
-            var success = await _soStringService.DeleteSuggestionAsync(suggestionId,suggestion.CreatedById);
+            var success = await _soStringService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id));
             if (success)
             {
                 return new EmptyResult();

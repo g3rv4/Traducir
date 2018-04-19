@@ -31,7 +31,6 @@ namespace Traducir.Core.Services
         Task UpdateTranslationsFromSODump();
         Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId);
         Task<bool> DeleteSuggestionAsync(int suggestionId, int userId);
-        Task<SOStringSuggestion> GetStringSuggestionByIdAsync(int suggestionId);
     }
     public class SOStringService : ISOStringService
     {
@@ -603,49 +602,45 @@ Where  Id = @stringId", new
 
         public async Task<bool> DeleteSuggestionAsync(int suggestionId, int userId)
         {
-            var suggestion = await GetStringSuggestionByIdAsync(suggestionId);
-            //Delete fails if the user is not the owner
-            if (suggestion.CreatedById != userId)
-            {
-                return false;
-            }
+
+
             using (var db = _dbService.GetConnection())
             {
-                await db.ExecuteAsync(@"
+                var rows = (int) await db.ExecuteScalarAsync(@"
+DECLARE @idString INT = 0;
+
 Update StringSuggestions
-Set StateId = {=DeletedByOwner}
-Where Id = @suggestionId;
+Set StateId = {=DeletedByOwner},
+    LastStateUpdatedById = @userId,
+    LastStateUpdatedDate = @now,
+    @idString = StringId
+Where Id = @suggestionId
+And CreatedById = @userId;
 
 Insert Into StringSuggestionHistory
             (StringSuggestionId, HistoryTypeId, UserId, CreationDate)
-Values      (@suggestionId, {=DeletedByOwner}, @userId, @now);",
+Select Id, {=DeletedByOwner}, CreatedById, LastStateUpdatedDate
+From StringSuggestions
+Where Id = @suggestionId
+And CreatedById = @userId
+And StateId = {=DeletedByOwner};
+
+Select @idString;",
                 new
                 {
                     suggestionId,
                     StringSuggestionState.DeletedByOwner,
-                    userId, 
+                    userId,
                     now = DateTime.UtcNow
                 });
+                if (rows > 0)
+                {
+                    await RefreshCacheAsync(rows);
+                    return true;
+                }
+                return false;
             }
-            await RefreshCacheAsync(suggestion.StringId);
-            return true;
         }
 
-        public async Task<SOStringSuggestion> GetStringSuggestionByIdAsync(int suggestionId)
-        {
-            SOStringSuggestion suggestion;
-            using (var db = _dbService.GetConnection())
-            {
-                suggestion = await db.QuerySingleOrDefault(@"
-Select * 
-From StringSuggestions
-Where Id = @suggestionId;",
-                new
-                {
-                    suggestionId
-                });
-            }
-            return suggestion;
-        }
     }
 }

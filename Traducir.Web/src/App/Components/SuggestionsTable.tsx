@@ -125,11 +125,8 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             isButtonDisabled: true
         });
         const _that = this;
-        axios.delete('/app/api/suggestions', {
-            params: {
-                suggestionId: sug.id
-            }
-        }).then(r => {
+        axios.delete('/app/api/suggestions/' + sug.id
+        ).then(r => {
             _that.props.refreshString(sug.stringId);
             history.push('/filters');
         })
