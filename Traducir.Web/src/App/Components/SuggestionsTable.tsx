@@ -127,17 +127,18 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         axios.delete('/app/api/suggestions/' + sug.id
         ).then(r => {
             _that.props.refreshString(sug.stringId);
-            history.push('/filters');
-        })
-            .catch(e => {
-                if (e.response.status == 400) {
-                    _that.props.showErrorMessage("Error deleting the suggestion. Do you have enough rights?");
-                } else {
-                    _that.props.showErrorMessage(e.response.status);
-                }
-                _that.setState({
-                    isButtonDisabled: false
-                });
+            _that.setState({
+                isButtonDisabled: false
             });
+        }).catch(e => {
+            if (e.response.status == 400) {
+                _that.props.showErrorMessage("Error deleting the suggestion. Do you have enough rights?");
+            } else {
+                _that.props.showErrorMessage(e.response.status);
+            }
+            _that.setState({
+                isButtonDisabled: false
+            });
+        });
     }
 }
