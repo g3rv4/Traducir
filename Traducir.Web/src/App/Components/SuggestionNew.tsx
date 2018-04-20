@@ -101,10 +101,9 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
                     <div className="btn-group" role="group">
                         <button type="button" className="btn btn-primary float-left"
                             onClick={e => this.postSuggestion(false)}>Send new suggestion</button>
-                        {this.props.user.userType >= UserType.Reviewer ?
+                        {this.props.user.userType >= UserType.Reviewer &&
                             <button type="button" className="btn btn-warning float-left"
-                                onClick={e => this.postSuggestion(true)}>Send final translation</button>
-                            : null}
+                                onClick={e => this.postSuggestion(true)}>Send final translation</button>}
                     </div>
                 </div>
             </div>

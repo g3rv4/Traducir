@@ -108,15 +108,12 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
     }
 
     renderDeleteButton(sug: SOStringSuggestion): JSX.Element | null {
-        if (this.props.user == null) {
+        if (!this.props.user || sug.createdById != this.props.user.id) {
             return null;
         }
-        if (sug.createdById == this.props.user.id) {
-            return <button type="button" className="btn btn-sm btn-danger" onClick={e => this.processDeleteReview(sug)} disabled={this.state.isButtonDisabled}>
-                DELETE
-            </button>;
-        }
-        return null;
+        return <button type="button" className="btn btn-sm btn-danger" onClick={e => this.processDeleteReview(sug)} disabled={this.state.isButtonDisabled}>
+            DELETE
+        </button>;
     }
 
     processDeleteReview(sug: SOStringSuggestion) {

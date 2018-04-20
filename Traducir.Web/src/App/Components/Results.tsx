@@ -15,18 +15,18 @@ export default class Results extends React.Component<ResultsProps> {
     constructor(props: ResultsProps) {
         super(props);
     }
-    renderSuggestions(str: SOString): React.ReactFragment {
-        if (str.suggestions == null || str.suggestions.length == 0) {
-            return <></>
+    renderSuggestions(str: SOString): React.ReactFragment | null {
+        if (!str.suggestions || str.suggestions.length == 0) {
+            return null;
         }
 
         const approved = _.filter(str.suggestions, s => s.state == StringSuggestionState.ApprovedByTrustedUser).length;
         const pending = _.filter(str.suggestions, s => s.state == StringSuggestionState.Created).length;
 
         return <>
-            {approved > 0 ? <span className="text-success">{approved}</span> : null}
-            {approved > 0 && pending > 0 ? <span> - </span> : null}
-            {pending > 0 ? <span className="text-danger">{pending}</span> : null}
+            {approved > 0 && <span className="text-success">{approved}</span>}
+            {approved > 0 && pending > 0 && <span> - </span>}
+            {pending > 0 && <span className="text-danger">{pending}</span>}
         </>
     }
 

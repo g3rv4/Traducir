@@ -256,12 +256,12 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                     <Link to='/' className="btn btn-secondary" onClick={e => this.reset()}>Reset</Link>
                 </div>
             </div>
-            {location.pathname == '/filters' && location.search == '' && this.hasFilter() ?
+            {location.pathname == '/filters' && location.search == '' && this.hasFilter() &&
                 <Redirect
                     to={{
                         pathname: '/filters',
                         search: this.currentPath()
-                    }} /> : null}
+                    }} />}
         </>
     }
 }
