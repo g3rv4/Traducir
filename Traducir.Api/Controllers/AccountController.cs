@@ -113,17 +113,17 @@ namespace Traducir.Controllers
         [Route("app/api/me")]
         public async Task<IActionResult> WhoAmI()
         {
-            var canSuggest = await _authorizationService.AuthorizeAsync(User, "CanSuggest");
-            var canReview = await _authorizationService.AuthorizeAsync(User, "CanReview");
-            var canManageUsers = await _authorizationService.AuthorizeAsync(User, "CanManageUsers");
+            var canSuggest = (await _authorizationService.AuthorizeAsync(User, "CanSuggest")).Succeeded;
+            var canReview = (await _authorizationService.AuthorizeAsync(User, "CanReview")).Succeeded;
+            var canManageUsers = (await _authorizationService.AuthorizeAsync(User, "CanManageUsers")).Succeeded;
 
             return Json(new UserInfo
             {
                 Name = User.GetClaim<string>(ClaimType.Name),
                 UserType = User.GetClaim<UserType>(ClaimType.UserType),
-                CanSuggest = canSuggest.Succeeded,
-                CanReview = canReview.Succeeded,
-                CanManageUsers = canManageUsers.Succeeded,
+                CanSuggest = canSuggest,
+                CanReview = canReview,
+                CanManageUsers = canManageUsers,
                 Id = User.GetClaim<int>(ClaimType.Id)
             });
         }

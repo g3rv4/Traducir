@@ -163,10 +163,11 @@ namespace Traducir.Controllers
                 return BadRequest(SuggestionCreationResult.EmptySuggestion);
             }
 
-            var canReview = await _authorizationService.AuthorizeAsync(User, "CanReview");
+            var canReview = (await _authorizationService.AuthorizeAsync(User, "CanReview")).Succeeded;
+            var usingRawString = model.RawString && canReview;
 
             // fix whitespaces unless user is reviewer and selected raw string
-            if (!(model.RawString && canReview.Succeeded))
+            if (!usingRawString)
             {
                 model.Suggestion = FixWhitespaces(model.Suggestion, str.OriginalString);
             }
@@ -187,7 +188,7 @@ namespace Traducir.Controllers
             var variablesInOriginal = _variablesRegex.Matches(str.OriginalString).Select(m => m.Value).ToArray();
             var variablesInSuggestion = _variablesRegex.Matches(model.Suggestion).Select(m => m.Value).ToArray();
 
-            if ((!model.RawString || !canReview.Succeeded) && variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)))
+            if (!usingRawString && variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)))
             {
                 return BadRequest(SuggestionCreationResult.TooFewVariables);
             }
