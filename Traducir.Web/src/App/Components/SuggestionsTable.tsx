@@ -108,7 +108,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             });
     }
 
-    renderDeleteButton(sug: SOStringSuggestion): JSX.Element {
+    renderDeleteButton(sug: SOStringSuggestion): JSX.Element | null {
         if (this.props.user == null) {
             return null;
         }
@@ -134,7 +134,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                 if (e.response.status == 400) {
                     _that.props.showErrorMessage("Error deleting the suggestion. Do you have enough rights?");
                 } else {
-                    _that.props.showErrorMessage(null, e.response.status);
+                    _that.props.showErrorMessage(undefined, e.response.status);
                 }
                 _that.setState({
                     isButtonDisabled: false
