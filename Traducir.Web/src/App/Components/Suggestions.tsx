@@ -9,7 +9,7 @@ import SuggestionsTable from "./SuggestionsTable"
 import SuggestionNew from "./SuggestionNew"
 
 export interface SuggestionsProps {
-    user: UserInfo | null;
+    user?: UserInfo;
     str: SOString;
     config: Config;
     refreshString: (stringIdToUpdate: number) => void;

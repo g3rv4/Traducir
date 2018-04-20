@@ -3,21 +3,15 @@ import * as _ from 'lodash';
 import { Link } from 'react-router-dom';
 import history from '../../history'
 import SOString from "../../Models/SOString"
-import UserInfo from "../../Models/UserInfo"
 import { StringSuggestionState } from "../../Models/SOStringSuggestion"
 
 export interface ResultsProps {
-    user: UserInfo | null;
     results: SOString[];
     isLoading: boolean;
     loadSuggestions: (str: SOString) => void;
 }
 
-interface ResultsState {
-
-}
-
-export default class Results extends React.Component<ResultsProps, ResultsState> {
+export default class Results extends React.Component<ResultsProps> {
     constructor(props: ResultsProps) {
         super(props);
     }

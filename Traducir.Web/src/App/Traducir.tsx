@@ -19,13 +19,13 @@ import Config from "../Models/Config";
 import Stats from "../Models/Stats";
 
 export interface TraducirState {
-    user: UserInfo | null;
+    user?: UserInfo;
     strings: SOString[];
-    currentString: SOString | null;
-    config: Config | null;
+    currentString?: SOString;
+    config?: Config;
     isOpen: boolean;
     isLoading: boolean;
-    stats: Stats | null;
+    stats?: Stats;
 }
 
 class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
@@ -33,13 +33,9 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         super(props);
 
         this.state = {
-            user: null,
             strings: [],
-            currentString: null,
-            config: null,
-            stats: null,
             isOpen: false,
-            isLoading: false
+            isLoading: false,
         };
 
         this.loadSuggestions = this.loadSuggestions.bind(this);
@@ -51,7 +47,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         const _that = this;
         axios.post<UserInfo>('/app/api/me', this.state)
             .then(response => _that.setState({ user: response.data }))
-            .catch(error => _that.setState({ user: null }));
+            .catch(error => _that.setState({ user: undefined }));
         axios.get<Config>('/app/api/config')
             .then(response => _that.setState({ config: response.data }))
             .catch(error => this.showErrorMessage(error.response.status));
@@ -120,7 +116,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
     }
 
     showErrorMessage(messageOrCode: string | number) {
-        if (typeof(messageOrCode) == "string") {
+        if (typeof (messageOrCode) == "string") {
             alert(messageOrCode);
         } else {
             const code: number = messageOrCode;
@@ -184,11 +180,13 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             <div className="container">
                 <Switch>
                     <Route path='/users' exact render={p =>
-                        this.state.config && <Users
+                        this.state.config ?
+                            <Users
                                 showErrorMessage={this.showErrorMessage}
                                 currentUser={this.state.user}
                                 config={this.state.config}
-                            />
+                            /> :
+                            null
                     } />
                     <Route render={p => <>
                         <Filters
@@ -199,14 +197,17 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                         />
                         <Switch>
                             <Route path='/' exact render={p =>
-                                this.state.stats &&
-                                <StatsWithLinks stats={this.state.stats} />} />
+                                this.state.stats ?
+                                    <StatsWithLinks stats={this.state.stats} /> :
+                                    null
+                            } />
                             {this.state.strings.length == 0 && <Route path='/string/' render={p =>
-                                this.state.stats &&
-                                <StatsWithLinks stats={this.state.stats} />} />}
+                                this.state.stats ?
+                                    <StatsWithLinks stats={this.state.stats} /> :
+                                    null
+                            } />}
                             <Route render={p =>
                                 <Results
-                                    user={this.state.user}
                                     results={this.state.strings}
                                     loadSuggestions={this.loadSuggestions}
                                     isLoading={this.state.isLoading} />

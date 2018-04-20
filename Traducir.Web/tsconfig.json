@@ -7,7 +7,7 @@
     "target": "es6",
     "jsx": "react",
     "moduleResolution": "node",
-    "typeRoots" : [
+    "typeRoots": [
       "node_modules/@types",
       "./types"
     ]

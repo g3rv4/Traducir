@@ -7,7 +7,7 @@ import { UserType } from "../../Models/UserType";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
 
 export interface SuggestionNewProps {
-    user: UserInfo | null;
+    user?: UserInfo;
     stringId: number;
     rawString: boolean;
     refreshString: (stringIdToUpdate: number) => void;

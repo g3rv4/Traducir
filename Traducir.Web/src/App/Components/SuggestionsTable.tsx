@@ -9,7 +9,7 @@ import { UserType } from "../../Models/UserType";
 export interface SuggestionsTableProps {
     suggestions: SOStringSuggestion[];
     config: Config;
-    user: UserInfo | null;
+    user?: UserInfo;
     refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (messageOrCode: string | number) => void;
 }
