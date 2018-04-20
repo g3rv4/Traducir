@@ -8,10 +8,10 @@ using Traducir.Core.Helpers;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
-using Traducir.ViewModels.Strings;
+using Traducir.Api.ViewModels.Strings;
 using Traducir.Api.Models.Enums;
 
-namespace Traducir.Controllers
+namespace Traducir.Api.Controllers
 {
     public class StringsController : Controller
     {

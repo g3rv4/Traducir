@@ -6,10 +6,9 @@ using Microsoft.Extensions.Configuration;
 using SimpleMigrations;
 using SimpleMigrations.DatabaseProvider;
 using StackExchange.Exceptional;
-using Traducir.Core.Helpers;
 using Traducir.Core.Services;
 
-namespace Traducir.Controllers
+namespace Traducir.Api.Controllers
 {
     public class AdminController : Controller
     {

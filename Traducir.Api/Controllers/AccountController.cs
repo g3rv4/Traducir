@@ -14,7 +14,7 @@ using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
 
-namespace Traducir.Controllers
+namespace Traducir.Api.Controllers
 {
     public class AccountController : Controller
     {

@@ -1,4 +1,4 @@
-namespace Traducir.ViewModels.Strings
+namespace Traducir.Api.ViewModels.Strings
 {
     public class ReviewViewModel
     {
