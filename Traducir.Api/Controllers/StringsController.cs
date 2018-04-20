@@ -163,8 +163,7 @@ namespace Traducir.Controllers
                 return BadRequest(SuggestionCreationResult.EmptySuggestion);
             }
 
-            var canReview = (await _authorizationService.AuthorizeAsync(User, "CanReview")).Succeeded;
-            var usingRawString = model.RawString && canReview;
+            var usingRawString = model.RawString && (await _authorizationService.AuthorizeAsync(User, "CanReview")).Succeeded;
 
             // fix whitespaces unless user is reviewer and selected raw string
             if (!usingRawString)
