@@ -9,7 +9,7 @@ import SuggestionsTable from "./SuggestionsTable"
 import SuggestionNew from "./SuggestionNew"
 
 export interface SuggestionsProps {
-    user: UserInfo;
+    user: UserInfo | null;
     str: SOString;
     config: Config;
     refreshString: (stringIdToUpdate: number) => void;
@@ -28,24 +28,27 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
             rawString: false
         };
     }
-    updateUrgency = (isUrgent: boolean) => {
+    updateUrgency(isUrgent: boolean) {
+        const _that = this;
         axios.put('/app/api/manage-urgency', {
             StringId: this.props.str.id,
             IsUrgent: isUrgent
         }).then(r => {
-            this.props.refreshString(this.props.str.id);
+            if (_that.props.str) {
+                _that.props.refreshString(_that.props.str.id);
+            }
             history.push('/filters');
         })
             .catch(e => {
                 if (e.response.status == 400) {
                     this.props.showErrorMessage("Failed updating the urgency... maybe a race condition?");
                 } else {
-                    this.props.showErrorMessage(null, e.response.status);
+                    this.props.showErrorMessage(undefined, e.response.status);
                 }
             });
     }
-    renderUrgency = () => {
-        if(!this.props.user || !this.props.user.canSuggest){
+    renderUrgency() {
+        if (!this.props.user || !this.props.user.canSuggest) {
             return <span>{this.props.str.isUrgent ? 'Yes' : 'No'}</span>
         }
         return this.props.str.isUrgent
@@ -60,9 +63,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
         return <>
             <div>
                 <span className="font-weight-bold">Key: </span>
-                {this.props.config
-                    ? <a href={`https://www.transifex.com/${this.props.config.transifexPath}/$?q=key%3A${this.props.str.key}`} target="_blank">{this.props.str.key}</a>
-                    : <pre className="d-inline">{this.props.str.key}</pre>}
+                <a href={`https://www.transifex.com/${this.props.config.transifexPath}/$?q=key%3A${this.props.str.key}`} target="_blank">{this.props.str.key}</a>
             </div>
             <div>
                 <span className="font-weight-bold">This string needs a new translation ASAP: </span> {this.renderUrgency()}

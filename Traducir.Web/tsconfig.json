@@ -3,6 +3,7 @@
     "outDir": "./src/js/",
     "sourceMap": true,
     "noImplicitAny": true,
+    "strictNullChecks": true,
     "module": "commonjs",
     "target": "es6",
     "jsx": "react",

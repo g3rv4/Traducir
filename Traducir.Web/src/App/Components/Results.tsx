@@ -7,7 +7,7 @@ import UserInfo from "../../Models/UserInfo"
 import { StringSuggestionState } from "../../Models/SOStringSuggestion"
 
 export interface ResultsProps {
-    user: UserInfo;
+    user: UserInfo | null;
     results: SOString[];
     isLoading: boolean;
     loadSuggestions: (str: SOString) => void;

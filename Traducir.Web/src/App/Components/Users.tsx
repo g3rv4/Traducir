@@ -34,7 +34,7 @@ export default class Users extends React.Component<UsersProps, UsersState> {
             });
         })
             .catch(e => {
-                _that.props.showErrorMessage(null, e.response.status);
+                _that.props.showErrorMessage(undefined, e.response.status);
             });
     }
     updateUserType = (user: User, newType: UserType) => {
@@ -49,7 +49,7 @@ export default class Users extends React.Component<UsersProps, UsersState> {
                 if (e.response.status == 400) {
                     _that.props.showErrorMessage("Error updating user type");
                 } else {
-                    _that.props.showErrorMessage(null, e.response.status);
+                    _that.props.showErrorMessage(undefined, e.response.status);
                 }
             });
     }
@@ -75,7 +75,7 @@ export default class Users extends React.Component<UsersProps, UsersState> {
                                 </a>
                             </td>
                             <td>{userTypeToString(u.userType)}</td>
-                            <td>{this.props.currentUser && this.props.currentUser.canManageUsers &&
+                            <td>{this.props.currentUser.canManageUsers &&
                                 <div className="btn-group" role="group">
                                     {u.userType == UserType.User &&
                                         <button type="button" className="btn btn-sm btn-warning" onClick={e => this.updateUserType(u, UserType.TrustedUser)}>

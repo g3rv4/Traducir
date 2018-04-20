@@ -6,7 +6,7 @@ import {
     UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem,
     Modal, ModalHeader, ModalBody, ModalFooter
 } from 'reactstrap';
-import { Route, Switch, withRouter, RouteComponentProps, Link } from 'react-router-dom';
+import { Route, Switch, withRouter, RouteComponentProps, Link, Redirect } from 'react-router-dom';
 import history from '../history';
 import Filters from "./Components/Filters";
 import Results from "./Components/Results";
@@ -19,13 +19,13 @@ import Config from "../Models/Config";
 import Stats from "../Models/Stats";
 
 export interface TraducirState {
-    user: UserInfo;
+    user: UserInfo | null;
     strings: SOString[];
-    currentString: SOString;
-    config: Config;
+    currentString: SOString | null;
+    config: Config | null;
     isOpen: boolean;
     isLoading: boolean;
-    stats: Stats;
+    stats: Stats | null;
 }
 
 class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
@@ -33,7 +33,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         super(props);
 
         this.state = {
-            user: undefined,
+            user: null,
             strings: [],
             currentString: null,
             config: null,
@@ -50,10 +50,10 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             .catch(error => _that.setState({ user: null }));
         axios.get<Config>('/app/api/config')
             .then(response => _that.setState({ config: response.data }))
-            .catch(error => this.showErrorMessage(null, error.response.status));
+            .catch(error => this.showErrorMessage(undefined, error.response.status));
         axios.get<Stats>('/app/api/strings/stats')
             .then(response => _that.setState({ stats: response.data }))
-            .catch(error => this.showErrorMessage(null, error.response.status));
+            .catch(error => this.showErrorMessage(undefined, error.response.status));
 
         const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/)
         if (stringMatch) {
@@ -63,7 +63,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                         currentString: r.data
                     });
                 })
-                .catch(error => this.showErrorMessage(null, error.response.status));
+                .catch(error => this.showErrorMessage(undefined, error.response.status));
         }
     }
 
@@ -104,7 +104,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                 });
                 axios.get<Stats>('/app/api/strings/stats')
                     .then(response => _that.setState({ stats: response.data }))
-                    .catch(error => this.showErrorMessage(null, error.response.status));
+                    .catch(error => this.showErrorMessage(undefined, error.response.status));
             })
     }
 
@@ -179,11 +179,13 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             <div className="container">
                 <Switch>
                     <Route path='/users' exact render={p =>
-                        <Users
-                            showErrorMessage={this.showErrorMessage}
-                            currentUser={this.state.user}
-                            config={this.state.config}
-                        />
+                        this.state.config && this.state.user
+                            ? <Users
+                                showErrorMessage={this.showErrorMessage}
+                                currentUser={this.state.user}
+                                config={this.state.config}
+                            />
+                            : <Redirect to="/" />
                     } />
                     <Route render={p => <>
                         <Filters
@@ -212,7 +214,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                 <Modal isOpen={this.isOpen()} toggle={this.onToggle} className="w-95 mw-100">
                     <ModalHeader toggle={this.onToggle}>Suggestions</ModalHeader>
                     <ModalBody>
-                        {this.state.currentString && <Suggestions
+                        {this.state.currentString && this.state.config && <Suggestions
                             config={this.state.config}
                             user={this.state.user}
                             str={this.state.currentString}

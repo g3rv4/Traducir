@@ -9,7 +9,7 @@ import { UserType } from "../../Models/UserType";
 export interface SuggestionsTableProps {
     suggestions: SOStringSuggestion[];
     config: Config;
-    user: UserInfo;
+    user: UserInfo | null;
     refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (message?: string, code?: number) => void;
 }
@@ -30,8 +30,8 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
             isButtonDisabled: false
         };
     }
-    render(): JSX.Element {
-        if (!this.props.suggestions || !this.props.suggestions.length || !this.props.config) {
+    render(): JSX.Element | null {
+        if (!this.props.suggestions || !this.props.suggestions.length) {
             return null;
         }
 
@@ -49,10 +49,10 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                 {this.props.suggestions.map(sug =>
                     <tr key={sug.id} className={sug.state == StringSuggestionState.ApprovedByTrustedUser ? 'table-success' : ''}>
                         <td><pre>{sug.suggestion}</pre></td>
-                        <td>{sug.lastStateUpdatedByName ?
+                        <td>{sug.lastStateUpdatedByName &&
                             <a href={`https://${this.props.config.siteDomain}/users/${sug.lastStateUpdatedById}`}
                                 target="_blank">{sug.lastStateUpdatedByName}</a>
-                            : null}</td>
+                                }</td>
                         <td><a href={`https://${this.props.config.siteDomain}/users/${sug.createdById}`}
                             target="_blank"
                             title={'at ' + sug.creationDate + ' UTC'}>{sug.createdByName}</a></td>
@@ -63,7 +63,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         </table>
     }
 
-    renderSuggestionActions(sug: SOStringSuggestion): JSX.Element {
+    renderSuggestionActions(sug: SOStringSuggestion): JSX.Element | null {
         if (!this.props.user || !this.props.user.canReview) {
             return null;
         }
@@ -100,7 +100,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                 if (e.response.status == 400) {
                     _that.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
                 } else {
-                    _that.props.showErrorMessage(null, e.response.status);
+                    _that.props.showErrorMessage(undefined, e.response.status);
                 }
                 _that.setState({
                     isButtonDisabled: false

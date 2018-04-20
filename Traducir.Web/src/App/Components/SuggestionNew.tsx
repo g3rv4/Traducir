@@ -7,7 +7,7 @@ import { UserType } from "../../Models/UserType";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
 
 export interface SuggestionNewProps {
-    user: UserInfo;
+    user: UserInfo | null;
     stringId: number;
     rawString: boolean;
     refreshString: (stringIdToUpdate: number) => void;
@@ -77,12 +77,12 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
                             break;
                     }
                 } else {
-                    this.props.showErrorMessage(null, e.response.status);
+                    this.props.showErrorMessage(undefined, e.response.status);
                 }
             });
     }
 
-    render(): JSX.Element {
+    render(): JSX.Element | null {
         if (!this.props.user || !this.props.user.canSuggest) {
             return null;
         }
