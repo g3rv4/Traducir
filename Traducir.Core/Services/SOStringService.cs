@@ -7,7 +7,6 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CsvHelper;
 using Dapper;
@@ -34,9 +33,9 @@ namespace Traducir.Core.Services
     }
     public class SOStringService : ISOStringService
     {
-        private IDbService _dbService { get; set; }
-        private ImmutableArray<SOString> _strings { get; set; }
-        private Dictionary<int, SOString> _stringsById { get; set; }
+        private readonly IDbService _dbService;
+        private ImmutableArray<SOString> Strings { get; set; }
+        private Dictionary<int, SOString> StringsById { get; set; }
         public SOStringService(IDbService dbService)
         {
             _dbService = dbService;
@@ -175,7 +174,7 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
 
         private void ExpireCache()
         {
-            _strings = ImmutableArray<SOString>.Empty;
+            Strings = ImmutableArray<SOString>.Empty;
         }
 
         private async Task RefreshCacheAsync(int? stringId = null)
@@ -226,20 +225,20 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
 
                 if (stringId.HasValue)
                 {
-                    _stringsById[stringId.Value] = stringsById[stringId.Value];
-                    _strings = _stringsById.Values.OrderByDescending(s => s.IsUrgent).ThenBy(s => s.OriginalString).ToImmutableArray();
+                    StringsById[stringId.Value] = stringsById[stringId.Value];
+                    Strings = StringsById.Values.OrderByDescending(s => s.IsUrgent).ThenBy(s => s.OriginalString).ToImmutableArray();
                 }
                 else
                 {
-                    _stringsById = stringsById;
-                    _strings = strings.ToImmutableArray();
+                    StringsById = stringsById;
+                    Strings = strings.ToImmutableArray();
                 }
             }
         }
 
         public async Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate)
         {
-            if (_strings == null || _strings.Length == 0)
+            if (Strings == null || Strings.Length == 0)
             {
                 await RefreshCacheAsync();
             }
@@ -247,18 +246,18 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
             ImmutableArray<SOString> result;
             using (MiniProfiler.Current.Step("Filtering the strings"))
             {
-                result = _strings.Where(predicate).ToImmutableArray();
+                result = Strings.Where(predicate).ToImmutableArray();
             }
             return result;
         }
 
         public async Task<SOString> GetStringByIdAsync(int stringId)
         {
-            if (_strings == null || _strings.Length == 0)
+            if (Strings == null || Strings.Length == 0)
             {
                 await RefreshCacheAsync();
             }
-            if (_stringsById.TryGetValue(stringId, out var res))
+            if (StringsById.TryGetValue(stringId, out var res))
             {
                 return res;
             }
@@ -269,12 +268,10 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
         {
             using (var db = _dbService.GetConnection())
             {
-
-                int? suggestionId;
                 try
                 {
                     var initialState = userType >= UserType.TrustedUser ? StringSuggestionState.ApprovedByTrustedUser : StringSuggestionState.Created;
-                    suggestionId = await db.QuerySingleOrDefaultAsync<int?>(@"
+                    var suggestionId = await db.QuerySingleOrDefaultAsync<int?>(@"
 Declare @suggestionId Int;
 
 Insert Into StringSuggestions
@@ -323,7 +320,7 @@ Select @suggestionId;", new
             using (var db = _dbService.GetConnection())
             {
                 // is this suggestion eligible for review?
-                int? stringId = await db.QuerySingleOrDefaultAsync<int?>($@"
+                int? stringId = await db.QuerySingleOrDefaultAsync<int?>(@"
 Select StringId
 From   StringSuggestions
 Where  Id = @suggestionId
@@ -593,11 +590,11 @@ Where  Id = @stringId", new
 
         public async Task<ImmutableArray<SOString>> GetStringsAsync()
         {
-            if (_strings == null || _strings.Length == 0)
+            if (Strings == null || Strings.Length == 0)
             {
                 await RefreshCacheAsync();
             }
-            return _strings;
+            return Strings;
         }
 
         public async Task<bool> DeleteSuggestionAsync(int suggestionId, int userId)

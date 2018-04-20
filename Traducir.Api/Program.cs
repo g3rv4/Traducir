@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Traducir
+namespace Traducir.Api
 {
     public class Program
     {

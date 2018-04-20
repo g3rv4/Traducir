@@ -26,35 +26,35 @@ namespace Traducir.Core.Services
     {
         private const string FilterId = "SY(8)VHj.3*xaOr3N*GB)B";
 
-        private string ClientId { get; }
-        private string AppKey { get; }
-        private string AppSecret { get; }
+        private readonly string _clientId;
+        private readonly string _appKey;
+        private readonly string _appSecret;
 
-        HttpClientHandler _handler => new HttpClientHandler()
+        HttpClientHandler Handler => new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         };
-        HttpClient _httpClient => new HttpClient(_handler)
+        HttpClient HttpClient => new HttpClient(Handler)
         {
             BaseAddress = new Uri("https://api.stackexchange.com")
         };
 
-        public SEApiService(IConfiguration _configuration)
+        public SEApiService(IConfiguration configuration)
         {
-            ClientId = _configuration.GetValue<string>("STACKAPP_CLIENT_ID");
-            AppKey = _configuration.GetValue<string>("STACKAPP_KEY");
-            AppSecret = _configuration.GetValue<string>("STACKAPP_SECRET");
+            _clientId = configuration.GetValue<string>("STACKAPP_CLIENT_ID");
+            _appKey = configuration.GetValue<string>("STACKAPP_KEY");
+            _appSecret = configuration.GetValue<string>("STACKAPP_SECRET");
         }
 
         Task<HttpResponseMessage> GetFromApi(string url, string accessToken)
         {
             var glue = url.Contains("?") ? "&" : "?";
-            return _httpClient.GetAsync($"{url}{glue}key={AppKey}&access_token={accessToken}&filter={FilterId}");
+            return HttpClient.GetAsync($"{url}{glue}key={_appKey}&access_token={accessToken}&filter={FilterId}");
         }
 
         public string GetInitialOauthUrl(string returnUrl, string state = null)
         {
-            return $"https://stackoverflow.com/oauth?client_id={ClientId}&redirect_uri={WebUtility.UrlEncode(returnUrl)}" +
+            return $"https://stackoverflow.com/oauth?client_id={_clientId}&redirect_uri={WebUtility.UrlEncode(returnUrl)}" +
                 (state == null ? "" : $"&state={WebUtility.UrlEncode(state)}");
         }
 
@@ -65,8 +65,8 @@ namespace Traducir.Core.Services
                 client.BaseAddress = new Uri("https://stackoverflow.com");
                 var content = new FormUrlEncodedContent(new[]
                 {
-                    ("client_id", ClientId),
-                    ("client_secret", AppSecret),
+                    ("client_id", _clientId),
+                    ("client_secret", _appSecret),
                     ("code", code),
                     ("redirect_uri", returnUrl),
                 }.Select(e => new KeyValuePair<string, string>(e.Item1, e.Item2)));

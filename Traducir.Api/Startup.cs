@@ -13,7 +13,7 @@ using StackExchange.Profiling;
 using Traducir.Core.Helpers;
 using Traducir.Core.Services;
 
-namespace Traducir
+namespace Traducir.Api
 {
     public class Startup
     {

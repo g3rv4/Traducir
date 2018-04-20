@@ -12,9 +12,9 @@ namespace Traducir.Api.Controllers
 {
     public class AdminController : Controller
     {
-        private ITransifexService _transifexService { get; }
-        private ISOStringService _soStringService { get; }
-        private IConfiguration _configuration { get; }
+        private readonly ITransifexService _transifexService;
+        private readonly ISOStringService _soStringService;
+        private readonly IConfiguration _configuration;
 
         public AdminController(ITransifexService transifexService, ISOStringService soStringService, IConfiguration configuration)
         {
@@ -59,7 +59,7 @@ namespace Traducir.Api.Controllers
         [Route("app/api/admin/migrate")]
         public IActionResult Migrate()
         {
-            var migrationsAssembly = typeof(Traducir.Migrations.Program).Assembly;
+            var migrationsAssembly = typeof(Migrations.Program).Assembly;
             using (var db = new SqlConnection(_configuration.GetValue<string>("CONNECTION_STRING")))
             {
                 var databaseProvider = new MssqlDatabaseProvider(db);

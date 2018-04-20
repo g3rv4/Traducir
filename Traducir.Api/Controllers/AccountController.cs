@@ -18,10 +18,10 @@ namespace Traducir.Api.Controllers
 {
     public class AccountController : Controller
     {
-        private ISEApiService _seApiService { get; }
-        private IConfiguration _configuration { get; }
-        private IUserService _userService { get; }
-        private IAuthorizationService _authorizationService { get; }
+        private readonly ISEApiService _seApiService;
+        private readonly IConfiguration _configuration;
+        private readonly IUserService _userService;
+        private readonly IAuthorizationService _authorizationService;
 
         public AccountController(IConfiguration configuration,
             ISEApiService seApiService,

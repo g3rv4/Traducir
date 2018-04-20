@@ -24,7 +24,7 @@ namespace Traducir.Core.Services
         public ProfiledDbConnection GetConnection()
         {
             var connection = new SqlConnection(ConnectionString);
-            return new StackExchange.Profiling.Data.ProfiledDbConnection(connection, MiniProfiler.Current);
+            return new ProfiledDbConnection(connection, MiniProfiler.Current);
         }
     }
 }
