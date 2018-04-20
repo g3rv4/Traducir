@@ -551,6 +551,8 @@ Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
 Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
 
             }
+
+            await RefreshCacheAsync();
         }
 
         public async Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId)
