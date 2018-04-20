@@ -16,7 +16,6 @@ pipeline:
       
       - "cd Traducir.Web"
       - "cp -r /var/node_modules node_modules"
-      - "npm install"
       - "npm run build"
       - "cp -r ./dist/* ../output-image/app/frontend/"
       - "cd ../"
