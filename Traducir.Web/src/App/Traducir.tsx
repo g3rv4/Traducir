@@ -44,26 +44,25 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
     }
 
     componentDidMount() {
-        const _that = this;
         axios.post<UserInfo>('/app/api/me')
-            .then(response => _that.setState({ user: response.data }))
-            .catch(error => _that.setState({ user: undefined }));
+            .then(response => this.setState({ user: response.data }))
+            .catch(error => this.setState({ user: undefined }));
         axios.get<Config>('/app/api/config')
-            .then(response => _that.setState({ config: response.data }))
-            .catch(error => _that.showErrorMessage(error.response.status));
+            .then(response => this.setState({ config: response.data }))
+            .catch(error => this.showErrorMessage(error.response.status));
         axios.get<Stats>('/app/api/strings/stats')
-            .then(response => _that.setState({ stats: response.data }))
-            .catch(error => _that.showErrorMessage(error.response.status));
+            .then(response => this.setState({ stats: response.data }))
+            .catch(error => this.showErrorMessage(error.response.status));
 
         const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/)
         if (stringMatch) {
             axios.get<SOString>(`/app/api/strings/${stringMatch[1]}`)
                 .then(r => {
-                    _that.setState({
+                    this.setState({
                         currentString: r.data
                     });
                 })
-                .catch(error => _that.showErrorMessage(error.response.status));
+                .catch(error => this.showErrorMessage(error.response.status));
         }
     }
 
@@ -90,7 +89,6 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
 
     refreshString(stringIdToUpdate: number) {
         const idx = _.findIndex(this.state.strings, s => s.id == stringIdToUpdate);
-        const _that = this;
         axios.get<SOString>(`/app/api/strings/${stringIdToUpdate}`)
             .then(r => {
                 r.data.touched = true;
@@ -98,13 +96,13 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                 const newStrings = this.state.strings.slice();
                 newStrings[idx] = r.data;
 
-                _that.setState({
+                this.setState({
                     strings: newStrings,
                     currentString: r.data
                 });
                 axios.get<Stats>('/app/api/strings/stats')
-                    .then(response => _that.setState({ stats: response.data }))
-                    .catch(error => _that.showErrorMessage(error.response.status));
+                    .then(response => this.setState({ stats: response.data }))
+                    .catch(error => this.showErrorMessage(error.response.status));
             })
     }
 

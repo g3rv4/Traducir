@@ -88,20 +88,19 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         this.setState({
             isButtonDisabled: true
         });
-        const _that = this;
         axios.put('/app/api/review', {
             SuggestionId: sug.id,
             Approve: action == ReviewAction.Accept
         }).then(r => {
-            _that.props.refreshString(sug.stringId);
+            this.props.refreshString(sug.stringId);
             history.push('/filters');
         }).catch(e => {
             if (e.response.status == 400) {
-                _that.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
+                this.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
             } else {
-                _that.props.showErrorMessage(e.response.status);
+                this.props.showErrorMessage(e.response.status);
             }
-            _that.setState({
+            this.setState({
                 isButtonDisabled: false
             });
         });
@@ -123,20 +122,19 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         this.setState({
             isButtonDisabled: true
         });
-        const _that = this;
         axios.delete('/app/api/suggestions/' + sug.id
         ).then(r => {
-            _that.props.refreshString(sug.stringId);
-            _that.setState({
+            this.props.refreshString(sug.stringId);
+            this.setState({
                 isButtonDisabled: false
             });
         }).catch(e => {
             if (e.response.status == 400) {
-                _that.props.showErrorMessage("Error deleting the suggestion. Do you have enough rights?");
+                this.props.showErrorMessage("Error deleting the suggestion. Do you have enough rights?");
             } else {
-                _that.props.showErrorMessage(e.response.status);
+                this.props.showErrorMessage(e.response.status);
             }
-            _that.setState({
+            this.setState({
                 isButtonDisabled: false
             });
         });

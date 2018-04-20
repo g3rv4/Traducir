@@ -31,20 +31,19 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
         this.onCheckboxChange = this.onCheckboxChange.bind(this);
     }
     updateUrgency(isUrgent: boolean) {
-        const _that = this;
         axios.put('/app/api/manage-urgency', {
             StringId: this.props.str.id,
             IsUrgent: isUrgent
         }).then(r => {
-            if (_that.props.str) {
-                _that.props.refreshString(_that.props.str.id);
+            if (this.props.str) {
+                this.props.refreshString(this.props.str.id);
             }
             history.push('/filters');
         }).catch(e => {
             if (e.response.status == 400) {
-                _that.props.showErrorMessage("Failed updating the urgency... maybe a race condition?");
+                this.props.showErrorMessage("Failed updating the urgency... maybe a race condition?");
             } else {
-                _that.props.showErrorMessage(e.response.status);
+                this.props.showErrorMessage(e.response.status);
             }
         });
     }
