@@ -42,9 +42,9 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
             history.push('/filters');
         }).catch(e => {
             if (e.response.status == 400) {
-                this.props.showErrorMessage("Failed updating the urgency... maybe a race condition?");
+                _that.props.showErrorMessage("Failed updating the urgency... maybe a race condition?");
             } else {
-                this.props.showErrorMessage(e.response.status);
+                _that.props.showErrorMessage(e.response.status);
             }
         });
     }
