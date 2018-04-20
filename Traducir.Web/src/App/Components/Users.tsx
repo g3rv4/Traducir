@@ -28,31 +28,29 @@ export default class Users extends React.Component<UsersProps, UsersState> {
         this.refreshUsers();
     }
     refreshUsers() {
-        const _that = this;
         axios.get<User[]>('/app/api/users').then(r => {
-            _that.setState({
+            this.setState({
                 users: r.data
             });
         }).catch(e => {
             if (e.response.status == 401) {
                 history.push('/');
             } else {
-                _that.props.showErrorMessage(e.response.status);
+                this.props.showErrorMessage(e.response.status);
             }
         });
     }
     updateUserType(user: User, newType: UserType) {
-        const _that = this;
         axios.put('/app/api/users/change-type', {
             UserId: user.id,
             UserType: newType
         }).then(r => {
-            _that.refreshUsers();
+            this.refreshUsers();
         }).catch(e => {
             if (e.response.status == 400) {
-                _that.props.showErrorMessage("Error updating user type");
+                this.props.showErrorMessage("Error updating user type");
             } else {
-                _that.props.showErrorMessage(e.response.status);
+                this.props.showErrorMessage(e.response.status);
             }
         });
     }

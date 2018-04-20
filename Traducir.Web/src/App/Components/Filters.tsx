@@ -146,18 +146,17 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
 
     submitForm = _.debounce(() => {
         this.props.onLoading();
-        const _that = this;
         axios.post<SOString[]>('/app/api/strings/query', this.state)
-            .then(function (response) {
-                _that.setState({ hasError: false });
-                _that.props.onResultsFetched(response.data);
+            .then(response => {
+                this.setState({ hasError: false });
+                this.props.onResultsFetched(response.data);
             })
-            .catch(function (error) {
+            .catch(error => {
                 if (error.response.status == 400) {
-                    _that.setState({ hasError: true });
-                    _that.props.onResultsFetched([]);
+                    this.setState({ hasError: true });
+                    this.props.onResultsFetched([]);
                 } else {
-                    _that.props.showErrorMessage(error.response.status);
+                    this.props.showErrorMessage(error.response.status);
                 }
             });
     }, 1000);
