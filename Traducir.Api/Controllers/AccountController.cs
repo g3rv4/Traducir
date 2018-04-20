@@ -132,7 +132,7 @@ namespace Traducir.Api.Controllers
         [Route("app/api/users")]
         public async Task<IActionResult> GetUsers()
         {
-            return Json((await _userService.GetUsersAsync()).OrderByDescending(u => u.UserType));
+            return Json((await _userService.GetUsersAsync()).OrderByDescending(u => u.UserType).ThenByDescending(u => u.LastSeenDate));
         }
 
         [HttpPut]

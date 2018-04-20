@@ -127,9 +127,7 @@ namespace Traducir.Api.Controllers
                 ComposePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
             }
 
-            var result = predicate != null ? await _soStringService.GetStringsAsync(predicate) :
-                await _soStringService.GetStringsAsync();
-
+            var result = await _soStringService.GetStringsAsync(predicate);
             return Json(result.Take(2000));
         }
 

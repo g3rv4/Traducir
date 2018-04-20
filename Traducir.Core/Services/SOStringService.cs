@@ -21,8 +21,7 @@ namespace Traducir.Core.Services
     {
         Task StoreNewStringsAsync(ImmutableArray<TransifexString> strings);
         Task<SOString> GetStringByIdAsync(int stringId);
-        Task<ImmutableArray<SOString>> GetStringsAsync();
-        Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate);
+        Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate = null);
         Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
         Task UpdateStringsPushed();
@@ -236,11 +235,16 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
             }
         }
 
-        public async Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate)
+        public async Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate = null)
         {
             if (Strings == null || Strings.Length == 0)
             {
                 await RefreshCacheAsync();
+            }
+
+            if (predicate == null)
+            {
+                return Strings;
             }
 
             ImmutableArray<SOString> result;
@@ -590,40 +594,30 @@ Where  Id = @stringId", new
             return true;
         }
 
-        public async Task<ImmutableArray<SOString>> GetStringsAsync()
-        {
-            if (Strings == null || Strings.Length == 0)
-            {
-                await RefreshCacheAsync();
-            }
-            return Strings;
-        }
-
         public async Task<bool> DeleteSuggestionAsync(int suggestionId, int userId)
         {
             using (var db = _dbService.GetConnection())
             {
-                var idString = (int) await db.ExecuteScalarAsync(@"
+                var idString = await db.QuerySingleOrDefaultAsync<int>(@"
 Declare @idString int = 0;
 
 Update StringSuggestions
-Set StateId = {=DeletedByOwner},
-    LastStateUpdatedById = @userId,
-    LastStateUpdatedDate = @now,
-    @idString = StringId
-Where Id = @suggestionId
-And CreatedById = @userId;
+Set    StateId = {=DeletedByOwner},
+       LastStateUpdatedById = @userId,
+       LastStateUpdatedDate = @now,
+       @idString = StringId
+Where  Id = @suggestionId
+And    CreatedById = @userId;
 
 Insert Into StringSuggestionHistory
             (StringSuggestionId, HistoryTypeId, UserId, CreationDate)
 Select Id, {=DeletedByOwner}, CreatedById, LastStateUpdatedDate
-From StringSuggestions
-Where Id = @suggestionId
-And CreatedById = @userId
-And StateId = {=DeletedByOwner};
+From   StringSuggestions
+Where  Id = @suggestionId
+And    CreatedById = @userId
+And    StateId = {=DeletedByOwner};
 
-Select @idString;",
-                new
+Select @idString;", new
                 {
                     suggestionId,
                     StringSuggestionState.DeletedByOwner,
