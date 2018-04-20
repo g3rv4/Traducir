@@ -45,7 +45,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
 
     componentDidMount() {
         const _that = this;
-        axios.post<UserInfo>('/app/api/me', this.state)
+        axios.post<UserInfo>('/app/api/me')
             .then(response => _that.setState({ user: response.data }))
             .catch(error => _that.setState({ user: undefined }));
         axios.get<Config>('/app/api/config')
@@ -69,7 +69,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
 
     renderLogInLogOut() {
         const returnUrl = encodeURIComponent(location.pathname + location.search);
-        if (!this.state || this.state.user === null) {
+        if (!this.state || !this.state.user) {
             return <NavItem>
                 <NavLink href={`/app/login?returnUrl=${returnUrl}`}>Log in!</NavLink>
             </NavItem>
