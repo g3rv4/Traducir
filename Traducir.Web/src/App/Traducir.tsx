@@ -73,11 +73,9 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                 <NavLink href={`/app/login?returnUrl=${returnUrl}`}>Log in!</NavLink>
             </NavItem>
         } else if (this.state.user) {
-            return <>
-                <NavItem>
+            return <NavItem>
                     <NavLink href={`/app/logout?returnUrl=${returnUrl}`}>Log out</NavLink>
                 </NavItem>
-            </>
         }
     }
 
