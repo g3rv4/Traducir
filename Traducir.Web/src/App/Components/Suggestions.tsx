@@ -13,7 +13,7 @@ export interface SuggestionsProps {
     str: SOString;
     config: Config;
     refreshString: (stringIdToUpdate: number) => void;
-    showErrorMessage: (message?: string, code?: number) => void;
+    showErrorMessage: (messageOrCode: string | number) => void;
 }
 
 export interface SuggestionsState {
@@ -43,7 +43,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
                 if (e.response.status == 400) {
                     this.props.showErrorMessage("Failed updating the urgency... maybe a race condition?");
                 } else {
-                    this.props.showErrorMessage(undefined, e.response.status);
+                    this.props.showErrorMessage(e.response.status);
                 }
             });
     }

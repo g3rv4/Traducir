@@ -11,7 +11,7 @@ export interface SuggestionNewProps {
     stringId: number;
     rawString: boolean;
     refreshString: (stringIdToUpdate: number) => void;
-    showErrorMessage: (message?: string, code?: number) => void;
+    showErrorMessage: (messageOrCode: string | number) => void;
 }
 
 interface SuggestionNewState {
@@ -77,7 +77,7 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
                             break;
                     }
                 } else {
-                    this.props.showErrorMessage(undefined, e.response.status);
+                    this.props.showErrorMessage(e.response.status);
                 }
             });
     }

@@ -6,7 +6,7 @@ import UserInfo from "../../Models/UserInfo";
 import { userTypeToString, UserType } from "../../Models/UserType";
 
 export interface UsersProps {
-    showErrorMessage: (message?: string, code?: number) => void;
+    showErrorMessage: (messageOrCode: string | number) => void;
     currentUser: UserInfo;
     config: Config;
 }
@@ -34,7 +34,7 @@ export default class Users extends React.Component<UsersProps, UsersState> {
             });
         })
             .catch(e => {
-                _that.props.showErrorMessage(undefined, e.response.status);
+                _that.props.showErrorMessage(e.response.status);
             });
     }
     updateUserType = (user: User, newType: UserType) => {
@@ -49,7 +49,7 @@ export default class Users extends React.Component<UsersProps, UsersState> {
                 if (e.response.status == 400) {
                     _that.props.showErrorMessage("Error updating user type");
                 } else {
-                    _that.props.showErrorMessage(undefined, e.response.status);
+                    _that.props.showErrorMessage(e.response.status);
                 }
             });
     }

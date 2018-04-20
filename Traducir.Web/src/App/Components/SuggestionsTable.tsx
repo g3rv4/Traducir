@@ -11,7 +11,7 @@ export interface SuggestionsTableProps {
     config: Config;
     user: UserInfo | null;
     refreshString: (stringIdToUpdate: number) => void;
-    showErrorMessage: (message?: string, code?: number) => void;
+    showErrorMessage: (messageOrCode: string | number) => void;
 }
 
 interface SuggestionsTableState {
@@ -100,7 +100,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                 if (e.response.status == 400) {
                     _that.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
                 } else {
-                    _that.props.showErrorMessage(undefined, e.response.status);
+                    _that.props.showErrorMessage(e.response.status);
                 }
                 _that.setState({
                     isButtonDisabled: false
@@ -134,7 +134,7 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                 if (e.response.status == 400) {
                     _that.props.showErrorMessage("Error deleting the suggestion. Do you have enough rights?");
                 } else {
-                    _that.props.showErrorMessage(undefined, e.response.status);
+                    _that.props.showErrorMessage(e.response.status);
                 }
                 _that.setState({
                     isButtonDisabled: false

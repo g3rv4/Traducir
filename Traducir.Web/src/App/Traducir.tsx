@@ -50,10 +50,10 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             .catch(error => _that.setState({ user: null }));
         axios.get<Config>('/app/api/config')
             .then(response => _that.setState({ config: response.data }))
-            .catch(error => this.showErrorMessage(undefined, error.response.status));
+            .catch(error => this.showErrorMessage(error.response.status));
         axios.get<Stats>('/app/api/strings/stats')
             .then(response => _that.setState({ stats: response.data }))
-            .catch(error => this.showErrorMessage(undefined, error.response.status));
+            .catch(error => this.showErrorMessage(error.response.status));
 
         const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/)
         if (stringMatch) {
@@ -63,7 +63,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                         currentString: r.data
                     });
                 })
-                .catch(error => this.showErrorMessage(undefined, error.response.status));
+                .catch(error => this.showErrorMessage(error.response.status));
         }
     }
 
@@ -104,7 +104,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                 });
                 axios.get<Stats>('/app/api/strings/stats')
                     .then(response => _that.setState({ stats: response.data }))
-                    .catch(error => this.showErrorMessage(undefined, error.response.status));
+                    .catch(error => this.showErrorMessage(error.response.status));
             })
     }
 
@@ -115,10 +115,11 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         })
     }
 
-    showErrorMessage = (message?: string, code?: number) => {
-        if (message) {
-            alert(message);
+    showErrorMessage = (messageOrCode: string | number) => {
+        if (typeof(messageOrCode) == "string") {
+            alert(messageOrCode);
         } else {
+            const code: number = messageOrCode;
             if (code == 401) {
                 alert('Your session has expired... you will be redirected to the log in page');
                 window.location.href = `/app/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`;

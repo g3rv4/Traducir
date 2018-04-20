@@ -22,7 +22,7 @@ interface FiltersState {
 export interface FiltersProps {
     onResultsFetched: (strings: SOString[]) => void;
     onLoading: () => void;
-    showErrorMessage: (message?: string, code?: number) => void;
+    showErrorMessage: (messageOrCode: string | number) => void;
     location: Location;
 }
 
@@ -157,7 +157,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                     _that.setState({ hasError: true });
                     _that.props.onResultsFetched([]);
                 } else {
-                    _that.props.showErrorMessage(undefined, error.response.status);
+                    _that.props.showErrorMessage(error.response.status);
                 }
             });
     }, 1000);
