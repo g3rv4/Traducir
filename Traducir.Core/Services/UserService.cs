@@ -16,7 +16,7 @@ namespace Traducir.Core.Services
     }
     public class UserService : IUserService
     {
-        private IDbService _dbService { get; }
+        private readonly IDbService _dbService;
         public UserService(IDbService dbService)
         {
             _dbService = dbService;

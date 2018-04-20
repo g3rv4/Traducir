@@ -22,9 +22,9 @@ namespace Traducir.Core.Services
 
     public class TransifexService : ITransifexService
     {
-        private string _apikey { get; }
-        private string _resourcePath { get; }
-        private ISOStringService _soStringService { get; }
+        private readonly string _apikey;
+        private readonly string _resourcePath;
+        private readonly ISOStringService _soStringService;
 
         public TransifexService(IConfiguration configuration, ISOStringService soStringService)
         {
@@ -33,18 +33,18 @@ namespace Traducir.Core.Services
             _soStringService = soStringService;
         }
 
-        private static HttpClient _HttpClient { get; set; }
+        private static HttpClient HttpClient { get; set; }
         private HttpClient GetHttpClient()
         {
-            if (_HttpClient == null)
+            if (HttpClient == null)
             {
                 var baseAddress = new Uri("https://www.transifex.com");
-                _HttpClient = new HttpClient() { BaseAddress = baseAddress };
+                HttpClient = new HttpClient { BaseAddress = baseAddress };
                 var byteArray = Encoding.ASCII.GetBytes("api:" + _apikey);
-                _HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+                HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
             }
 
-            return _HttpClient;
+            return HttpClient;
         }
 
         public async Task<ImmutableArray<TransifexString>> GetStringsFromTransifexAsync()
@@ -76,7 +76,7 @@ namespace Traducir.Core.Services
                         Translation = s.Translation
                     }));
 
-                    var buffer = System.Text.Encoding.UTF8.GetBytes(content);
+                    var buffer = Encoding.UTF8.GetBytes(content);
                     byteContent = new ByteArrayContent(buffer);
                     byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
                 }

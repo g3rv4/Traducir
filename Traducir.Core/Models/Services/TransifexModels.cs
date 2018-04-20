@@ -8,8 +8,8 @@ namespace Traducir.Core.Models.Services
         [DataMember(Name = "key")]
         public string Key { get; set; }
 
-        private string _NormalizedKey;
-        public string NormalizedKey => _NormalizedKey ?? (_NormalizedKey = Key.ToNormalizedKey());
+        private string _normalizedKey;
+        public string NormalizedKey => _normalizedKey ?? (_normalizedKey = Key.ToNormalizedKey());
 
         [DataMember(Name = "reviewed")]
         public bool Reviewed { get; set; }

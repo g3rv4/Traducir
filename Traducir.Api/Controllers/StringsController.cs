@@ -15,8 +15,8 @@ namespace Traducir.Api.Controllers
 {
     public class StringsController : Controller
     {
-        private ISOStringService _soStringService { get; set; }
-        private IAuthorizationService _authorizationService { get; }
+        private readonly ISOStringService _soStringService;
+        private readonly IAuthorizationService _authorizationService;
 
         public StringsController(ISOStringService soStringService,
             IAuthorizationService authorizationService)
@@ -53,7 +53,7 @@ namespace Traducir.Api.Controllers
         {
             Func<SOString, bool> predicate = null;
 
-            void composePredicate(Func<SOString, bool> newPredicate)
+            void ComposePredicate(Func<SOString, bool> newPredicate)
             {
                 if (predicate == null)
                 {
@@ -66,39 +66,39 @@ namespace Traducir.Api.Controllers
 
             if (model.TranslationStatus != QueryViewModel.TranslationStatuses.AnyStatus)
             {
-                composePredicate(s => s.HasTranslation == (model.TranslationStatus == QueryViewModel.TranslationStatuses.WithTranslation));
+                ComposePredicate(s => s.HasTranslation == (model.TranslationStatus == QueryViewModel.TranslationStatuses.WithTranslation));
             }
             if (model.PushStatus != QueryViewModel.PushStatuses.AnyStatus)
             {
-                composePredicate(s => s.NeedsPush == (model.PushStatus == QueryViewModel.PushStatuses.NeedsPush));
+                ComposePredicate(s => s.NeedsPush == (model.PushStatus == QueryViewModel.PushStatuses.NeedsPush));
             }
             if (model.UrgencyStatus != QueryViewModel.UrgencyStatuses.AnyStatus)
             {
-                composePredicate(s => s.IsUrgent == (model.UrgencyStatus == QueryViewModel.UrgencyStatuses.IsUrgent));
+                ComposePredicate(s => s.IsUrgent == (model.UrgencyStatus == QueryViewModel.UrgencyStatuses.IsUrgent));
             }
             if (model.SuggestionsStatus != QueryViewModel.SuggestionApprovalStatus.AnyStatus)
             {
                 switch (model.SuggestionsStatus)
                 {
                     case QueryViewModel.SuggestionApprovalStatus.DoesNotHaveSuggestions:
-                        composePredicate(s => !s.HasSuggestions);
+                        ComposePredicate(s => !s.HasSuggestions);
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReview:
-                        composePredicate(s =>
+                        ComposePredicate(s =>
                             s.Suggestions != null &&
                             s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
-                        composePredicate(s => s.HasSuggestionsWaitingApproval);
+                        ComposePredicate(s => s.HasSuggestionsWaitingApproval);
                         break;
                     case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReviewApprovedByTrustedUser:
-                        composePredicate(s => s.HasApprovedSuggestionsWaitingReview);
+                        ComposePredicate(s => s.HasApprovedSuggestionsWaitingReview);
                         break;
                 }
             }
             if (model.Key.HasValue())
             {
-                composePredicate(s => s.Key.StartsWith(model.Key));
+                ComposePredicate(s => s.Key.StartsWith(model.Key));
             }
             if (model.SourceRegex.HasValue())
             {
@@ -111,7 +111,7 @@ namespace Traducir.Api.Controllers
                 {
                     return BadRequest();
                 }
-                composePredicate(s => regex.IsMatch(s.OriginalString));
+                ComposePredicate(s => regex.IsMatch(s.OriginalString));
             }
             if (model.TranslationRegex.HasValue())
             {
@@ -124,7 +124,7 @@ namespace Traducir.Api.Controllers
                 {
                     return BadRequest();
                 }
-                composePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
+                ComposePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
             }
 
             var result = predicate != null ? await _soStringService.GetStringsAsync(predicate) :
@@ -133,7 +133,7 @@ namespace Traducir.Api.Controllers
             return Json(result.Take(2000));
         }
 
-        private Regex _variablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
+        private static readonly Regex VariablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
 
         private static readonly Regex WhitespacesRegex = new Regex(@"^(?<start>\s*).*?(?<end>\s*)$", RegexOptions.Singleline | RegexOptions.Compiled);
 
@@ -158,7 +158,7 @@ namespace Traducir.Api.Controllers
             }
 
             // empty suggestion
-            if (model.Suggestion == null || model.Suggestion.Length == 0)
+            if (model.Suggestion.IsNullOrEmpty())
             {
                 return BadRequest(SuggestionCreationResult.EmptySuggestion);
             }
@@ -184,8 +184,8 @@ namespace Traducir.Api.Controllers
             }
 
             // if there are missing or extra values
-            var variablesInOriginal = _variablesRegex.Matches(str.OriginalString).Select(m => m.Value).ToArray();
-            var variablesInSuggestion = _variablesRegex.Matches(model.Suggestion).Select(m => m.Value).ToArray();
+            var variablesInOriginal = VariablesRegex.Matches(str.OriginalString).Select(m => m.Value).ToArray();
+            var variablesInSuggestion = VariablesRegex.Matches(model.Suggestion).Select(m => m.Value).ToArray();
 
             if (!usingRawString && variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)))
             {
