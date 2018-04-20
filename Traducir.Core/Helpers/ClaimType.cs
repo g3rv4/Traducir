@@ -2,11 +2,11 @@ namespace Traducir.Core.Helpers
 {
     public static class ClaimType
     {
-        public const string Id = "Id";
-        public const string Name = "Name";
-        public const string UserType = "UserType";
-        public const string CanSuggest = "CanSuggest";
-        public const string CanReview = "CanReview";
-        public const string IsModerator = "IsModerator";
+        public const string Id = nameof(Id);
+        public const string Name = nameof(Name);
+        public const string UserType = nameof(UserType);
+        public const string CanSuggest = nameof(CanSuggest);
+        public const string CanReview = nameof(CanReview);
+        public const string IsModerator = nameof(IsModerator);
     }
 }

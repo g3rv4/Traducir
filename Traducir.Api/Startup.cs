@@ -58,9 +58,9 @@ namespace Traducir
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy("CanSuggest", policy => policy.RequireClaim(ClaimType.CanSuggest));
-                options.AddPolicy("CanReview", policy => policy.RequireClaim(ClaimType.CanReview));
-                options.AddPolicy("CanManageUsers", policy => policy.RequireClaim(ClaimType.IsModerator));
+                options.AddPolicy(Policy.CanSuggest, policy => policy.RequireClaim(ClaimType.CanSuggest));
+                options.AddPolicy(Policy.CanReview, policy => policy.RequireClaim(ClaimType.CanReview));
+                options.AddPolicy(Policy.CanManageUsers, policy => policy.RequireClaim(ClaimType.IsModerator));
             });
 
             services.AddExceptional(settings =>

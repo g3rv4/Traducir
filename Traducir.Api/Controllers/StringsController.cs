@@ -144,7 +144,7 @@ namespace Traducir.Controllers
         }
 
         [HttpPut]
-        [Authorize(Policy = "CanSuggest")]
+        [Authorize(Policy = Policy.CanSuggest)]
         [Route("app/api/suggestions")]
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
@@ -163,7 +163,7 @@ namespace Traducir.Controllers
                 return BadRequest(SuggestionCreationResult.EmptySuggestion);
             }
 
-            var usingRawString = model.RawString && (await _authorizationService.AuthorizeAsync(User, "CanReview")).Succeeded;
+            var usingRawString = model.RawString && (await _authorizationService.AuthorizeAsync(User, Policy.CanReview)).Succeeded;
 
             // fix whitespaces unless user is reviewer and selected raw string
             if (!usingRawString)
@@ -209,7 +209,7 @@ namespace Traducir.Controllers
         }
 
         [HttpPut]
-        [Authorize(Policy = "CanReview")]
+        [Authorize(Policy = Policy.CanReview)]
         [Route("app/api/review")]
         public async Task<IActionResult> Review([FromBody] ReviewViewModel model)
         {
@@ -228,7 +228,7 @@ namespace Traducir.Controllers
         }
 
         [HttpPut]
-        [Authorize(Policy = "CanSuggest")]
+        [Authorize(Policy = Policy.CanSuggest)]
         [Route("app/api/manage-urgency")]
         public async Task<IActionResult> ManageUrgency([FromBody] ManageUrgencyViewModel model)
         {
@@ -242,7 +242,7 @@ namespace Traducir.Controllers
         }
 
         [HttpDelete]
-        [Authorize(Policy = "CanSuggest")]
+        [Authorize(Policy = Policy.CanSuggest)]
         [Route("app/api/suggestions/{suggestionId:INT}")]
         public async Task<IActionResult> DeleteSuggestion([FromRoute] int suggestionId)
         {

@@ -113,9 +113,9 @@ namespace Traducir.Controllers
         [Route("app/api/me")]
         public async Task<IActionResult> WhoAmI()
         {
-            var canSuggest = (await _authorizationService.AuthorizeAsync(User, "CanSuggest")).Succeeded;
-            var canReview = (await _authorizationService.AuthorizeAsync(User, "CanReview")).Succeeded;
-            var canManageUsers = (await _authorizationService.AuthorizeAsync(User, "CanManageUsers")).Succeeded;
+            var canSuggest = (await _authorizationService.AuthorizeAsync(User, Policy.CanSuggest)).Succeeded;
+            var canReview = (await _authorizationService.AuthorizeAsync(User, Policy.CanReview)).Succeeded;
+            var canManageUsers = (await _authorizationService.AuthorizeAsync(User, Policy.CanManageUsers)).Succeeded;
 
             return Json(new UserInfo
             {
@@ -136,7 +136,7 @@ namespace Traducir.Controllers
         }
 
         [HttpPut]
-        [Authorize(Policy = "CanManageUsers")]
+        [Authorize(Policy = Policy.CanManageUsers)]
         [Route("app/api/users/change-type")]
         public async Task<IActionResult> ChangeUserType([FromBody] ChangeUserTypeViewModel model)
         {
