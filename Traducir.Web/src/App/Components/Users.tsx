@@ -8,7 +8,7 @@ import { userTypeToString, UserType } from "../../Models/UserType";
 
 export interface UsersProps {
     showErrorMessage: (messageOrCode: string | number) => void;
-    currentUser: UserInfo | null;
+    currentUser?: UserInfo;
     config: Config;
 }
 
