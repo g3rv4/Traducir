@@ -52,12 +52,12 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
                         <td>{sug.lastStateUpdatedByName &&
                             <a href={`https://${this.props.config.siteDomain}/users/${sug.lastStateUpdatedById}`}
                                 target="_blank">{sug.lastStateUpdatedByName}</a>
-                                }</td>
+                        }</td>
                         <td><a href={`https://${this.props.config.siteDomain}/users/${sug.createdById}`}
                             target="_blank"
                             title={'at ' + sug.creationDate + ' UTC'}>{sug.createdByName}</a></td>
                         <td>{this.renderDeleteButton(sug)}</td>
-                        <td>{this.renderSuggestionActions(sug)}</td>                        
+                        <td>{this.renderSuggestionActions(sug)}</td>
                     </tr>)}
             </tbody>
         </table>
@@ -95,17 +95,16 @@ export default class SuggestionsTable extends React.Component<SuggestionsTablePr
         }).then(r => {
             _that.props.refreshString(sug.stringId);
             history.push('/filters');
-        })
-            .catch(e => {
-                if (e.response.status == 400) {
-                    _that.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
-                } else {
-                    _that.props.showErrorMessage(e.response.status);
-                }
-                _that.setState({
-                    isButtonDisabled: false
-                });
+        }).catch(e => {
+            if (e.response.status == 400) {
+                _that.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
+            } else {
+                _that.props.showErrorMessage(e.response.status);
+            }
+            _that.setState({
+                isButtonDisabled: false
             });
+        });
     }
 
     renderDeleteButton(sug: SOStringSuggestion): JSX.Element | null {

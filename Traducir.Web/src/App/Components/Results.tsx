@@ -36,7 +36,7 @@ export default class Results extends React.Component<ResultsProps, ResultsState>
         </>
     }
 
-    goToString = (str: SOString) => {
+    goToString(str: SOString) {
         this.props.loadSuggestions(str);
         history.push('/string/' + str.id);
     }

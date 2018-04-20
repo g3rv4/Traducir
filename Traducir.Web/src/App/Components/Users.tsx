@@ -3,11 +3,12 @@ import axios, { AxiosError } from 'axios';
 import User from "../../Models/User";
 import Config from "../../Models/Config";
 import UserInfo from "../../Models/UserInfo";
+import history from '../../history';
 import { userTypeToString, UserType } from "../../Models/UserType";
 
 export interface UsersProps {
     showErrorMessage: (messageOrCode: string | number) => void;
-    currentUser: UserInfo;
+    currentUser: UserInfo | null;
     config: Config;
 }
 
@@ -26,32 +27,34 @@ export default class Users extends React.Component<UsersProps, UsersState> {
     componentDidMount() {
         this.refreshUsers();
     }
-    refreshUsers = () => {
+    refreshUsers() {
         const _that = this;
         axios.get<User[]>('/app/api/users').then(r => {
             _that.setState({
                 users: r.data
             });
-        })
-            .catch(e => {
+        }).catch(e => {
+            if (e.response.status == 401) {
+                history.push('/');
+            } else {
                 _that.props.showErrorMessage(e.response.status);
-            });
+            }
+        });
     }
-    updateUserType = (user: User, newType: UserType) => {
+    updateUserType(user: User, newType: UserType) {
         const _that = this;
         axios.put('/app/api/users/change-type', {
             UserId: user.id,
             UserType: newType
         }).then(r => {
             _that.refreshUsers();
-        })
-            .catch(e => {
-                if (e.response.status == 400) {
-                    _that.props.showErrorMessage("Error updating user type");
-                } else {
-                    _that.props.showErrorMessage(e.response.status);
-                }
-            });
+        }).catch(e => {
+            if (e.response.status == 400) {
+                _that.props.showErrorMessage("Error updating user type");
+            } else {
+                _that.props.showErrorMessage(e.response.status);
+            }
+        });
     }
     render() {
         return <>
@@ -75,7 +78,7 @@ export default class Users extends React.Component<UsersProps, UsersState> {
                                 </a>
                             </td>
                             <td>{userTypeToString(u.userType)}</td>
-                            <td>{this.props.currentUser.canManageUsers &&
+                            <td>{this.props.currentUser && this.props.currentUser.canManageUsers &&
                                 <div className="btn-group" role="group">
                                     {u.userType == UserType.User &&
                                         <button type="button" className="btn btn-sm btn-warning" onClick={e => this.updateUserType(u, UserType.TrustedUser)}>

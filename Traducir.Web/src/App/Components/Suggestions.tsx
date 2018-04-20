@@ -27,6 +27,8 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
         this.state = {
             rawString: false
         };
+
+        this.onCheckboxChange = this.onCheckboxChange.bind(this);
     }
     updateUrgency(isUrgent: boolean) {
         const _that = this;
@@ -38,14 +40,13 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
                 _that.props.refreshString(_that.props.str.id);
             }
             history.push('/filters');
-        })
-            .catch(e => {
-                if (e.response.status == 400) {
-                    this.props.showErrorMessage("Failed updating the urgency... maybe a race condition?");
-                } else {
-                    this.props.showErrorMessage(e.response.status);
-                }
-            });
+        }).catch(e => {
+            if (e.response.status == 400) {
+                this.props.showErrorMessage("Failed updating the urgency... maybe a race condition?");
+            } else {
+                this.props.showErrorMessage(e.response.status);
+            }
+        });
     }
     renderUrgency() {
         if (!this.props.user || !this.props.user.canSuggest) {
@@ -55,7 +56,7 @@ export default class Suggestions extends React.Component<SuggestionsProps, Sugge
             ? <span>Yes <a href="#" className="btn btn-sm btn-warning" onClick={e => this.updateUrgency(false)}>Mark as non urgent</a></span>
             : <span>No <a href="#" className="btn btn-sm btn-danger" onClick={e => this.updateUrgency(true)}>Mark as urgent</a></span>
     }
-    onCheckboxChange = () => {
+    onCheckboxChange() {
         this.setState({ rawString: !this.state.rawString });
     }
 

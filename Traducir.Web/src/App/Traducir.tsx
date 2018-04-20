@@ -6,7 +6,7 @@ import {
     UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem,
     Modal, ModalHeader, ModalBody, ModalFooter
 } from 'reactstrap';
-import { Route, Switch, withRouter, RouteComponentProps, Link, Redirect } from 'react-router-dom';
+import { Route, Switch, withRouter, RouteComponentProps, Link } from 'react-router-dom';
 import history from '../history';
 import Filters from "./Components/Filters";
 import Results from "./Components/Results";
@@ -41,6 +41,10 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             isOpen: false,
             isLoading: false
         };
+
+        this.loadSuggestions = this.loadSuggestions.bind(this);
+        this.resultsReceived = this.resultsReceived.bind(this);
+        this.refreshString = this.refreshString.bind(this);
     }
 
     componentDidMount() {
@@ -82,13 +86,13 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         }
     }
 
-    loadSuggestions = (str: SOString) => {
+    loadSuggestions(str: SOString) {
         this.setState({
             currentString: str
         });
     }
 
-    refreshString = (stringIdToUpdate: number) => {
+    refreshString(stringIdToUpdate: number) {
         const idx = _.findIndex(this.state.strings, s => s.id == stringIdToUpdate);
         const _that = this;
         axios.get<SOString>(`/app/api/strings/${stringIdToUpdate}`)
@@ -108,14 +112,14 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             })
     }
 
-    resultsReceived = (strings: SOString[]) => {
+    resultsReceived(strings: SOString[]) {
         this.setState({
             strings,
             isLoading: false
         })
     }
 
-    showErrorMessage = (messageOrCode: string | number) => {
+    showErrorMessage(messageOrCode: string | number) {
         if (typeof(messageOrCode) == "string") {
             alert(messageOrCode);
         } else {
@@ -128,17 +132,17 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             }
         }
     }
-    toggle = () => {
+    toggle() {
         this.setState({
             isOpen: !this.state.isOpen
         });
     }
 
-    isOpen = () => {
+    isOpen() {
         return this.props.location.pathname.startsWith('/string/')
     }
 
-    onToggle = () => {
+    onToggle() {
         history.push('/filters');
     }
 
@@ -180,13 +184,11 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             <div className="container">
                 <Switch>
                     <Route path='/users' exact render={p =>
-                        this.state.config && this.state.user
-                            ? <Users
+                        this.state.config && <Users
                                 showErrorMessage={this.showErrorMessage}
                                 currentUser={this.state.user}
                                 config={this.state.config}
                             />
-                            : <Redirect to="/" />
                     } />
                     <Route render={p => <>
                         <Filters

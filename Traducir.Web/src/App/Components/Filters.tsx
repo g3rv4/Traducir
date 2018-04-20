@@ -62,7 +62,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
         }
     }
 
-    hasFilter = () => {
+    hasFilter() {
         return this.state.sourceRegex ||
             this.state.translationRegex ||
             this.state.key ||
@@ -113,7 +113,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
         }
     }
 
-    handleField = (updatedState: FiltersState) => {
+    handleField(updatedState: FiltersState) {
         this.setState({ ...updatedState, hasError: false }, () => {
             if (!this.hasFilter()) {
                 history.replace('/');
@@ -130,7 +130,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
         });
     }
 
-    reset = () => {
+    reset() {
         this.setState({
             sourceRegex: "",
             translationRegex: "",
@@ -162,7 +162,9 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             });
     }, 1000);
 
-    currentPath = () => stringify(_.pickBy(this.state, e => e));
+    currentPath() {
+        return stringify(_.pickBy(this.state, e => e));
+    }
 
     render() {
         return <>
@@ -251,7 +253,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             }
             <div className="row text-center mb-5">
                 <div className="col">
-                    <Link to='/' className="btn btn-secondary" onClick={this.reset}>Reset</Link>
+                    <Link to='/' className="btn btn-secondary" onClick={e => this.reset()}>Reset</Link>
                 </div>
             </div>
             {location.pathname == '/filters' && location.search == '' && this.hasFilter() ?

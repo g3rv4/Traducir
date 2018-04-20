@@ -38,7 +38,7 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
         };
     }
 
-    postSuggestion = (approve: boolean) => {
+    postSuggestion(approve: boolean) {
         axios.put('/app/api/suggestions', {
             StringId: this.props.stringId,
             Suggestion: this.state.suggestion,
@@ -47,39 +47,38 @@ export default class SuggestionNew extends React.Component<SuggestionNewProps, S
         }).then(r => {
             this.props.refreshString(this.props.stringId);
             history.push('/filters');
-        })
-            .catch(e => {
-                if (e.response.status == 400) {
-                    switch (e.response.data) {
-                        case SuggestionCreationResult.DatabaseError:
-                            this.props.showErrorMessage("A database error has ocurred, please try again.");
-                            break;
-                        case SuggestionCreationResult.EmptySuggestion:
-                            this.props.showErrorMessage("You send an empty suggestion, please try to send a suggestion next time");
-                            break;
-                        case SuggestionCreationResult.InvalidStringId:
-                            this.props.showErrorMessage("We couldn't find the id you send, did you need to refresh your page?");
-                            break;
-                        case SuggestionCreationResult.TooFewVariables:
-                            this.props.showErrorMessage("Failed sending the suggestion. You are missing some variables");
-                            break;
-                        case SuggestionCreationResult.TooManyVariables:
-                            this.props.showErrorMessage("Failed sending the suggestion. You have included unrecognized variables");
-                            break;
-                        case SuggestionCreationResult.SuggestionAlreadyThere:
-                            this.props.showErrorMessage("The suggestion you are sending is already suggested. Maybe you need to refresh?");
-                            break;
-                        case SuggestionCreationResult.SuggestionEqualsOriginal:
-                            this.props.showErrorMessage("The suggestion you are sending is the same as the actual translation");
-                            break;
-                        default:
-                            this.props.showErrorMessage("The server encountered an error, but we don't know what happened");
-                            break;
-                    }
-                } else {
-                    this.props.showErrorMessage(e.response.status);
+        }).catch(e => {
+            if (e.response.status == 400) {
+                switch (e.response.data) {
+                    case SuggestionCreationResult.DatabaseError:
+                        this.props.showErrorMessage("A database error has ocurred, please try again.");
+                        break;
+                    case SuggestionCreationResult.EmptySuggestion:
+                        this.props.showErrorMessage("You send an empty suggestion, please try to send a suggestion next time");
+                        break;
+                    case SuggestionCreationResult.InvalidStringId:
+                        this.props.showErrorMessage("We couldn't find the id you send, did you need to refresh your page?");
+                        break;
+                    case SuggestionCreationResult.TooFewVariables:
+                        this.props.showErrorMessage("Failed sending the suggestion. You are missing some variables");
+                        break;
+                    case SuggestionCreationResult.TooManyVariables:
+                        this.props.showErrorMessage("Failed sending the suggestion. You have included unrecognized variables");
+                        break;
+                    case SuggestionCreationResult.SuggestionAlreadyThere:
+                        this.props.showErrorMessage("The suggestion you are sending is already suggested. Maybe you need to refresh?");
+                        break;
+                    case SuggestionCreationResult.SuggestionEqualsOriginal:
+                        this.props.showErrorMessage("The suggestion you are sending is the same as the actual translation");
+                        break;
+                    default:
+                        this.props.showErrorMessage("The server encountered an error, but we don't know what happened");
+                        break;
                 }
-            });
+            } else {
+                this.props.showErrorMessage(e.response.status);
+            }
+        });
     }
 
     render(): JSX.Element | null {
