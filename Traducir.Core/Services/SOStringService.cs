@@ -57,7 +57,7 @@ namespace Traducir.Core.Services
         {
             using (var db = _dbService.GetConnection())
             {
-                await CreateTemporaryTable(db).ConfigureAwait(false);
+                await CreateTemporaryTable(db);
                 using (MiniProfiler.Current.Step("Populate temp table"))
                 {
                     var table = new DataTable();
@@ -102,7 +102,7 @@ Set       s.DeletionDate = @now
 From      Strings s
 Left Join ImportTable feed On feed.NormalizedKey = s.NormalizedKey
 Where     s.DeletionDate Is Null
-And       feed.NormalizedKey Is Null;", new { now = DateTime.UtcNow, StringHistoryType.Deleted }).ConfigureAwait(false);
+And       feed.NormalizedKey Is Null;", new { now = DateTime.UtcNow, StringHistoryType.Deleted });
                 }
 
                 using (MiniProfiler.Current.Step("Update strings"))
@@ -119,7 +119,7 @@ Update s
 Set    s.[Key] = feed.[Key], s.Variant = feed.Variant
 From   Strings s
 Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
-Where  s.[Key] <> feed.[Key];", new { now = DateTime.UtcNow, StringHistoryType.Updated }).ConfigureAwait(false);
+Where  s.[Key] <> feed.[Key];", new { now = DateTime.UtcNow, StringHistoryType.Updated });
                 }
 
                 using (MiniProfiler.Current.Step("Undelete strings"))
@@ -136,7 +136,7 @@ Update s
 Set    s.DeletionDate = Null
 From   Strings s
 Join   ImportTable feed On feed.NormalizedKey = s.NormalizedKey
-Where  s.DeletionDate Is Not Null;", new { now = DateTime.UtcNow, StringHistoryType.Undeleted }).ConfigureAwait(false);
+Where  s.DeletionDate Is Not Null;", new { now = DateTime.UtcNow, StringHistoryType.Undeleted });
                 }
 
                 using (MiniProfiler.Current.Step("Add new strings"))
@@ -161,7 +161,7 @@ Insert Into StringHistory
             (StringId, HistoryTypeId, CreationDate)
 Select s.Id, {=Created}, @now
 From   @NormalizedKeysToInsert i
-Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.UtcNow, StringHistoryType.Created }).ConfigureAwait(false);
+Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.UtcNow, StringHistoryType.Created });
                 }
             }
 
@@ -172,7 +172,7 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
         {
             if (Strings == null || Strings.Length == 0)
             {
-                await RefreshCacheAsync().ConfigureAwait(false);
+                await RefreshCacheAsync();
             }
 
             if (predicate == null)
@@ -193,7 +193,7 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
         {
             if (Strings == null || Strings.Length == 0)
             {
-                await RefreshCacheAsync().ConfigureAwait(false);
+                await RefreshCacheAsync();
             }
 
             if (StringsById.TryGetValue(stringId, out var res))
@@ -234,11 +234,11 @@ Select @suggestionId;", new
                         now = DateTime.UtcNow,
                         comment = initialState == StringSuggestionState.ApprovedByTrustedUser ? "Created by a trusted user" : null,
                         HistoryCreated = StringSuggestionHistoryType.Created
-                    }).ConfigureAwait(false);
+                    });
 
                     if (approve)
                     {
-                        await ReviewSuggestionAsync(suggestionId.Value, true, userId, userType).ConfigureAwait(false);
+                        await ReviewSuggestionAsync(suggestionId.Value, true, userId, userType);
                     }
                 }
                 catch (SqlException e) when (e.Number == 547)
@@ -246,7 +246,7 @@ Select @suggestionId;", new
                     return false;
                 }
 
-                await RefreshCacheAsync(stringId).ConfigureAwait(false);
+                await RefreshCacheAsync(stringId);
                 return true;
             }
         }
@@ -270,7 +270,7 @@ And    StateId In @validStates", new
                     userId,
                     suggestionId,
                     validStates = userType == UserType.Reviewer ? new[] { StringSuggestionState.Created, StringSuggestionState.ApprovedByTrustedUser } : new[] { StringSuggestionState.Created }
-                }).ConfigureAwait(false);
+                });
 
                 if (stringId.HasValue)
                 {
@@ -362,9 +362,9 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                         now = DateTime.UtcNow,
                         DismissedByOtherStringHistory = StringSuggestionHistoryType.DismissedByOtherString,
                         DismissedByOtherStringState = StringSuggestionState.DismissedByOtherString,
-                    }).ConfigureAwait(false);
+                    });
 
-                    await RefreshCacheAsync(stringId.Value).ConfigureAwait(false);
+                    await RefreshCacheAsync(stringId.Value);
                     return true;
                 }
 
@@ -376,7 +376,7 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
         {
             using (var db = _dbService.GetConnection())
             {
-                var rows = await db.ExecuteAsync(@"Update Strings Set NeedsPush = 0 Where NeedsPush = 1").ConfigureAwait(false);
+                var rows = await db.ExecuteAsync(@"Update Strings Set NeedsPush = 0 Where NeedsPush = 1");
                 if (rows > 0)
                 {
                     ExpireCache();
@@ -388,15 +388,15 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
         {
             using (var httpClient = new HttpClient())
             {
-                var response = await httpClient.GetAsync(dumpUrl).ConfigureAwait(false);
+                var response = await httpClient.GetAsync(dumpUrl);
                 response.EnsureSuccessStatusCode();
 
-                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                using (var stream = await response.Content.ReadAsStreamAsync())
                 using (var reader = new StreamReader(stream))
                 using (var csv = new CsvReader(reader))
                 using (var db = _dbService.GetConnection())
                 {
-                    await ResetDumpTable(db).ConfigureAwait(false);
+                    await ResetDumpTable(db);
                     var table = new DataTable();
                     table.Columns.Add("Id", typeof(int));
                     table.Columns.Add("LocaleId", typeof(int));
@@ -457,7 +457,7 @@ Set    s.Translation = dump.Translation,
        s.IsUrgent = 0
 From   Strings s
 Join   SODumpTable dump On dump.Hash = s.[Key]
-Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump }).ConfigureAwait(false);
+Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
 
                 // update the ones in the db that have a translation with a different variant order
                 await db.ExecuteAsync(@"
@@ -473,15 +473,15 @@ Set    s.Translation = dump.Translation,
        s.IsUrgent = 0
 From   Strings s
 Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
-Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump }).ConfigureAwait(false);
+Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
             }
 
-            await RefreshCacheAsync().ConfigureAwait(false);
+            await RefreshCacheAsync();
         }
 
         public async Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId)
         {
-            var str = await GetStringByIdAsync(stringId).ConfigureAwait(false);
+            var str = await GetStringByIdAsync(stringId);
             if (str == null)
             {
                 return false;
@@ -508,10 +508,10 @@ Where  Id = @stringId", new
                     userId,
                     historyType = isUrgent ? StringHistoryType.MadeUrgent : StringHistoryType.MadeNotUrgent,
                     now = DateTime.UtcNow
-                }).ConfigureAwait(false);
+                });
             }
 
-            await RefreshCacheAsync(stringId).ConfigureAwait(false);
+            await RefreshCacheAsync(stringId);
             return true;
         }
 
@@ -544,13 +544,13 @@ Select @idString;", new
                     StringSuggestionState.DeletedByOwner,
                     userId,
                     now = DateTime.UtcNow
-                }).ConfigureAwait(false);
+                });
 
                 // If the Id returned is zero, then no data was updated, because there is no suggestion
                 // or the user is not the one who created it.
                 if (idString > 0)
                 {
-                    await RefreshCacheAsync(idString).ConfigureAwait(false);
+                    await RefreshCacheAsync(idString);
                     return true;
                 }
 
@@ -629,10 +629,10 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
                 StringSuggestionState.Created,
                 StringSuggestionState.ApprovedByTrustedUser,
                 stringId
-            }).ConfigureAwait(false))
+            }))
             {
-                var strings = (await reader.ReadAsync<SOString>().ConfigureAwait(false)).AsList();
-                var suggestions = (await reader.ReadAsync<SOStringSuggestion>().ConfigureAwait(false)).AsList();
+                var strings = (await reader.ReadAsync<SOString>()).AsList();
+                var suggestions = (await reader.ReadAsync<SOStringSuggestion>()).AsList();
                 Dictionary<int, SOString> stringsById;
 
                 using (MiniProfiler.Current.Step("Attaching the suggestions to the strings"))

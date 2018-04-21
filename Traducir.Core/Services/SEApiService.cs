@@ -64,10 +64,10 @@ namespace Traducir.Core.Services
                     ("code", code),
                     ("redirect_uri", returnUrl),
                 }.Select(e => new KeyValuePair<string, string>(e.Item1, e.Item2)));
-                var result = await client.PostAsync("/oauth/access_token", content).ConfigureAwait(false);
+                var result = await client.PostAsync("/oauth/access_token", content);
                 result.EnsureSuccessStatusCode();
 
-                string resultContent = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
+                string resultContent = await result.Content.ReadAsStringAsync();
                 var parsedData = HttpUtility.ParseQueryString(resultContent);
                 return parsedData["access_token"];
             }
@@ -75,10 +75,10 @@ namespace Traducir.Core.Services
 
         public async Task<NetworkUser[]> GetMyAssociatedUsersAsync(string accessToken)
         {
-            var result = await GetFromApi("/2.2/me/associated", accessToken).ConfigureAwait(false);
+            var result = await GetFromApi("/2.2/me/associated", accessToken);
             result.EnsureSuccessStatusCode();
 
-            using (var stream = await result.Content.ReadAsStreamAsync().ConfigureAwait(false))
+            using (var stream = await result.Content.ReadAsStreamAsync())
             using (var reader = new StreamReader(stream))
             {
                 return Jil.JSON.Deserialize<PaginatedResponse<NetworkUser>>(reader, Jil.Options.MillisecondsSinceUnixEpochUtc)
@@ -88,10 +88,10 @@ namespace Traducir.Core.Services
 
         public async Task<User> GetMyUserAsync(string site, string accessToken)
         {
-            var result = await GetFromApi("/2.2/me?site=" + site, accessToken).ConfigureAwait(false);
+            var result = await GetFromApi("/2.2/me?site=" + site, accessToken);
             result.EnsureSuccessStatusCode();
 
-            using (var stream = await result.Content.ReadAsStreamAsync().ConfigureAwait(false))
+            using (var stream = await result.Content.ReadAsStreamAsync())
             using (var reader = new StreamReader(stream))
             {
                 return Jil.JSON.Deserialize<PaginatedResponse<User>>(reader, Jil.Options.MillisecondsSinceUnixEpochUtc)
