@@ -26,8 +26,7 @@ namespace Traducir.Api.Controllers
 
         public AccountController(
             IConfiguration configuration,ISEApiService seApiService,
-            IUserService userService,
-            IAuthorizationService authorizationService)
+            IUserService userService,IAuthorizationService authorizationService)
         {
             _seApiService = seApiService;
             _configuration = configuration;
