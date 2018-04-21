@@ -25,8 +25,7 @@ namespace Traducir.Api.Controllers
         private readonly IAuthorizationService _authorizationService;
 
         public AccountController(
-            IConfiguration configuration,
-            ISEApiService seApiService,
+            IConfiguration configuration,ISEApiService seApiService,
             IUserService userService,
             IAuthorizationService authorizationService)
         {
