@@ -8,6 +8,7 @@ pipeline:
       - "mkdir -p /var/traducir-image/app/backend"
 
       - "cd Traducir.Api"
+      - "dotnet restore"
       - "dotnet msbuild /m /v:m /p:GenerateFullPaths=true /p:MSBuildTreatWarningsAsErrors=true"
       - "dotnet publish -c Release -f netcoreapp2.0 -o /var/traducir-image/app/backend"
     volumes:
@@ -19,7 +20,7 @@ pipeline:
     commands:
       - "rm -rf /var/traducir-image/app/frontend"
       - "mkdir -p /var/traducir-image/app/frontend"
-      
+
       - "cd Traducir.Web"
       - "cp -r /var/node_modules node_modules"
       - "npm run build"
