@@ -1,26 +1,61 @@
 pipeline:
-  build:
+  backend:
     image: g3rv4/transifex-builder
     when:
       branch: master
     commands:
-      - "git clone git@github.com:g3rv4-docker/traducir.git output-image"
-      - "rm -rf output-image/app/backend"
-      - "rm -rf output-image/app/frontend"
-      - "mkdir -p output-image/app/backend"
-      - "mkdir -p output-image/app/frontend"
+      - "rm -rf /var/traducir-image/app/backend"
+      - "mkdir -p /var/traducir-image/app/backend"
 
       - "cd Traducir.Api"
-      - "dotnet publish -c Release -f netcoreapp2.0 -o ../output-image/app/backend"
-      - "cd ../"
+      - "dotnet publish -c Release -f netcoreapp2.0 -o /var/traducir-image/app/backend"
+    volumes:
+      - /home/gervasio/docker/traducir-image:/var/traducir-image
+  frontend:
+    image: g3rv4/transifex-builder
+    when:
+      branch: master
+    commands:
+      - "rm -rf /var/traducir-image/app/frontend"
+      - "mkdir -p /var/traducir-image/app/frontend"
       
       - "cd Traducir.Web"
       - "cp -r /var/node_modules node_modules"
       - "npm run build"
-      - "cp -r ./dist/* ../output-image/app/frontend/"
-      - "cd ../"
-
-      - "cd output-image"
-      - "git add app"
-      - "git commit -m \"Source update: ${DRONE_COMMIT_SHA}\""
-      - "git push"
+      - "cp -r ./dist/* /var/traducir-image/app/frontend/"
+    volumes:
+      - /home/gervasio/docker/traducir-image:/var/traducir-image
+  release-dev:
+    image: g3rv4/docker
+    commands:
+      - "docker build -t g3rv4/traducir:dev /var/traducir-image"
+      - "docker stop traducir_traducir_dev_1"
+      - "docker rm -f traducir_traducir_dev_1"
+      - "docker-compose -f /var/traducir/docker-compose.yml up -d"
+      - "sleep 10"
+      - "curl -X DELETE \"https://api.cloudflare.com/client/v4/zones/$${CLOUDFLARE_ZONE}/purge_cache\" -H \"X-Auth-Email: $${CLOUDFLARE_EMAIL}\" -H \"X-Auth-Key: $${CLOUDFLARE_KEY}\" -H \"Content-Type: application/json\" --data '{\"purge_everything\":true}'"
+      - "docker exec traducir_traducir_dev_1 curl -i http://localhost:5000/app/api/admin/migrate"
+    secrets: [cloudflare_zone, cloudflare_email, cloudflare_key]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/gervasio/docker/traducir-image:/var/traducir-image
+      - /home/gervasio/docker/traducir:/var/traducir
+    when:
+      event: [ push ]
+  release-prod:
+    image: g3rv4/docker
+    commands:
+      - "docker build -t g3rv4/traducir /var/traducir-image"
+      - "docker stop traducir_traducir_1"
+      - "docker rm -f traducir_traducir_1"
+      - "docker-compose -f /var/traducir/docker-compose.yml up -d"
+      - "sleep 10"
+      - "curl -X DELETE \"https://api.cloudflare.com/client/v4/zones/$${CLOUDFLARE_ZONE}/purge_cache\" -H \"X-Auth-Email: $${CLOUDFLARE_EMAIL}\" -H \"X-Auth-Key: $${CLOUDFLARE_KEY}\" -H \"Content-Type: application/json\" --data '{\"purge_everything\":true}'"
+      - "docker exec traducir_traducir_1 curl -i http://localhost:5000/app/api/admin/migrate"
+    secrets: [cloudflare_zone, cloudflare_email, cloudflare_key]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/gervasio/docker/traducir-image:/var/traducir-image
+      - /home/gervasio/docker/traducir:/var/traducir
+    when:
+      event: [ deployment ]
