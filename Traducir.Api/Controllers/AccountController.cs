@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -23,7 +24,8 @@ namespace Traducir.Api.Controllers
         private readonly IUserService _userService;
         private readonly IAuthorizationService _authorizationService;
 
-        public AccountController(IConfiguration configuration,
+        public AccountController(
+            IConfiguration configuration,
             ISEApiService seApiService,
             IUserService userService,
             IAuthorizationService authorizationService)
@@ -32,11 +34,6 @@ namespace Traducir.Api.Controllers
             _configuration = configuration;
             _userService = userService;
             _authorizationService = authorizationService;
-        }
-
-        string GetOauthReturnUrl()
-        {
-            return Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS") ? "https" : "http");
         }
 
         [Route("app/login")]
@@ -48,7 +45,7 @@ namespace Traducir.Api.Controllers
         [Route("app/logout")]
         public async Task<IActionResult> LogOut(string returnUrl = null)
         {
-            await HttpContext.SignOutAsync();
+            await HttpContext.SignOutAsync().ConfigureAwait(false);
             return Redirect(returnUrl ?? "/");
         }
 
@@ -57,8 +54,8 @@ namespace Traducir.Api.Controllers
         {
             var siteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN");
 
-            var accessToken = await _seApiService.GetAccessTokenFromCodeAsync(code, GetOauthReturnUrl());
-            var currentUser = await _seApiService.GetMyUserAsync(siteDomain, accessToken);
+            var accessToken = await _seApiService.GetAccessTokenFromCodeAsync(code, GetOauthReturnUrl()).ConfigureAwait(false);
+            var currentUser = await _seApiService.GetMyUserAsync(siteDomain, accessToken).ConfigureAwait(false);
 
             if (currentUser == null)
             {
@@ -78,13 +75,13 @@ namespace Traducir.Api.Controllers
                 IsModerator = currentUser.UserType == "moderator",
                 CreationDate = DateTime.UtcNow,
                 LastSeenDate = DateTime.UtcNow
-            });
+            }).ConfigureAwait(false);
 
-            var user = await _userService.GetUserAsync(currentUser.UserId);
+            var user = await _userService.GetUserAsync(currentUser.UserId).ConfigureAwait(false);
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimType.Id, user.Id.ToString()),
+                new Claim(ClaimType.Id, user.Id.ToString(CultureInfo.InvariantCulture)),
                 new Claim(ClaimType.Name, user.DisplayName),
                 new Claim(ClaimType.UserType, user.UserType.ToString())
             };
@@ -96,15 +93,17 @@ namespace Traducir.Api.Controllers
                     claims.Add(new Claim(ClaimType.CanReview, "1"));
                 }
             }
+
             if (user.IsModerator)
             {
                 claims.Add(new Claim(ClaimType.IsModerator, "1"));
             }
+
             var identity = new ClaimsIdentity(claims, "login");
 
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity));
+                new ClaimsPrincipal(identity)).ConfigureAwait(false);
 
             return Redirect(state ?? "/");
         }
@@ -113,9 +112,9 @@ namespace Traducir.Api.Controllers
         [Route("app/api/me")]
         public async Task<IActionResult> WhoAmI()
         {
-            var canSuggest = (await _authorizationService.AuthorizeAsync(User, Policy.CanSuggest)).Succeeded;
-            var canReview = (await _authorizationService.AuthorizeAsync(User, Policy.CanReview)).Succeeded;
-            var canManageUsers = (await _authorizationService.AuthorizeAsync(User, Policy.CanManageUsers)).Succeeded;
+            var canSuggest = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanSuggest).ConfigureAwait(false)).Succeeded;
+            var canReview = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview).ConfigureAwait(false)).Succeeded;
+            var canManageUsers = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanManageUsers).ConfigureAwait(false)).Succeeded;
 
             return Json(new UserInfo
             {
@@ -132,11 +131,13 @@ namespace Traducir.Api.Controllers
         [Route("app/api/users")]
         public async Task<IActionResult> GetUsers()
         {
-            return Json((await _userService.GetUsersAsync()).OrderByDescending(u => u.UserType).ThenByDescending(u => u.LastSeenDate));
+            return Json((await _userService.GetUsersAsync().ConfigureAwait(false))
+                .OrderByDescending(u => u.UserType)
+                .ThenByDescending(u => u.LastSeenDate));
         }
 
         [HttpPut]
-        [Authorize(Policy = Policy.CanManageUsers)]
+        [Authorize(Policy = TraducirPolicy.CanManageUsers)]
         [Route("app/api/users/change-type")]
         public async Task<IActionResult> ChangeUserType([FromBody] ChangeUserTypeViewModel model)
         {
@@ -146,13 +147,19 @@ namespace Traducir.Api.Controllers
                 return BadRequest();
             }
 
-            var success = await _userService.ChangeUserTypeAsync(model.UserId, model.UserType, User.GetClaim<int>(ClaimType.Id));
+            var success = await _userService.ChangeUserTypeAsync(model.UserId, model.UserType, User.GetClaim<int>(ClaimType.Id))
+                .ConfigureAwait(false);
             if (!success)
             {
                 return BadRequest();
             }
+
             return new EmptyResult();
         }
 
+        private string GetOauthReturnUrl()
+        {
+            return Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS") ? "https" : "http");
+        }
     }
 }

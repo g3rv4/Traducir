@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
 namespace Traducir.Core.Helpers
 {
-    public static class Extensions
+    public static class TraducirExtensions
     {
         public static HashSet<T> ToHashSet<T>(
             this IEnumerable<T> source,
@@ -24,6 +25,7 @@ namespace Traducir.Core.Helpers
             return !str.IsNullOrEmpty();
         }
 
+        #pragma warning disable CA5351
         public static string CalculateMd5(this string str)
         {
             // Use input string to calculate MD5 hash
@@ -36,11 +38,13 @@ namespace Traducir.Core.Helpers
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < hashBytes.Length; i++)
                 {
-                    sb.Append(hashBytes[i].ToString("x2"));
+                    sb.Append(hashBytes[i].ToString("x2", CultureInfo.InvariantCulture));
                 }
+
                 return sb.ToString();
             }
         }
+        #pragma warning restore CA5351
 
         public static T GetClaim<T>(this ClaimsPrincipal user, string type)
         {

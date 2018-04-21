@@ -8,6 +8,7 @@ pipeline:
       - "mkdir -p /var/traducir-image/app/backend"
 
       - "cd Traducir.Api"
+      - "dotnet msbuild /m /v:m /p:GenerateFullPaths=true /p:MSBuildTreatWarningsAsErrors=true"
       - "dotnet publish -c Release -f netcoreapp2.0 -o /var/traducir-image/app/backend"
     volumes:
       - /home/gervasio/docker/traducir-image:/var/traducir-image

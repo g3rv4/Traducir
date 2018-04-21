@@ -17,14 +17,15 @@ namespace Traducir.Api
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
-        public IHostingEnvironment HostingEnvironment { get; }
-
         public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
             HostingEnvironment = env;
         }
+
+        public IConfiguration Configuration { get; }
+
+        public IHostingEnvironment HostingEnvironment { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -58,9 +59,9 @@ namespace Traducir.Api
 
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(Policy.CanSuggest, policy => policy.RequireClaim(ClaimType.CanSuggest));
-                options.AddPolicy(Policy.CanReview, policy => policy.RequireClaim(ClaimType.CanReview));
-                options.AddPolicy(Policy.CanManageUsers, policy => policy.RequireClaim(ClaimType.IsModerator));
+                options.AddPolicy(TraducirPolicy.CanSuggest, policy => policy.RequireClaim(ClaimType.CanSuggest));
+                options.AddPolicy(TraducirPolicy.CanReview, policy => policy.RequireClaim(ClaimType.CanReview));
+                options.AddPolicy(TraducirPolicy.CanManageUsers, policy => policy.RequireClaim(ClaimType.IsModerator));
             });
 
             services.AddExceptional(settings =>
@@ -88,7 +89,7 @@ namespace Traducir.Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseAuthentication();
             app.UseMiniProfiler();

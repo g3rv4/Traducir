@@ -1,6 +1,6 @@
 namespace Traducir.Core.Models.Enums
 {
-    public enum StringHistoryType : byte
+    public enum StringHistoryType : int
     {
         Created = 1,
         Updated = 2,

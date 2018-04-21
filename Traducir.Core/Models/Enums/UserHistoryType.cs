@@ -5,6 +5,6 @@ namespace Traducir.Core.Models.Enums
         Banned = 1,
         BanLifted = 2,
         MadeTrustedUser = 3,
-        DemotedToRegularUser = 4        
+        DemotedToRegularUser = 4
     }
 }

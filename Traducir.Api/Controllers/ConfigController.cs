@@ -7,6 +7,7 @@ namespace Traducir.Api.Controllers
     public class ConfigController : Controller
     {
         private readonly IConfiguration _configuration;
+
         public ConfigController(IConfiguration configuration)
         {
             _configuration = configuration;

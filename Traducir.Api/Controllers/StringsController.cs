@@ -1,24 +1,29 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Traducir.Api.Models.Enums;
+using Traducir.Api.ViewModels.Strings;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
-using Traducir.Api.ViewModels.Strings;
-using Traducir.Api.Models.Enums;
 
 namespace Traducir.Api.Controllers
 {
     public class StringsController : Controller
     {
+        private static readonly Regex VariablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
+        private static readonly Regex WhitespacesRegex = new Regex(@"^(?<start>\s*).*?(?<end>\s*)$", RegexOptions.Singleline | RegexOptions.Compiled);
+
         private readonly ISOStringService _soStringService;
         private readonly IAuthorizationService _authorizationService;
 
-        public StringsController(ISOStringService soStringService,
+        public StringsController(
+            ISOStringService soStringService,
             IAuthorizationService authorizationService)
         {
             _soStringService = soStringService;
@@ -31,12 +36,12 @@ namespace Traducir.Api.Controllers
         {
             return Json(new
             {
-                TotalStrings = (await _soStringService.GetStringsAsync()).Length,
-                WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation)).Length,
-                WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions)).Length,
-                WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval)).Length,
-                WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview)).Length,
-                UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent)).Length,
+                TotalStrings = (await _soStringService.GetStringsAsync().ConfigureAwait(false)).Length,
+                WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation).ConfigureAwait(false)).Length,
+                WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions).ConfigureAwait(false)).Length,
+                WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval).ConfigureAwait(false)).Length,
+                WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview).ConfigureAwait(false)).Length,
+                UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent).ConfigureAwait(false)).Length,
             });
         }
 
@@ -44,7 +49,7 @@ namespace Traducir.Api.Controllers
         [Route("app/api/strings/{stringId:INT}")]
         public async Task<IActionResult> GetString(int stringId)
         {
-            return Json(await _soStringService.GetStringByIdAsync(stringId));
+            return Json(await _soStringService.GetStringByIdAsync(stringId).ConfigureAwait(false));
         }
 
         [HttpPost]
@@ -60,46 +65,52 @@ namespace Traducir.Api.Controllers
                     predicate = newPredicate;
                     return;
                 }
+
                 var oldPredicate = predicate;
                 predicate = s => oldPredicate(s) && newPredicate(s);
             }
 
-            if (model.TranslationStatus != QueryViewModel.TranslationStatuses.AnyStatus)
+            if (model.TranslationStatus != TranslationStatus.AnyStatus)
             {
-                ComposePredicate(s => s.HasTranslation == (model.TranslationStatus == QueryViewModel.TranslationStatuses.WithTranslation));
+                ComposePredicate(s => s.HasTranslation == (model.TranslationStatus == TranslationStatus.WithTranslation));
             }
-            if (model.PushStatus != QueryViewModel.PushStatuses.AnyStatus)
+
+            if (model.PushStatus != PushStatus.AnyStatus)
             {
-                ComposePredicate(s => s.NeedsPush == (model.PushStatus == QueryViewModel.PushStatuses.NeedsPush));
+                ComposePredicate(s => s.NeedsPush == (model.PushStatus == PushStatus.NeedsPush));
             }
-            if (model.UrgencyStatus != QueryViewModel.UrgencyStatuses.AnyStatus)
+
+            if (model.UrgencyStatus != UrgencyStatus.AnyStatus)
             {
-                ComposePredicate(s => s.IsUrgent == (model.UrgencyStatus == QueryViewModel.UrgencyStatuses.IsUrgent));
+                ComposePredicate(s => s.IsUrgent == (model.UrgencyStatus == UrgencyStatus.IsUrgent));
             }
-            if (model.SuggestionsStatus != QueryViewModel.SuggestionApprovalStatus.AnyStatus)
+
+            if (model.SuggestionsStatus != SuggestionApprovalStatus.AnyStatus)
             {
                 switch (model.SuggestionsStatus)
                 {
-                    case QueryViewModel.SuggestionApprovalStatus.DoesNotHaveSuggestions:
+                    case SuggestionApprovalStatus.DoesNotHaveSuggestions:
                         ComposePredicate(s => !s.HasSuggestions);
                         break;
-                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReview:
+                    case SuggestionApprovalStatus.HasSuggestionsNeedingReview:
                         ComposePredicate(s =>
                             s.Suggestions != null &&
                             s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
                         break;
-                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
+                    case SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
                         ComposePredicate(s => s.HasSuggestionsWaitingApproval);
                         break;
-                    case QueryViewModel.SuggestionApprovalStatus.HasSuggestionsNeedingReviewApprovedByTrustedUser:
+                    case SuggestionApprovalStatus.HasSuggestionsNeedingReviewApprovedByTrustedUser:
                         ComposePredicate(s => s.HasApprovedSuggestionsWaitingReview);
                         break;
                 }
             }
+
             if (model.Key.HasValue())
             {
-                ComposePredicate(s => s.Key.StartsWith(model.Key));
+                ComposePredicate(s => s.Key.StartsWith(model.Key, true, CultureInfo.InvariantCulture));
             }
+
             if (model.SourceRegex.HasValue())
             {
                 Regex regex;
@@ -111,8 +122,10 @@ namespace Traducir.Api.Controllers
                 {
                     return BadRequest();
                 }
+
                 ComposePredicate(s => regex.IsMatch(s.OriginalString));
             }
+
             if (model.TranslationRegex.HasValue())
             {
                 Regex regex;
@@ -124,30 +137,21 @@ namespace Traducir.Api.Controllers
                 {
                     return BadRequest();
                 }
+
                 ComposePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
             }
 
-            var result = await _soStringService.GetStringsAsync(predicate);
+            var result = await _soStringService.GetStringsAsync(predicate).ConfigureAwait(false);
             return Json(result.Take(2000));
         }
 
-        private static readonly Regex VariablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
-
-        private static readonly Regex WhitespacesRegex = new Regex(@"^(?<start>\s*).*?(?<end>\s*)$", RegexOptions.Singleline | RegexOptions.Compiled);
-
-        private static string FixWhitespaces(string suggestion, string original)
-        {
-            var match = WhitespacesRegex.Match(original);
-            return match.Groups["start"] + suggestion.Trim() + match.Groups["end"];
-        }
-
         [HttpPut]
-        [Authorize(Policy = Policy.CanSuggest)]
+        [Authorize(Policy = TraducirPolicy.CanSuggest)]
         [Route("app/api/suggestions")]
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
-            //Verify that everything is valid before calling the service
-            var str = await _soStringService.GetStringByIdAsync(model.StringId);
+            // Verify that everything is valid before calling the service
+            var str = await _soStringService.GetStringByIdAsync(model.StringId).ConfigureAwait(false);
 
             // if the string id is invalid
             if (str == null)
@@ -161,7 +165,8 @@ namespace Traducir.Api.Controllers
                 return BadRequest(SuggestionCreationResult.EmptySuggestion);
             }
 
-            var usingRawString = model.RawString && (await _authorizationService.AuthorizeAsync(User, Policy.CanReview)).Succeeded;
+            var usingRawString = model.RawString &&
+                (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview).ConfigureAwait(false)).Succeeded;
 
             // fix whitespaces unless user is reviewer and selected raw string
             if (!usingRawString)
@@ -195,19 +200,22 @@ namespace Traducir.Api.Controllers
                 return BadRequest(SuggestionCreationResult.TooManyVariables);
             }
 
-            var suggestionResult = await _soStringService.CreateSuggestionAsync(model.StringId, model.Suggestion,
+            var suggestionResult = await _soStringService.CreateSuggestionAsync(
+                model.StringId,
+                model.Suggestion,
                 User.GetClaim<int>(ClaimType.Id),
                 User.GetClaim<UserType>(ClaimType.UserType),
-                model.Approve);
+                model.Approve).ConfigureAwait(false);
             if (suggestionResult)
             {
                 return new EmptyResult();
             }
+
             return BadRequest(SuggestionCreationResult.DatabaseError);
         }
 
         [HttpPut]
-        [Authorize(Policy = Policy.CanReview)]
+        [Authorize(Policy = TraducirPolicy.CanReview)]
         [Route("app/api/review")]
         public async Task<IActionResult> Review([FromBody] ReviewViewModel model)
         {
@@ -215,42 +223,55 @@ namespace Traducir.Api.Controllers
             {
                 return BadRequest();
             }
-            var success = await _soStringService.ReviewSuggestionAsync(model.SuggestionId.Value, model.Approve.Value,
+
+            var success = await _soStringService.ReviewSuggestionAsync(
+                model.SuggestionId.Value,
+                model.Approve.Value,
                 User.GetClaim<int>(ClaimType.Id),
-                User.GetClaim<UserType>(ClaimType.UserType));
+                User.GetClaim<UserType>(ClaimType.UserType)).ConfigureAwait(false);
             if (success)
             {
                 return new EmptyResult();
             }
+
             return BadRequest();
         }
 
         [HttpPut]
-        [Authorize(Policy = Policy.CanSuggest)]
+        [Authorize(Policy = TraducirPolicy.CanSuggest)]
         [Route("app/api/manage-urgency")]
         public async Task<IActionResult> ManageUrgency([FromBody] ManageUrgencyViewModel model)
         {
-            var success = await _soStringService.ManageUrgencyAsync(model.StringId, model.IsUrgent,
-                User.GetClaim<int>(ClaimType.Id));
+            var success = await _soStringService.ManageUrgencyAsync(
+                model.StringId,
+                model.IsUrgent,
+                User.GetClaim<int>(ClaimType.Id)).ConfigureAwait(false);
             if (success)
             {
                 return new EmptyResult();
             }
+
             return BadRequest();
         }
 
         [HttpDelete]
-        [Authorize(Policy = Policy.CanSuggest)]
+        [Authorize(Policy = TraducirPolicy.CanSuggest)]
         [Route("app/api/suggestions/{suggestionId:INT}")]
         public async Task<IActionResult> DeleteSuggestion([FromRoute] int suggestionId)
         {
-            var success = await _soStringService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id));
+            var success = await _soStringService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id)).ConfigureAwait(false);
             if (success)
             {
                 return new EmptyResult();
             }
+
             return BadRequest();
         }
 
+        private static string FixWhitespaces(string suggestion, string original)
+        {
+            var match = WhitespacesRegex.Match(original);
+            return match.Groups["start"] + suggestion.Trim() + match.Groups["end"];
+        }
     }
 }

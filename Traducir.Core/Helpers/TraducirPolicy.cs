@@ -1,6 +1,6 @@
 namespace Traducir.Core.Helpers
 {
-    public static class Policy
+    public static class TraducirPolicy
     {
         public const string CanSuggest = nameof(CanSuggest);
         public const string CanReview = nameof(CanReview);

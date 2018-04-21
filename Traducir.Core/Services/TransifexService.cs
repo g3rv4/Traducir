@@ -34,28 +34,16 @@ namespace Traducir.Core.Services
         }
 
         private static HttpClient HttpClient { get; set; }
-        private HttpClient GetHttpClient()
-        {
-            if (HttpClient == null)
-            {
-                var baseAddress = new Uri("https://www.transifex.com");
-                HttpClient = new HttpClient { BaseAddress = baseAddress };
-                var byteArray = Encoding.ASCII.GetBytes("api:" + _apikey);
-                HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-            }
-
-            return HttpClient;
-        }
 
         public async Task<ImmutableArray<TransifexString>> GetStringsFromTransifexAsync()
         {
             using (MiniProfiler.Current.Step("Fetching strings from Transifex"))
             {
                 var client = GetHttpClient();
-                var response = await client.GetAsync(_resourcePath);
+                var response = await client.GetAsync(_resourcePath).ConfigureAwait(false);
                 response.EnsureSuccessStatusCode();
 
-                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                 using (var reader = new StreamReader(stream))
                 {
                     return Jil.JSON.Deserialize<TransifexString[]>(reader).ToImmutableArray();
@@ -85,17 +73,30 @@ namespace Traducir.Core.Services
                 using (MiniProfiler.Current.Step("Posting to Transifex"))
                 {
                     var client = GetHttpClient();
-                    var response = await client.PutAsync(_resourcePath, byteContent);
+                    var response = await client.PutAsync(_resourcePath, byteContent).ConfigureAwait(false);
                     success = response.IsSuccessStatusCode;
                 }
 
                 if (success)
                 {
-                    await _soStringService.UpdateStringsPushed();
+                    await _soStringService.UpdateStringsPushed().ConfigureAwait(false);
                 }
 
                 return success;
             }
+        }
+
+        private HttpClient GetHttpClient()
+        {
+            if (HttpClient == null)
+            {
+                var baseAddress = new Uri("https://www.transifex.com");
+                HttpClient = new HttpClient { BaseAddress = baseAddress };
+                var byteArray = Encoding.ASCII.GetBytes("api:" + _apikey);
+                HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            }
+
+            return HttpClient;
         }
     }
 }

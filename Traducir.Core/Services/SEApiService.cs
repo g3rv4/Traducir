@@ -25,19 +25,9 @@ namespace Traducir.Core.Services
     public class SEApiService : ISEApiService
     {
         private const string FilterId = "SY(8)VHj.3*xaOr3N*GB)B";
-
         private readonly string _clientId;
         private readonly string _appKey;
         private readonly string _appSecret;
-
-        HttpClientHandler Handler => new HttpClientHandler
-        {
-            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-        };
-        HttpClient HttpClient => new HttpClient(Handler)
-        {
-            BaseAddress = new Uri("https://api.stackexchange.com")
-        };
 
         public SEApiService(IConfiguration configuration)
         {
@@ -46,16 +36,20 @@ namespace Traducir.Core.Services
             _appSecret = configuration.GetValue<string>("STACKAPP_SECRET");
         }
 
-        Task<HttpResponseMessage> GetFromApi(string url, string accessToken)
+        private HttpClientHandler Handler => new HttpClientHandler
         {
-            var glue = url.Contains("?") ? "&" : "?";
-            return HttpClient.GetAsync($"{url}{glue}key={_appKey}&access_token={accessToken}&filter={FilterId}");
-        }
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+        };
+
+        private HttpClient HttpClient => new HttpClient(Handler)
+        {
+            BaseAddress = new Uri("https://api.stackexchange.com")
+        };
 
         public string GetInitialOauthUrl(string returnUrl, string state = null)
         {
             return $"https://stackoverflow.com/oauth?client_id={_clientId}&redirect_uri={WebUtility.UrlEncode(returnUrl)}" +
-                (state == null ? "" : $"&state={WebUtility.UrlEncode(state)}");
+                (state == null ? string.Empty : $"&state={WebUtility.UrlEncode(state)}");
         }
 
         public async Task<string> GetAccessTokenFromCodeAsync(string code, string returnUrl)
@@ -70,10 +64,10 @@ namespace Traducir.Core.Services
                     ("code", code),
                     ("redirect_uri", returnUrl),
                 }.Select(e => new KeyValuePair<string, string>(e.Item1, e.Item2)));
-                var result = await client.PostAsync("/oauth/access_token", content);
+                var result = await client.PostAsync("/oauth/access_token", content).ConfigureAwait(false);
                 result.EnsureSuccessStatusCode();
 
-                string resultContent = await result.Content.ReadAsStringAsync();
+                string resultContent = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
                 var parsedData = HttpUtility.ParseQueryString(resultContent);
                 return parsedData["access_token"];
             }
@@ -81,10 +75,10 @@ namespace Traducir.Core.Services
 
         public async Task<NetworkUser[]> GetMyAssociatedUsersAsync(string accessToken)
         {
-            var result = await GetFromApi("/2.2/me/associated", accessToken);
+            var result = await GetFromApi("/2.2/me/associated", accessToken).ConfigureAwait(false);
             result.EnsureSuccessStatusCode();
 
-            using (var stream = await result.Content.ReadAsStreamAsync())
+            using (var stream = await result.Content.ReadAsStreamAsync().ConfigureAwait(false))
             using (var reader = new StreamReader(stream))
             {
                 return Jil.JSON.Deserialize<PaginatedResponse<NetworkUser>>(reader, Jil.Options.MillisecondsSinceUnixEpochUtc)
@@ -94,15 +88,21 @@ namespace Traducir.Core.Services
 
         public async Task<User> GetMyUserAsync(string site, string accessToken)
         {
-            var result = await GetFromApi("/2.2/me?site=" + site, accessToken);
+            var result = await GetFromApi("/2.2/me?site=" + site, accessToken).ConfigureAwait(false);
             result.EnsureSuccessStatusCode();
 
-            using (var stream = await result.Content.ReadAsStreamAsync())
+            using (var stream = await result.Content.ReadAsStreamAsync().ConfigureAwait(false))
             using (var reader = new StreamReader(stream))
             {
                 return Jil.JSON.Deserialize<PaginatedResponse<User>>(reader, Jil.Options.MillisecondsSinceUnixEpochUtc)
                     .Items.FirstOrDefault();
             }
+        }
+
+        private Task<HttpResponseMessage> GetFromApi(string url, string accessToken)
+        {
+            var glue = url.Contains("?") ? "&" : "?";
+            return HttpClient.GetAsync($"{url}{glue}key={_appKey}&access_token={accessToken}&filter={FilterId}");
         }
     }
 }

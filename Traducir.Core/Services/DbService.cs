@@ -13,13 +13,13 @@ namespace Traducir.Core.Services
 
     public class DbService : IDbService
     {
-        private static string ConnectionString { get; set; }
-
         public DbService(IConfiguration configuration)
         {
             SqlMapper.Settings.InListStringSplitCount = 11;
             ConnectionString = configuration.GetValue<string>("CONNECTION_STRING");
         }
+
+        private static string ConnectionString { get; set; }
 
         public ProfiledDbConnection GetConnection()
         {
