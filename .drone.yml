@@ -19,4 +19,4 @@ pipeline:
       - "ls"
       - "ls app/*"
     when:
-      instance: dronegh.gmc.uy
+      instance: dronegh2.gmc.uy
