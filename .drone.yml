@@ -1,5 +1,5 @@
 pipeline:
-  backend:
+  backend-master:
     image: g3rv4/transifex-builder
     commands:
       - "rm -rf /var/traducir-image/app/backend"
@@ -9,7 +9,9 @@ pipeline:
       - "dotnet publish -c Release -f netcoreapp2.0 -o /var/traducir-image/app/backend"
     volumes:
       - /home/gervasio/docker/traducir-image:/var/traducir-image
-  frontend:
+    when:
+      branch: master
+  frontend-master:
     image: g3rv4/transifex-builder
     commands:
       - "rm -rf /var/traducir-image/app/frontend"
@@ -21,6 +23,23 @@ pipeline:
       - "cp -r ./dist/* /var/traducir-image/app/frontend/"
     volumes:
       - /home/gervasio/docker/traducir-image:/var/traducir-image
+    when:
+      branch: master
+  backend-pr:
+    image: g3rv4/transifex-builder
+    commands:
+      - "cd Traducir.Api"
+      - "dotnet publish -c Release -f netcoreapp2.0 -o /var/traducir-image/app/backend"
+    when:
+      event: pull_request
+  frontend-pr:
+    image: g3rv4/transifex-builder
+    commands:
+      - "cd Traducir.Web"
+      - "cp -r /var/node_modules node_modules"
+      - "npm run build"
+    when:
+      event: pull_request
   release-dev:
     image: g3rv4/docker
     commands:
@@ -37,7 +56,7 @@ pipeline:
       - /home/gervasio/docker/traducir-image:/var/traducir-image
       - /home/gervasio/docker/traducir:/var/traducir
     when:
-      event: [ push ]
+      event: push
       branch: master
   release-prod:
     image: g3rv4/docker
@@ -55,5 +74,5 @@ pipeline:
       - /home/gervasio/docker/traducir-image:/var/traducir-image
       - /home/gervasio/docker/traducir:/var/traducir
     when:
-      event: [ deployment ]
+      event: deployment
       branch: master
