@@ -41,8 +41,8 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
                     <th>Suggestion</th>
                     <th>Approved By</th>
                     <th>Created by</th>
-                    <th></th>
-                    <th></th>
+                    <th />
+                    <th />
                 </tr>
             </thead>
             <tbody>
@@ -50,12 +50,22 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
                     <tr key={sug.id} className={sug.state === StringSuggestionState.ApprovedByTrustedUser ? "table-success" : ""}>
                         <td><pre>{sug.suggestion}</pre></td>
                         <td>{sug.lastStateUpdatedByName &&
-                            <a href={`https://${this.props.config.siteDomain}/users/${sug.lastStateUpdatedById}`}
-                                target="_blank">{sug.lastStateUpdatedByName}</a>
+                            <a
+                                href={`https://${this.props.config.siteDomain}/users/${sug.lastStateUpdatedById}`}
+                                target="_blank"
+                            >
+                                {sug.lastStateUpdatedByName}
+                            </a>
                         }</td>
-                        <td><a href={`https://${this.props.config.siteDomain}/users/${sug.createdById}`}
-                            target="_blank"
-                            title={"at " + sug.creationDate + " UTC"}>{sug.createdByName}</a></td>
+                        <td>
+                            <a
+                                href={`https://${this.props.config.siteDomain}/users/${sug.createdById}`}
+                                target="_blank"
+                                title={"at " + sug.creationDate + " UTC"}
+                            >
+                                {sug.createdByName}
+                            </a>
+                        </td>
                         <td>{this.renderDeleteButton(sug)}</td>
                         <td>{this.renderSuggestionActions(sug)}</td>
                     </tr>)}
@@ -76,10 +86,10 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
 
         return <div className="btn-group" role="group">
             <button type="button" className="btn btn-sm btn-success" onClick={e => this.processReview(sug, ReviewAction.Accept)} disabled={this.state.isButtonDisabled}>
-                <i className="fas fa-thumbs-up"></i>
+                <i className="fas fa-thumbs-up" />
             </button>
             <button type="button" className="btn btn-sm btn-danger" onClick={e => this.processReview(sug, ReviewAction.Reject)} disabled={this.state.isButtonDisabled}>
-                <i className="fas fa-thumbs-down"></i>
+                <i className="fas fa-thumbs-down" />
             </button>
         </div>;
     }

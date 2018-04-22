@@ -47,8 +47,11 @@ export default class Results extends React.Component<IResultsProps> {
             </tr>;
         }
         return <>
-            {strings.map(str => <tr key={str.id} onClick={e => this.goToString(str)}
-                className={str.isUrgent ? "table-danger" : str.touched ? "table-success" : ""}>
+            {strings.map(str => <tr
+                key={str.id}
+                onClick={e => this.goToString(str)}
+                className={str.isUrgent ? "table-danger" : str.touched ? "table-success" : ""}
+            >
                 <td>{str.originalString}</td>
                 <td>{str.translation}</td>
                 <td>{this.renderSuggestions(str)}</td>

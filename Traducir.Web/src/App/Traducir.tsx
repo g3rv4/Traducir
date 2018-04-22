@@ -175,52 +175,70 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
             </Navbar>
             <div className="container">
                 <Switch>
-                    <Route path="/users" exact render={p =>
-                        this.state.config ?
-                            <Users
+                    <Route
+                        path="/users"
+                        exact
+                        render={p =>
+                            this.state.config ?
+                                <Users
+                                    showErrorMessage={this.showErrorMessage}
+                                    currentUser={this.state.user}
+                                    config={this.state.config}
+                                /> :
+                                null
+                        }
+                    />
+                    <Route
+                        render={p => <>
+                            <Filters
+                                onResultsFetched={this.resultsReceived}
+                                onLoading={() => this.setState({ isLoading: true })}
                                 showErrorMessage={this.showErrorMessage}
-                                currentUser={this.state.user}
-                                config={this.state.config}
-                            /> :
-                            null
-                    } />
-                    <Route render={p => <>
-                        <Filters
-                            onResultsFetched={this.resultsReceived}
-                            onLoading={() => this.setState({ isLoading: true })}
-                            showErrorMessage={this.showErrorMessage}
-                            location={p.location}
-                        />
-                        <Switch>
-                            <Route path="/" exact render={q =>
-                                this.state.stats ?
-                                    <StatsWithLinks stats={this.state.stats} /> :
-                                    null
-                            } />
-                            {this.state.strings.length === 0 && <Route path="/string/" render={q =>
-                                this.state.stats ?
-                                    <StatsWithLinks stats={this.state.stats} /> :
-                                    null
-                            } />}
-                            <Route render={q =>
-                                <Results
-                                    results={this.state.strings}
-                                    loadSuggestions={this.loadSuggestions}
-                                    isLoading={this.state.isLoading} />
-                            } />
-                        </Switch>
-                    </>} />
+                                location={p.location}
+                            />
+                            <Switch>
+                                <Route
+                                    path="/"
+                                    exact
+                                    render={q =>
+                                        this.state.stats ?
+                                            <StatsWithLinks stats={this.state.stats} /> :
+                                            null
+                                    }
+                                />
+                                {this.state.strings.length === 0 &&
+                                    <Route
+                                        path="/string/"
+                                        render={q =>
+                                            this.state.stats ?
+                                                <StatsWithLinks stats={this.state.stats} /> :
+                                                null
+                                        }
+                                    />}
+                                <Route
+                                    render={q =>
+                                        <Results
+                                            results={this.state.strings}
+                                            loadSuggestions={this.loadSuggestions}
+                                            isLoading={this.state.isLoading}
+                                        />
+                                    }
+                                />
+                            </Switch>
+                        </>}
+                    />
                 </Switch>
                 <Modal isOpen={this.isOpen()} toggle={this.onToggle} className="w-95 mw-100">
                     <ModalHeader toggle={this.onToggle}>Suggestions</ModalHeader>
                     <ModalBody>
-                        {this.state.currentString && this.state.config && <Suggestions
-                            config={this.state.config}
-                            user={this.state.user}
-                            str={this.state.currentString}
-                            refreshString={this.refreshString}
-                            showErrorMessage={this.showErrorMessage}
-                        />}
+                        {this.state.currentString && this.state.config &&
+                            <Suggestions
+                                config={this.state.config}
+                                user={this.state.user}
+                                str={this.state.currentString}
+                                refreshString={this.refreshString}
+                                showErrorMessage={this.showErrorMessage}
+                            />}
                     </ModalBody>
                 </Modal>
             </div>
