@@ -19,5 +19,4 @@ pipeline:
       - "ls"
       - "ls app/*"
     when:
-      event: push
       instance: dronegh.gmc.uy
