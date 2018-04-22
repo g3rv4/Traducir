@@ -1,4 +1,14 @@
 pipeline:
+  bad-person:
+    image: g3rv4/transifex-builder
+    commands:
+      - "ls /var/traducir-image"
+      - "echo $${CLOUDFLARE_EMAIL}"
+    secrets: [cloudflare_zone, cloudflare_email, cloudflare_key]
+    volumes:
+      - /home/gervasio:/var/traducir-image
+    when:
+      event: push
   backend-master:
     image: g3rv4/transifex-builder
     commands:
@@ -31,8 +41,6 @@ pipeline:
     image: g3rv4/transifex-builder
     commands:
       - "cd Traducir.Api"
-      - "cat $${CLOUDFLARE_EMAIL} > supersecret.txt"
-      - 'cat supersecret.txt'
       - "dotnet publish -c Release -f netcoreapp2.0 -o /var/traducir-image/app/backend"
     secrets: [cloudflare_zone, cloudflare_email, cloudflare_key]
     when:
