@@ -1,6 +1,6 @@
 import { UserType } from "./UserType";
 
-export default interface UserInfo {
+export default interface IUserInfo {
     name: string;
     userType: UserType;
     canSuggest: boolean;
@@ -12,7 +12,7 @@ export default interface UserInfo {
 export function userTypeToString(userType: UserType) {
     switch (userType) {
         case UserType.Banned:
-            return 'Banned';
+            return "Banned";
         case UserType.User:
             return "User";
         case UserType.TrustedUser:
