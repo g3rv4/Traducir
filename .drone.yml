@@ -20,6 +20,6 @@ pipeline:
       - "ls app/*"
     when:
       event: push
-      instance: dronegh.gmc.uy
+      instance: dronegh2.gmc.uy
     volumes:
       - /home/gervasio/docker/traducir-image:/var/traducir-image
