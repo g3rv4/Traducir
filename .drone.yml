@@ -1,8 +1,6 @@
 pipeline:
   backend:
     image: g3rv4/transifex-builder
-    when:
-      branch: master
     commands:
       - "rm -rf /var/traducir-image/app/backend"
       - "mkdir -p /var/traducir-image/app/backend"
@@ -13,8 +11,6 @@ pipeline:
       - /home/gervasio/docker/traducir-image:/var/traducir-image
   frontend:
     image: g3rv4/transifex-builder
-    when:
-      branch: master
     commands:
       - "rm -rf /var/traducir-image/app/frontend"
       - "mkdir -p /var/traducir-image/app/frontend"
@@ -42,6 +38,7 @@ pipeline:
       - /home/gervasio/docker/traducir:/var/traducir
     when:
       event: [ push ]
+      branch: master
   release-prod:
     image: g3rv4/docker
     commands:
@@ -59,3 +56,4 @@ pipeline:
       - /home/gervasio/docker/traducir:/var/traducir
     when:
       event: [ deployment ]
+      branch: master
