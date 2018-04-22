@@ -20,4 +20,4 @@ pipeline:
       - "ls app/*"
     when:
       event: push
-      instance: dronegh2.gmc.uy
+      instance: dronegh.gmc.uy
