@@ -1,4 +1,4 @@
-export default interface Config {
+export default interface IConfig {
     siteDomain: string;
     friendlyName: string;
     transifexPath: string;

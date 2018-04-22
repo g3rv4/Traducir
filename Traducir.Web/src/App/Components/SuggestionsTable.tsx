@@ -1,14 +1,14 @@
 import axios, { AxiosError } from "axios";
 import * as React from "react";
 import history from "../../history";
-import Config from "../../Models/Config";
+import IConfig from "../../Models/Config";
 import ISOStringSuggestion, { StringSuggestionState } from "../../Models/SOStringSuggestion";
 import IUserInfo from "../../Models/UserInfo";
 import { UserType } from "../../Models/UserType";
 
 export interface ISuggestionsTableProps {
     suggestions: ISOStringSuggestion[];
-    config: Config;
+    config: IConfig;
     user?: IUserInfo;
     refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (messageOrCode: string | number) => void;

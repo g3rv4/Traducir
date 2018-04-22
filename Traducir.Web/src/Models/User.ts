@@ -1,6 +1,6 @@
 import { UserType } from "./UserType";
 
-export default interface User {
+export default interface IUser {
     id: number;
     displayName: string;
     userType: UserType;

@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import history from "../../history";
-import Config from "../../Models/Config";
+import IConfig from "../../Models/Config";
 import ISOString from "../../Models/SOString";
 import IUserInfo from "../../Models/UserInfo";
 import SuggestionNew from "./SuggestionNew";
@@ -11,7 +11,7 @@ import SuggestionsTable from "./SuggestionsTable";
 export interface ISuggestionsProps {
     user?: IUserInfo;
     str: ISOString;
-    config: Config;
+    config: IConfig;
     refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (messageOrCode: string | number) => void;
 }
