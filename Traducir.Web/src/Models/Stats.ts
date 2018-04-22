@@ -1,4 +1,4 @@
-export default interface Stats {
+export default interface IStats {
     totalStrings: number;
     urgentStrings: number;
     withoutTranslation: number;

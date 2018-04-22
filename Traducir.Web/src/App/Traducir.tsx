@@ -8,9 +8,9 @@ import {
     NavbarToggler, NavItem, NavLink, UncontrolledDropdown
 } from "reactstrap";
 import history from "../history";
-import Config from "../Models/Config";
+import IConfig from "../Models/Config";
 import ISOString from "../Models/SOString";
-import Stats from "../Models/Stats";
+import IStats from "../Models/Stats";
 import IUserInfo, { userTypeToString } from "../Models/UserInfo";
 import Filters from "./Components/Filters";
 import Results from "./Components/Results";
@@ -22,10 +22,10 @@ export interface ITraducirState {
     user?: IUserInfo;
     strings: ISOString[];
     currentString?: ISOString;
-    config?: Config;
+    config?: IConfig;
     isOpen: boolean;
     isLoading: boolean;
-    stats?: Stats;
+    stats?: IStats;
 }
 
 class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> {
@@ -47,10 +47,10 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         axios.post<IUserInfo>("/app/api/me")
             .then(response => this.setState({ user: response.data }))
             .catch(error => this.setState({ user: undefined }));
-        axios.get<Config>("/app/api/config")
+        axios.get<IConfig>("/app/api/config")
             .then(response => this.setState({ config: response.data }))
             .catch(error => this.showErrorMessage(error.response.status));
-        axios.get<Stats>("/app/api/strings/stats")
+        axios.get<IStats>("/app/api/strings/stats")
             .then(response => this.setState({ stats: response.data }))
             .catch(error => this.showErrorMessage(error.response.status));
 
@@ -98,7 +98,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                     currentString: r.data,
                     strings: newStrings
                 });
-                axios.get<Stats>("/app/api/strings/stats")
+                axios.get<IStats>("/app/api/strings/stats")
                     .then(response => this.setState({ stats: response.data }))
                     .catch(error => this.showErrorMessage(error.response.status));
             });

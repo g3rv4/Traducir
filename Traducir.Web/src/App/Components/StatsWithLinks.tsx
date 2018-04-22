@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-import Stats from "../../Models/Stats";
+import IStats from "../../Models/Stats";
 
 export interface IStatsWithLinksProps {
-    stats: Stats;
+    stats: IStats;
 }
 
 export default class StatsWithLinks extends React.Component<IStatsWithLinksProps, {}> {

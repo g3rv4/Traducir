@@ -1,19 +1,19 @@
 import axios, { AxiosError } from "axios";
 import * as React from "react";
 import history from "../../history";
-import Config from "../../Models/Config";
-import User from "../../Models/User";
+import IConfig from "../../Models/Config";
+import IUser from "../../Models/User";
 import IUserInfo from "../../Models/UserInfo";
 import { UserType, userTypeToString } from "../../Models/UserType";
 
 export interface IUsersProps {
     showErrorMessage: (messageOrCode: string | number) => void;
     currentUser?: IUserInfo;
-    config: Config;
+    config: IConfig;
 }
 
 interface IUsersState {
-    users: User[];
+    users: IUser[];
 }
 
 export default class Users extends React.Component<IUsersProps, IUsersState> {
@@ -28,7 +28,7 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
         this.refreshUsers();
     }
     public refreshUsers() {
-        axios.get<User[]>("/app/api/users").then(r => {
+        axios.get<IUser[]>("/app/api/users").then(r => {
             this.setState({
                 users: r.data
             });
@@ -40,7 +40,7 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
             }
         });
     }
-    public updateUserType(user: User, newType: UserType) {
+    public updateUserType(user: IUser, newType: UserType) {
         axios.put("/app/api/users/change-type", {
             UserId: user.id,
             UserType: newType
