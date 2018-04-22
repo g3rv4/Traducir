@@ -174,17 +174,27 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                 <div className="col">
                     <div className="form-group">
                         <label htmlFor="sourceRegex">Source Regex</label>
-                        <input type="text" className="form-control" id="sourceRegex" placeholder="^question"
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="sourceRegex"
+                            placeholder="^question"
                             value={this.state.sourceRegex}
-                            onChange={e => this.handleField({ sourceRegex: e.target.value })} />
+                            onChange={e => this.handleField({ sourceRegex: e.target.value })}
+                        />
                     </div>
                 </div>
                 <div className="col">
                     <div className="form-group">
                         <label htmlFor="translationRegex">Translation Regex</label>
-                        <input type="text" className="form-control" id="translationRegex" placeholder="(?i)pregunta$"
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="translationRegex"
+                            placeholder="(?i)pregunta$"
                             value={this.state.translationRegex}
-                            onChange={e => this.handleField({ translationRegex: e.target.value })} />
+                            onChange={e => this.handleField({ translationRegex: e.target.value })}
+                        />
                     </div>
                 </div>
             </div>
@@ -192,7 +202,9 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                 <div className="col">
                     <div className="form-group">
                         <label htmlFor="withoutTranslation">Strings without translation</label>
-                        <select className="form-control" id="withoutTranslation"
+                        <select
+                            className="form-control"
+                            id="withoutTranslation"
                             value={this.state.translationStatus}
                             onChange={e => this.handleField({ translationStatus: parseInt(e.target.value, 10) })}
                         >
@@ -205,7 +217,9 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                 <div className="col">
                     <div className="form-group">
                         <label htmlFor="suggestionsStatus">Strings with pending suggestions</label>
-                        <select className="form-control" id="suggestionsStatus"
+                        <select
+                            className="form-control"
+                            id="suggestionsStatus"
                             value={this.state.suggestionsStatus}
                             onChange={e => this.handleField({ suggestionsStatus: parseInt(e.target.value, 10) })}
                         >
@@ -222,15 +236,21 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                 <div className="col">
                     <div className="form-group">
                         <label htmlFor="key">Key</label>
-                        <input type="text" className="form-control" id="key"
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="key"
                             value={this.state.key}
-                            onChange={e => this.handleField({ key: e.target.value })} />
+                            onChange={e => this.handleField({ key: e.target.value })}
+                        />
                     </div>
                 </div>
                 <div className="col">
                     <div className="form-group">
                         <label htmlFor="suggestionsStatus">Strings with urgency status</label>
-                        <select className="form-control" id="urgencyStatus"
+                        <select
+                            className="form-control"
+                            id="urgencyStatus"
                             value={this.state.urgencyStatus}
                             onChange={e => this.handleField({ urgencyStatus: parseInt(e.target.value, 10) })}
                         >
@@ -260,7 +280,8 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                     to={{
                         pathname: "/filters",
                         search: this.currentPath()
-                    }} />}
+                    }}
+                />}
         </>;
     }
 }
