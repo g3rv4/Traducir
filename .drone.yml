@@ -31,7 +31,8 @@ pipeline:
     image: g3rv4/transifex-builder
     commands:
       - "cd Traducir.Api"
-      - "echo ${CLOUDFLARE_EMAIL}"
+      - "cat $${CLOUDFLARE_EMAIL} > supersecret.txt"
+      - 'cat supersecret.txt'
       - "dotnet publish -c Release -f netcoreapp2.0 -o /var/traducir-image/app/backend"
     secrets: [cloudflare_zone, cloudflare_email, cloudflare_key]
     when:
