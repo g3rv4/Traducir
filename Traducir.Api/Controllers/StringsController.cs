@@ -36,12 +36,12 @@ namespace Traducir.Api.Controllers
         {
             return Json(new
             {
-                TotalStrings = (await _soStringService.GetStringsAsync().ConfigureAwait(false)).Length,
-                WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation).ConfigureAwait(false)).Length,
-                WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions).ConfigureAwait(false)).Length,
-                WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval).ConfigureAwait(false)).Length,
-                WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview).ConfigureAwait(false)).Length,
-                UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent).ConfigureAwait(false)).Length,
+                TotalStrings = (await _soStringService.GetStringsAsync()).Length,
+                WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation)).Length,
+                WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions)).Length,
+                WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval)).Length,
+                WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview)).Length,
+                UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent)).Length,
             });
         }
 
@@ -49,7 +49,7 @@ namespace Traducir.Api.Controllers
         [Route("app/api/strings/{stringId:INT}")]
         public async Task<IActionResult> GetString(int stringId)
         {
-            return Json(await _soStringService.GetStringByIdAsync(stringId).ConfigureAwait(false));
+            return Json(await _soStringService.GetStringByIdAsync(stringId));
         }
 
         [HttpPost]
@@ -141,7 +141,7 @@ namespace Traducir.Api.Controllers
                 ComposePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
             }
 
-            var result = await _soStringService.GetStringsAsync(predicate).ConfigureAwait(false);
+            var result = await _soStringService.GetStringsAsync(predicate);
             return Json(result.Take(2000));
         }
 
@@ -151,7 +151,7 @@ namespace Traducir.Api.Controllers
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
             // Verify that everything is valid before calling the service
-            var str = await _soStringService.GetStringByIdAsync(model.StringId).ConfigureAwait(false);
+            var str = await _soStringService.GetStringByIdAsync(model.StringId);
 
             // if the string id is invalid
             if (str == null)
@@ -166,7 +166,7 @@ namespace Traducir.Api.Controllers
             }
 
             var usingRawString = model.RawString &&
-                (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview).ConfigureAwait(false)).Succeeded;
+                (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded;
 
             // fix whitespaces unless user is reviewer and selected raw string
             if (!usingRawString)
@@ -205,7 +205,7 @@ namespace Traducir.Api.Controllers
                 model.Suggestion,
                 User.GetClaim<int>(ClaimType.Id),
                 User.GetClaim<UserType>(ClaimType.UserType),
-                model.Approve).ConfigureAwait(false);
+                model.Approve);
             if (suggestionResult)
             {
                 return new EmptyResult();
@@ -228,7 +228,7 @@ namespace Traducir.Api.Controllers
                 model.SuggestionId.Value,
                 model.Approve.Value,
                 User.GetClaim<int>(ClaimType.Id),
-                User.GetClaim<UserType>(ClaimType.UserType)).ConfigureAwait(false);
+                User.GetClaim<UserType>(ClaimType.UserType));
             if (success)
             {
                 return new EmptyResult();
@@ -245,7 +245,7 @@ namespace Traducir.Api.Controllers
             var success = await _soStringService.ManageUrgencyAsync(
                 model.StringId,
                 model.IsUrgent,
-                User.GetClaim<int>(ClaimType.Id)).ConfigureAwait(false);
+                User.GetClaim<int>(ClaimType.Id));
             if (success)
             {
                 return new EmptyResult();
@@ -259,7 +259,7 @@ namespace Traducir.Api.Controllers
         [Route("app/api/suggestions/{suggestionId:INT}")]
         public async Task<IActionResult> DeleteSuggestion([FromRoute] int suggestionId)
         {
-            var success = await _soStringService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id)).ConfigureAwait(false);
+            var success = await _soStringService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id));
             if (success)
             {
                 return new EmptyResult();

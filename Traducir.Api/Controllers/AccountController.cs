@@ -45,7 +45,7 @@ namespace Traducir.Api.Controllers
         [Route("app/logout")]
         public async Task<IActionResult> LogOut(string returnUrl = null)
         {
-            await HttpContext.SignOutAsync().ConfigureAwait(false);
+            await HttpContext.SignOutAsync();
             return Redirect(returnUrl ?? "/");
         }
 
@@ -54,8 +54,8 @@ namespace Traducir.Api.Controllers
         {
             var siteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN");
 
-            var accessToken = await _seApiService.GetAccessTokenFromCodeAsync(code, GetOauthReturnUrl()).ConfigureAwait(false);
-            var currentUser = await _seApiService.GetMyUserAsync(siteDomain, accessToken).ConfigureAwait(false);
+            var accessToken = await _seApiService.GetAccessTokenFromCodeAsync(code, GetOauthReturnUrl());
+            var currentUser = await _seApiService.GetMyUserAsync(siteDomain, accessToken);
 
             if (currentUser == null)
             {
@@ -75,9 +75,9 @@ namespace Traducir.Api.Controllers
                 IsModerator = currentUser.UserType == "moderator",
                 CreationDate = DateTime.UtcNow,
                 LastSeenDate = DateTime.UtcNow
-            }).ConfigureAwait(false);
+            });
 
-            var user = await _userService.GetUserAsync(currentUser.UserId).ConfigureAwait(false);
+            var user = await _userService.GetUserAsync(currentUser.UserId);
 
             var claims = new List<Claim>
             {
@@ -103,7 +103,7 @@ namespace Traducir.Api.Controllers
 
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity)).ConfigureAwait(false);
+                new ClaimsPrincipal(identity));
 
             return Redirect(state ?? "/");
         }
@@ -112,9 +112,9 @@ namespace Traducir.Api.Controllers
         [Route("app/api/me")]
         public async Task<IActionResult> WhoAmI()
         {
-            var canSuggest = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanSuggest).ConfigureAwait(false)).Succeeded;
-            var canReview = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview).ConfigureAwait(false)).Succeeded;
-            var canManageUsers = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanManageUsers).ConfigureAwait(false)).Succeeded;
+            var canSuggest = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanSuggest)).Succeeded;
+            var canReview = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded;
+            var canManageUsers = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanManageUsers)).Succeeded;
 
             return Json(new UserInfo
             {
@@ -131,7 +131,7 @@ namespace Traducir.Api.Controllers
         [Route("app/api/users")]
         public async Task<IActionResult> GetUsers()
         {
-            return Json((await _userService.GetUsersAsync().ConfigureAwait(false))
+            return Json((await _userService.GetUsersAsync())
                 .OrderByDescending(u => u.UserType)
                 .ThenByDescending(u => u.LastSeenDate));
         }
@@ -148,7 +148,7 @@ namespace Traducir.Api.Controllers
             }
 
             var success = await _userService.ChangeUserTypeAsync(model.UserId, model.UserType, User.GetClaim<int>(ClaimType.Id))
-                .ConfigureAwait(false);
+                ;
             if (!success)
             {
                 return BadRequest();

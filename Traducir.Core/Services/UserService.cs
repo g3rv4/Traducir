@@ -48,7 +48,7 @@ Else
                                                                                -- if they're now a mod, make them a reviewer
          IsTrusted = Case When @wasTrusted = 1 Then 1 Else @IsModerator End,
          LastSeenDate = @LastSeenDate
-Where    Id = @Id", user).ConfigureAwait(false);
+Where    Id = @Id", user);
             }
         }
 
@@ -62,7 +62,7 @@ From   Users
 Where  Id = @userId", new
                 {
                     userId
-                }).ConfigureAwait(false);
+                });
             }
         }
 
@@ -70,7 +70,7 @@ Where  Id = @userId", new
         {
             using (var db = _dbService.GetConnection())
             {
-                return (await db.QueryAsync<User>("Select * From Users").ConfigureAwait(false)).AsList();
+                return (await db.QueryAsync<User>("Select * From Users")).AsList();
             }
         }
 
@@ -109,7 +109,7 @@ And    IsReviewer = 0;", new
                     HistoryBanned = UserHistoryType.Banned,
                     HistoryBanLifted = UserHistoryType.BanLifted,
                     HistoryDemotedToRegularUser = UserHistoryType.DemotedToRegularUser
-                }).ConfigureAwait(false);
+                });
                 return rows > 0;
             }
         }

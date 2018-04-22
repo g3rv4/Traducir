@@ -40,10 +40,10 @@ namespace Traducir.Core.Services
             using (MiniProfiler.Current.Step("Fetching strings from Transifex"))
             {
                 var client = GetHttpClient();
-                var response = await client.GetAsync(_resourcePath).ConfigureAwait(false);
+                var response = await client.GetAsync(_resourcePath);
                 response.EnsureSuccessStatusCode();
 
-                using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                using (var stream = await response.Content.ReadAsStreamAsync())
                 using (var reader = new StreamReader(stream))
                 {
                     return Jil.JSON.Deserialize<TransifexString[]>(reader).ToImmutableArray();
@@ -73,13 +73,13 @@ namespace Traducir.Core.Services
                 using (MiniProfiler.Current.Step("Posting to Transifex"))
                 {
                     var client = GetHttpClient();
-                    var response = await client.PutAsync(_resourcePath, byteContent).ConfigureAwait(false);
+                    var response = await client.PutAsync(_resourcePath, byteContent);
                     success = response.IsSuccessStatusCode;
                 }
 
                 if (success)
                 {
-                    await _soStringService.UpdateStringsPushed().ConfigureAwait(false);
+                    await _soStringService.UpdateStringsPushed();
                 }
 
                 return success;

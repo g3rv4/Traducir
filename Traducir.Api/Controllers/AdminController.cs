@@ -32,32 +32,32 @@ namespace Traducir.Api.Controllers
         [Route("app/api/admin/pull")]
         public async Task<IActionResult> PullStrings()
         {
-            var strings = await _transifexService.GetStringsFromTransifexAsync().ConfigureAwait(false);
-            await _soStringService.StoreNewStringsAsync(strings).ConfigureAwait(false);
+            var strings = await _transifexService.GetStringsFromTransifexAsync();
+            await _soStringService.StoreNewStringsAsync(strings);
             return new EmptyResult();
         }
 
         [Route("app/api/admin/pull-so-dump")]
         public async Task<IActionResult> PullSODump(string dumpUrl)
         {
-            await _soStringService.PullSODump(dumpUrl).ConfigureAwait(false);
+            await _soStringService.PullSODump(dumpUrl);
             return new EmptyResult();
         }
 
         [Route("app/api/admin/update-translations-fron-so-dump")]
         public async Task<IActionResult> UpdateTranslationsFromSODump()
         {
-            await _soStringService.UpdateTranslationsFromSODump().ConfigureAwait(false);
+            await _soStringService.UpdateTranslationsFromSODump();
             return new EmptyResult();
         }
 
         [Route("app/api/admin/push")]
         public async Task<IActionResult> PushStrings()
         {
-            var stringsToPush = await _soStringService.GetStringsAsync(s => s.HasTranslation).ConfigureAwait(false);
+            var stringsToPush = await _soStringService.GetStringsAsync(s => s.HasTranslation);
             if (stringsToPush.Length > 0)
             {
-                await _transifexService.PushStringsToTransifexAsync(stringsToPush).ConfigureAwait(false);
+                await _transifexService.PushStringsToTransifexAsync(stringsToPush);
             }
 
             return new EmptyResult();
@@ -80,6 +80,6 @@ namespace Traducir.Api.Controllers
         }
 
         [Route("app/admin/errors/{path?}/{subPath?}")]
-        public async Task Exceptions() => await ExceptionalMiddleware.HandleRequestAsync(HttpContext).ConfigureAwait(false);
+        public async Task Exceptions() => await ExceptionalMiddleware.HandleRequestAsync(HttpContext);
     }
 }
