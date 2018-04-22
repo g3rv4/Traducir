@@ -70,7 +70,7 @@ namespace Traducir.Api.Controllers
 
             await _userService.UpsertUserAsync(new User
             {
-                Id = currentUser.UserId,DisplayName = currentUser.DisplayName,
+                Id = currentUser.UserId, DisplayName = currentUser.DisplayName,
                 IsModerator = currentUser.UserType == "moderator",
                 CreationDate = DateTime.UtcNow,
                 LastSeenDate = DateTime.UtcNow
