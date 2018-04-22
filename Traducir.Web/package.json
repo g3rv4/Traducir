@@ -5,6 +5,7 @@
   "main": "webpack run",
   "scripts": {
     "start": "webpack-dev-server --hot --config webpack.dev-hot.js",
+    "start-g3rv4": "webpack-dev-server --hot --public traducir.g3rv4.win --config webpack.dev-hot.js",
     "build": "webpack --config webpack.prod.js"
   },
   "author": "",
@@ -31,6 +32,7 @@
     "react-router-dom": "^4.2.2",
     "reactstrap": "^5.0.0-beta.3",
     "source-map-loader": "^0.2.3",
+    "ts-checker-webpack-plugin": "^0.3.0",
     "ts-loader": "^4.1.0",
     "tslint": "^5.9.1",
     "tslint-loader": "^3.6.0",
