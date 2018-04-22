@@ -1,11 +1,11 @@
-import * as React from 'react'
+import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { hot } from 'react-hot-loader'
-import { Router } from 'react-router-dom'
-import history from './history'
-import Traducir from './App/Traducir'
+import { hot } from "react-hot-loader";
+import { Router } from "react-router-dom";
+import Traducir from "./App/Traducir";
+import history from "./history";
 
-const TraducirHot = hot(module)(Traducir)
+const TraducirHot = hot(module)(Traducir);
 
 ReactDOM.render(
   <Router history={history}>

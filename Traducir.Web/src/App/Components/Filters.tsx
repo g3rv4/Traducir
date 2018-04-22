@@ -1,14 +1,14 @@
+import axios from "axios";
+import { Location } from "history";
+import * as _ from "lodash";
+import { parse, stringify } from "query-string";
 import * as React from "react";
-import * as _ from 'lodash';
-import axios from 'axios';
-import { Location } from 'history';
-import history from '../../history'
-import { stringify, parse } from 'query-string';
-import { Redirect, Link } from 'react-router-dom';
+import { Link, Redirect } from "react-router-dom";
+import history from "../../history";
 
-import SOString from "./../../Models/SOString";
+import ISOString from "./../../Models/SOString";
 
-interface FiltersState {
+interface IFiltersState {
     sourceRegex?: string;
     translationRegex?: string;
     key?: string;
@@ -19,8 +19,8 @@ interface FiltersState {
     hasError?: boolean;
 }
 
-export interface FiltersProps {
-    onResultsFetched: (strings: SOString[]) => void;
+export interface IFiltersProps {
+    onResultsFetched: (strings: ISOString[]) => void;
     onLoading: () => void;
     showErrorMessage: (messageOrCode: string | number) => void;
     location: Location;
@@ -52,17 +52,34 @@ enum UrgencyStatus {
     IsNotUrgent = 2
 }
 
-export default class Filters extends React.Component<FiltersProps, FiltersState> {
-    constructor(props: FiltersProps) {
+export default class Filters extends React.Component<IFiltersProps, IFiltersState> {
+    public submitForm = _.debounce(() => {
+        this.props.onLoading();
+        axios.post<ISOString[]>("/app/api/strings/query", this.state)
+            .then(response => {
+                this.setState({ hasError: false });
+                this.props.onResultsFetched(response.data);
+            })
+            .catch(error => {
+                if (error.response.status === 400) {
+                    this.setState({ hasError: true });
+                    this.props.onResultsFetched([]);
+                } else {
+                    this.props.showErrorMessage(error.response.status);
+                }
+            });
+    }, 1000);
+
+    constructor(props: IFiltersProps) {
         super(props);
         this.state = this.getStateFromLocation(this.props.location);
-        if (!this.hasFilter() && !props.location.pathname.startsWith('/string')) {
-            history.replace('/');
+        if (!this.hasFilter() && !props.location.pathname.startsWith("/string")) {
+            history.replace("/");
             return;
         }
     }
 
-    hasFilter() {
+    public hasFilter() {
         return this.state.sourceRegex ||
             this.state.translationRegex ||
             this.state.key ||
@@ -72,57 +89,57 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             this.state.urgencyStatus;
     }
 
-    componentDidMount() {
+    public componentDidMount() {
         if (this.hasFilter()) {
             this.submitForm();
         }
     }
 
-    componentWillReceiveProps(nextProps: FiltersProps, context: any) {
-        if (nextProps.location.pathname == '/filters' &&
+    public componentWillReceiveProps(nextProps: IFiltersProps, context: any) {
+        if (nextProps.location.pathname === "/filters" &&
             !nextProps.location.search &&
             !this.hasFilter()) {
-            history.replace('/');
+            history.replace("/");
             return;
         }
-        if (this.props.location.search == nextProps.location.search ||
-            this.props.location.pathname == '/filters') {
+        if (this.props.location.search === nextProps.location.search ||
+            this.props.location.pathname === "/filters") {
             return;
         }
 
         this.setState(this.getStateFromLocation(nextProps.location), () => {
-            if (!this.hasFilter() && !nextProps.location.pathname.startsWith('/string')) {
-                history.replace('/');
+            if (!this.hasFilter() && !nextProps.location.pathname.startsWith("/string")) {
+                history.replace("/");
                 return;
             }
             this.submitForm();
         });
     }
 
-    getStateFromLocation(location: Location) {
+    public getStateFromLocation(location: Location) {
         this.props.onLoading();
-        const parts: FiltersState = parse(location.search);
+        const parts: IFiltersState = parse(location.search);
         return {
-            sourceRegex: parts.sourceRegex || "",
-            translationRegex: parts.translationRegex || "",
             key: parts.key || "",
-            translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
-            suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
             pushStatus: parts.pushStatus || PushStatus.AnyStatus,
+            sourceRegex: parts.sourceRegex || "",
+            suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
+            translationRegex: parts.translationRegex || "",
+            translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
             urgencyStatus: parts.urgencyStatus || UrgencyStatus.AnyStatus
-        }
+        };
     }
 
-    handleField(updatedState: FiltersState) {
+    public handleField(updatedState: IFiltersState) {
         this.setState({ ...updatedState, hasError: false }, () => {
             if (!this.hasFilter()) {
-                history.replace('/');
+                history.replace("/");
                 return;
             }
             this.submitForm();
 
-            const newPath = '/filters?' + this.currentPath();
-            if (location.pathname.startsWith('/filters')) {
+            const newPath = "/filters?" + this.currentPath();
+            if (location.pathname.startsWith("/filters")) {
                 history.replace(newPath);
             } else {
                 history.push(newPath);
@@ -130,42 +147,25 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
         });
     }
 
-    reset() {
+    public reset() {
         this.setState({
-            sourceRegex: "",
-            translationRegex: "",
             key: "",
-            translationStatus: TranslationStatus.AnyStatus,
-            suggestionsStatus: SuggestionsStatus.AnyStatus,
             pushStatus: PushStatus.AnyStatus,
+            sourceRegex: "",
+            suggestionsStatus: SuggestionsStatus.AnyStatus,
+            translationRegex: "",
+            translationStatus: TranslationStatus.AnyStatus,
             urgencyStatus: UrgencyStatus.AnyStatus
         }, () => {
             this.props.onResultsFetched([]);
-        })
+        });
     }
 
-    submitForm = _.debounce(() => {
-        this.props.onLoading();
-        axios.post<SOString[]>('/app/api/strings/query', this.state)
-            .then(response => {
-                this.setState({ hasError: false });
-                this.props.onResultsFetched(response.data);
-            })
-            .catch(error => {
-                if (error.response.status == 400) {
-                    this.setState({ hasError: true });
-                    this.props.onResultsFetched([]);
-                } else {
-                    this.props.showErrorMessage(error.response.status);
-                }
-            });
-    }, 1000);
-
-    currentPath() {
+    public currentPath() {
         return stringify(_.pickBy(this.state, e => e));
     }
 
-    render() {
+    public render() {
         return <>
             <div className="m-2 text-center">
                 <h2>Filters</h2>
@@ -194,7 +194,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                         <label htmlFor="withoutTranslation">Strings without translation</label>
                         <select className="form-control" id="withoutTranslation"
                             value={this.state.translationStatus}
-                            onChange={e => this.handleField({ translationStatus: parseInt(e.target.value) })}
+                            onChange={e => this.handleField({ translationStatus: parseInt(e.target.value, 10) })}
                         >
                             <option value={TranslationStatus.AnyStatus}>Any string</option>
                             <option value={TranslationStatus.WithoutTranslation}>Only strings without translation</option>
@@ -207,7 +207,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                         <label htmlFor="suggestionsStatus">Strings with pending suggestions</label>
                         <select className="form-control" id="suggestionsStatus"
                             value={this.state.suggestionsStatus}
-                            onChange={e => this.handleField({ suggestionsStatus: parseInt(e.target.value) })}
+                            onChange={e => this.handleField({ suggestionsStatus: parseInt(e.target.value, 10) })}
                         >
                             <option value={SuggestionsStatus.AnyStatus}>Any string</option>
                             <option value={SuggestionsStatus.DoesNotHaveSuggestions}>Strings without suggestions</option>
@@ -232,7 +232,7 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
                         <label htmlFor="suggestionsStatus">Strings with urgency status</label>
                         <select className="form-control" id="urgencyStatus"
                             value={this.state.urgencyStatus}
-                            onChange={e => this.handleField({ urgencyStatus: parseInt(e.target.value) })}
+                            onChange={e => this.handleField({ urgencyStatus: parseInt(e.target.value, 10) })}
                         >
                             <option value={UrgencyStatus.AnyStatus}>Any string</option>
                             <option value={UrgencyStatus.IsUrgent}>Is urgent</option>
@@ -252,15 +252,15 @@ export default class Filters extends React.Component<FiltersProps, FiltersState>
             }
             <div className="row text-center mb-5">
                 <div className="col">
-                    <Link to='/' className="btn btn-secondary" onClick={e => this.reset()}>Reset</Link>
+                    <Link to="/" className="btn btn-secondary" onClick={e => this.reset()}>Reset</Link>
                 </div>
             </div>
-            {location.pathname == '/filters' && location.search == '' && this.hasFilter() &&
+            {location.pathname === "/filters" && location.search === "" && this.hasFilter() &&
                 <Redirect
                     to={{
-                        pathname: '/filters',
+                        pathname: "/filters",
                         search: this.currentPath()
                     }} />}
-        </>
+        </>;
     }
 }

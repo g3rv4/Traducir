@@ -1,60 +1,60 @@
+import axios, { AxiosError } from "axios";
 import * as React from "react";
-import axios, { AxiosError } from 'axios';
-import User from "../../Models/User";
+import history from "../../history";
 import Config from "../../Models/Config";
-import UserInfo from "../../Models/UserInfo";
-import history from '../../history';
-import { userTypeToString, UserType } from "../../Models/UserType";
+import User from "../../Models/User";
+import IUserInfo from "../../Models/UserInfo";
+import { UserType, userTypeToString } from "../../Models/UserType";
 
-export interface UsersProps {
+export interface IUsersProps {
     showErrorMessage: (messageOrCode: string | number) => void;
-    currentUser?: UserInfo;
+    currentUser?: IUserInfo;
     config: Config;
 }
 
-interface UsersState {
+interface IUsersState {
     users: User[];
 }
 
-export default class Users extends React.Component<UsersProps, UsersState> {
-    constructor(props: UsersProps) {
+export default class Users extends React.Component<IUsersProps, IUsersState> {
+    constructor(props: IUsersProps) {
         super(props);
 
         this.state = {
             users: []
         };
     }
-    componentDidMount() {
+    public componentDidMount() {
         this.refreshUsers();
     }
-    refreshUsers() {
-        axios.get<User[]>('/app/api/users').then(r => {
+    public refreshUsers() {
+        axios.get<User[]>("/app/api/users").then(r => {
             this.setState({
                 users: r.data
             });
         }).catch(e => {
-            if (e.response.status == 401) {
-                history.push('/');
+            if (e.response.status === 401) {
+                history.push("/");
             } else {
                 this.props.showErrorMessage(e.response.status);
             }
         });
     }
-    updateUserType(user: User, newType: UserType) {
-        axios.put('/app/api/users/change-type', {
+    public updateUserType(user: User, newType: UserType) {
+        axios.put("/app/api/users/change-type", {
             UserId: user.id,
             UserType: newType
         }).then(r => {
             this.refreshUsers();
         }).catch(e => {
-            if (e.response.status == 400) {
+            if (e.response.status === 400) {
                 this.props.showErrorMessage("Error updating user type");
             } else {
                 this.props.showErrorMessage(e.response.status);
             }
         });
     }
-    render() {
+    public render() {
         return <>
             <div className="m-2 text-center">
                 <h2>Users</h2>
@@ -72,28 +72,28 @@ export default class Users extends React.Component<UsersProps, UsersState> {
                         <tr key={u.id}>
                             <td>
                                 <a href={`https://${this.props.config.siteDomain}/users/${u.id}`} target="_blank">
-                                    {u.displayName} {u.isModerator ? '♦' : ''}
+                                    {u.displayName} {u.isModerator ? "♦" : ""}
                                 </a>
                             </td>
                             <td>{userTypeToString(u.userType)}</td>
                             <td>{this.props.currentUser && this.props.currentUser.canManageUsers &&
                                 <div className="btn-group" role="group">
-                                    {u.userType == UserType.User &&
+                                    {u.userType === UserType.User &&
                                         <button type="button" className="btn btn-sm btn-warning" onClick={e => this.updateUserType(u, UserType.TrustedUser)}>
                                             Make trusted user
                                         </button>
                                     }
-                                    {u.userType == UserType.Banned &&
+                                    {u.userType === UserType.Banned &&
                                         <button type="button" className="btn btn-sm btn-warning" onClick={e => this.updateUserType(u, UserType.User)}>
                                             Lift Ban
                                         </button>
                                     }
-                                    {u.userType == UserType.TrustedUser &&
+                                    {u.userType === UserType.TrustedUser &&
                                         <button type="button" className="btn btn-sm btn-danger" onClick={e => this.updateUserType(u, UserType.User)}>
                                             Make regular user
                                         </button>
                                     }
-                                    {u.userType != UserType.Banned && u.userType != UserType.TrustedUser && u.userType != UserType.Reviewer && !u.isModerator &&
+                                    {u.userType !== UserType.Banned && u.userType !== UserType.TrustedUser && u.userType !== UserType.Reviewer && !u.isModerator &&
                                         <button type="button" className="btn btn-sm btn-danger" onClick={e => this.updateUserType(u, UserType.Banned)}>
                                             Ban User
                                         </button>
@@ -103,6 +103,6 @@ export default class Users extends React.Component<UsersProps, UsersState> {
                         </tr>)}
                 </tbody>
             </table>
-        </>
+        </>;
     }
 }

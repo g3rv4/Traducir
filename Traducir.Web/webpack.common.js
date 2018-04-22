@@ -58,6 +58,17 @@ module.exports = {
                 ]
             },
 
+            // tslint
+            {
+                test: /\.tsx?$/,
+                enforce: 'pre',
+                loader: 'tslint-loader',
+                options: {
+                    emitErrors: true,
+                    failOnHint: true
+                 }
+            },
+
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
             { 
                 enforce: "pre",
