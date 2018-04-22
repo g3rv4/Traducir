@@ -1,41 +1,41 @@
+import axios, { AxiosError } from "axios";
+import * as _ from "lodash";
 import * as React from "react";
-import axios, { AxiosError } from 'axios';
-import * as _ from 'lodash';
+import { Link, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
 import {
-    Navbar, NavbarBrand, NavbarToggler, Collapse, Nav, NavItem, NavLink,
-    UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem,
-    Modal, ModalHeader, ModalBody, ModalFooter
-} from 'reactstrap';
-import { Route, Switch, withRouter, RouteComponentProps, Link } from 'react-router-dom';
-import history from '../history';
+    Collapse, DropdownItem, DropdownMenu, DropdownToggle, Modal, ModalBody, ModalFooter,
+    ModalHeader, Nav, Navbar, NavbarBrand,
+    NavbarToggler, NavItem, NavLink, UncontrolledDropdown
+} from "reactstrap";
+import history from "../history";
+import Config from "../Models/Config";
+import ISOString from "../Models/SOString";
+import Stats from "../Models/Stats";
+import IUserInfo, { userTypeToString } from "../Models/UserInfo";
 import Filters from "./Components/Filters";
 import Results from "./Components/Results";
-import Suggestions from "./Components/Suggestions";
 import StatsWithLinks from "./Components/StatsWithLinks";
+import Suggestions from "./Components/Suggestions";
 import Users from "./Components/Users";
-import SOString from "../Models/SOString";
-import UserInfo, { userTypeToString } from "../Models/UserInfo";
-import Config from "../Models/Config";
-import Stats from "../Models/Stats";
 
-export interface TraducirState {
-    user?: UserInfo;
-    strings: SOString[];
-    currentString?: SOString;
+export interface ITraducirState {
+    user?: IUserInfo;
+    strings: ISOString[];
+    currentString?: ISOString;
     config?: Config;
     isOpen: boolean;
     isLoading: boolean;
     stats?: Stats;
 }
 
-class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
+class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> {
     constructor(props: RouteComponentProps<{}>) {
         super(props);
 
         this.state = {
-            strings: [],
-            isOpen: false,
             isLoading: false,
+            isOpen: false,
+            strings: []
         };
 
         this.loadSuggestions = this.loadSuggestions.bind(this);
@@ -43,20 +43,20 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         this.refreshString = this.refreshString.bind(this);
     }
 
-    componentDidMount() {
-        axios.post<UserInfo>('/app/api/me')
+    public componentDidMount() {
+        axios.post<IUserInfo>("/app/api/me")
             .then(response => this.setState({ user: response.data }))
             .catch(error => this.setState({ user: undefined }));
-        axios.get<Config>('/app/api/config')
+        axios.get<Config>("/app/api/config")
             .then(response => this.setState({ config: response.data }))
             .catch(error => this.showErrorMessage(error.response.status));
-        axios.get<Stats>('/app/api/strings/stats')
+        axios.get<Stats>("/app/api/strings/stats")
             .then(response => this.setState({ stats: response.data }))
             .catch(error => this.showErrorMessage(error.response.status));
 
-        const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/)
+        const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/);
         if (stringMatch) {
-            axios.get<SOString>(`/app/api/strings/${stringMatch[1]}`)
+            axios.get<ISOString>(`/app/api/strings/${stringMatch[1]}`)
                 .then(r => {
                     this.setState({
                         currentString: r.data
@@ -66,28 +66,28 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
         }
     }
 
-    renderLogInLogOut() {
+    public renderLogInLogOut() {
         const returnUrl = encodeURIComponent(location.pathname + location.search);
         if (!this.state || !this.state.user) {
             return <NavItem>
                 <NavLink href={`/app/login?returnUrl=${returnUrl}`}>Log in!</NavLink>
-            </NavItem>
+            </NavItem>;
         } else if (this.state.user) {
             return <NavItem>
-                    <NavLink href={`/app/logout?returnUrl=${returnUrl}`}>Log out</NavLink>
-                </NavItem>
+                <NavLink href={`/app/logout?returnUrl=${returnUrl}`}>Log out</NavLink>
+            </NavItem>;
         }
     }
 
-    loadSuggestions(str: SOString) {
+    public loadSuggestions(str: ISOString) {
         this.setState({
             currentString: str
         });
     }
 
-    refreshString(stringIdToUpdate: number) {
-        const idx = _.findIndex(this.state.strings, s => s.id == stringIdToUpdate);
-        axios.get<SOString>(`/app/api/strings/${stringIdToUpdate}`)
+    public refreshString(stringIdToUpdate: number) {
+        const idx = _.findIndex(this.state.strings, s => s.id === stringIdToUpdate);
+        axios.get<ISOString>(`/app/api/strings/${stringIdToUpdate}`)
             .then(r => {
                 r.data.touched = true;
 
@@ -95,55 +95,55 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                 newStrings[idx] = r.data;
 
                 this.setState({
-                    strings: newStrings,
-                    currentString: r.data
+                    currentString: r.data,
+                    strings: newStrings
                 });
-                axios.get<Stats>('/app/api/strings/stats')
+                axios.get<Stats>("/app/api/strings/stats")
                     .then(response => this.setState({ stats: response.data }))
                     .catch(error => this.showErrorMessage(error.response.status));
-            })
+            });
     }
 
-    resultsReceived(strings: SOString[]) {
+    public resultsReceived(strings: ISOString[]) {
         this.setState({
-            strings,
-            isLoading: false
-        })
+            isLoading: false,
+            strings
+        });
     }
 
-    showErrorMessage(messageOrCode: string | number) {
-        if (typeof (messageOrCode) == "string") {
+    public showErrorMessage(messageOrCode: string | number) {
+        if (typeof (messageOrCode) === "string") {
             alert(messageOrCode);
         } else {
             const code: number = messageOrCode;
-            if (code == 401) {
-                alert('Your session has expired... you will be redirected to the log in page');
+            if (code === 401) {
+                alert("Your session has expired... you will be redirected to the log in page");
                 window.location.href = `/app/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`;
             } else {
-                alert('Unknown error. Code: ' + code);
+                alert("Unknown error. Code: " + code);
             }
         }
     }
-    toggle() {
+    public toggle() {
         this.setState({
             isOpen: !this.state.isOpen
         });
     }
 
-    isOpen() {
-        return this.props.location.pathname.startsWith('/string/')
+    public isOpen() {
+        return this.props.location.pathname.startsWith("/string/");
     }
 
-    onToggle() {
-        history.push('/filters');
+    public onToggle() {
+        history.push("/filters");
     }
 
-    render() {
+    public render() {
         return <>
             <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
-                    <Link to='/' className="navbar-brand d-none d-lg-block">{this.state.config && this.state.config.friendlyName} Translations 🦄{this.state.user && ` ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</Link>
-                    <Link to='/' className='navbar-brand d-lg-none'>{this.state.config && this.state.config.friendlyName} Translations 🦄</Link>
+                    <Link to="/" className="navbar-brand d-none d-lg-block">{this.state.config && this.state.config.friendlyName} Translations 🦄{this.state.user && ` ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</Link>
+                    <Link to="/" className="navbar-brand d-lg-none">{this.state.config && this.state.config.friendlyName} Translations 🦄</Link>
                     <NavbarToggler onClick={this.toggle} />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
@@ -175,7 +175,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
             </Navbar>
             <div className="container">
                 <Switch>
-                    <Route path='/users' exact render={p =>
+                    <Route path="/users" exact render={p =>
                         this.state.config ?
                             <Users
                                 showErrorMessage={this.showErrorMessage}
@@ -192,17 +192,17 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                             location={p.location}
                         />
                         <Switch>
-                            <Route path='/' exact render={p =>
+                            <Route path="/" exact render={q =>
                                 this.state.stats ?
                                     <StatsWithLinks stats={this.state.stats} /> :
                                     null
                             } />
-                            {this.state.strings.length == 0 && <Route path='/string/' render={p =>
+                            {this.state.strings.length === 0 && <Route path="/string/" render={q =>
                                 this.state.stats ?
                                     <StatsWithLinks stats={this.state.stats} /> :
                                     null
                             } />}
-                            <Route render={p =>
+                            <Route render={q =>
                                 <Results
                                     results={this.state.strings}
                                     loadSuggestions={this.loadSuggestions}
@@ -224,7 +224,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, TraducirState> {
                     </ModalBody>
                 </Modal>
             </div>
-        </>
+        </>;
     }
 }
 

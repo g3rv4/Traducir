@@ -1,4 +1,4 @@
-export default interface SOStringSuggestion {
+export default interface ISOStringSuggestion {
     id: number;
     stringId: number;
     suggestion: string;
