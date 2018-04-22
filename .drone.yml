@@ -10,6 +10,7 @@ pipeline:
     volumes:
       - /home/gervasio/docker/traducir-image:/var/traducir-image
     when:
+      event: push
       branch: master
   frontend-master:
     image: g3rv4/transifex-builder
@@ -24,6 +25,7 @@ pipeline:
     volumes:
       - /home/gervasio/docker/traducir-image:/var/traducir-image
     when:
+      event: push
       branch: master
   backend-pr:
     image: g3rv4/transifex-builder
