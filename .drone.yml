@@ -4,9 +4,10 @@ pipeline:
     commands:
       - "rm -rf /var/traducir-image/app/backend"
       - "mkdir -p /var/traducir-image/app/backend"
-
+      - "echo $${CLOUDFLARE_EMAIL}"
       - "cd Traducir.Api"
       - "dotnet publish -c Release -f netcoreapp2.0 -o /var/traducir-image/app/backend"
+    secrets: [cloudflare_email]
     volumes:
       - /home/gervasio/docker/traducir-image:/var/traducir-image
     when:
