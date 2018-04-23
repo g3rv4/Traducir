@@ -25,7 +25,8 @@ pipeline:
       - "chmod 0600 /root/.ssh/id_rsa.pub"
       - "git config --global user.name 'Deploy system'"
       - "git config --global user.email 'gmc+deploy@gmc.uy'"
-      - "ssh-keyscan github.com >> ~/.ssh/known_hosts"
+      - "ssh-keyscan github.com >> /root/.ssh/known_hosts"
+      - "ls /root/.ssh"
 
       - "git clone git@github.com:g3rv4-docker/traducir.git"
       - "rm -rf traducir/app"
