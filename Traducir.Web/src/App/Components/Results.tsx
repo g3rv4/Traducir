@@ -15,8 +15,9 @@ export default class Results extends React.Component<IResultsProps> {
     constructor(props: IResultsProps) {
         super(props);
     }
+
     public renderSuggestions(str: ISOString): React.ReactFragment | null {
-        if (!str.suggestions || str.suggestions.length === 0) {
+        if (!str.suggestions || !str.suggestions.length) {
             return null;
         }
 
@@ -32,7 +33,7 @@ export default class Results extends React.Component<IResultsProps> {
 
     public goToString(str: ISOString) {
         this.props.loadSuggestions(str);
-        history.push("/string/" + str.id);
+        history.push(`/string/${str.id}`);
     }
 
     public renderRows(strings: ISOString[]): React.ReactFragment {
@@ -58,6 +59,7 @@ export default class Results extends React.Component<IResultsProps> {
             </tr>)}
         </>;
     }
+
     public render() {
         return <>
             <div className="m-2 text-center">

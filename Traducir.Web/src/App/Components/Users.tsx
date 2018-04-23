@@ -24,36 +24,42 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
             users: []
         };
     }
+
     public componentDidMount() {
         this.refreshUsers();
     }
-    public refreshUsers() {
-        axios.get<IUser[]>("/app/api/users").then(r => {
+
+    public async refreshUsers() {
+        try {
+            const r = await axios.get<IUser[]>("/app/api/users");
             this.setState({
                 users: r.data
             });
-        }).catch(e => {
+        } catch (e) {
             if (e.response.status === 401) {
                 history.push("/");
             } else {
                 this.props.showErrorMessage(e.response.status);
             }
-        });
+        }
     }
-    public updateUserType(user: IUser, newType: UserType) {
-        axios.put("/app/api/users/change-type", {
-            UserId: user.id,
-            UserType: newType
-        }).then(r => {
+
+    public async updateUserType(user: IUser, newType: UserType) {
+        try {
+            await axios.put("/app/api/users/change-type", {
+                UserId: user.id,
+                UserType: newType
+            });
             this.refreshUsers();
-        }).catch(e => {
+        } catch (e) {
             if (e.response.status === 400) {
                 this.props.showErrorMessage("Error updating user type");
             } else {
                 this.props.showErrorMessage(e.response.status);
             }
-        });
+        }
     }
+
     public render() {
         return <>
             <div className="m-2 text-center">

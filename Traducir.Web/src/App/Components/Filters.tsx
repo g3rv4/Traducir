@@ -53,21 +53,23 @@ enum UrgencyStatus {
 }
 
 export default class Filters extends React.Component<IFiltersProps, IFiltersState> {
-    public submitForm = _.debounce(() => {
+    public submitForm = _.debounce(async () => {
         this.props.onLoading();
-        axios.post<ISOString[]>("/app/api/strings/query", this.state)
-            .then(response => {
-                this.setState({ hasError: false });
-                this.props.onResultsFetched(response.data);
-            })
-            .catch(error => {
-                if (error.response.status === 400) {
-                    this.setState({ hasError: true });
-                    this.props.onResultsFetched([]);
-                } else {
-                    this.props.showErrorMessage(error.response.status);
-                }
-            });
+
+        try {
+            const response = await axios.post<ISOString[]>("/app/api/strings/query", this.state);
+            this.setState({ hasError: false });
+            this.props.onResultsFetched(response.data);
+
+        } catch (error) {
+            if (error.response.status === 400) {
+                this.setState({ hasError: true });
+                this.props.onResultsFetched([]);
+            } else {
+                this.props.showErrorMessage(error.response.status);
+            }
+        }
+
     }, 1000);
 
     constructor(props: IFiltersProps) {
@@ -138,7 +140,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
             }
             this.submitForm();
 
-            const newPath = "/filters?" + this.currentPath();
+            const newPath = `/filters?${this.currentPath()}`;
             if (location.pathname.startsWith("/filters")) {
                 history.replace(newPath);
             } else {
