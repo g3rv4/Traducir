@@ -1,4 +1,3 @@
-
 pipeline:
   backend:
     image: g3rv4/traducir-builder
