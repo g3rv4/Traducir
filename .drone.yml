@@ -31,23 +31,23 @@ pipeline:
     when:
       event: push
       # branch: master
-  release-prod:
-    image: g3rv4/docker
-    commands:
-      - "rm -rf rm -rf /var/traducir-image/app"
-      - "cp -r app /var/traducir-image"
+  # release-prod:
+  #   image: g3rv4/docker
+  #   commands:
+  #     - "rm -rf rm -rf /var/traducir-image/app"
+  #     - "cp -r app /var/traducir-image"
 
-      - "docker build -t g3rv4/traducir /var/traducir-image"
-      - "docker stop traducir_traducir_1"
-      - "docker rm -f traducir_traducir_1"
-      - "docker-compose -f /var/traducir/docker-compose.yml up -d"
-      - "sleep 10"
-      - "curl -X DELETE \"https://api.cloudflare.com/client/v4/zones/$${CLOUDFLARE_ZONE}/purge_cache\" -H \"X-Auth-Email: $${CLOUDFLARE_EMAIL}\" -H \"X-Auth-Key: $${CLOUDFLARE_KEY}\" -H \"Content-Type: application/json\" --data '{\"purge_everything\":true}'"
-      - "docker exec traducir_traducir_1 curl -i http://localhost:5000/app/api/admin/migrate"
-    secrets: [cloudflare_zone, cloudflare_email, cloudflare_key]
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home/gervasio/docker/traducir-image:/var/traducir-image
-      - /home/gervasio/docker/traducir:/var/traducir
-    when:
-      event: deployment
+  #     - "docker build -t g3rv4/traducir /var/traducir-image"
+  #     - "docker stop traducir_traducir_1"
+  #     - "docker rm -f traducir_traducir_1"
+  #     - "docker-compose -f /var/traducir/docker-compose.yml up -d"
+  #     - "sleep 10"
+  #     - "curl -X DELETE \"https://api.cloudflare.com/client/v4/zones/$${CLOUDFLARE_ZONE}/purge_cache\" -H \"X-Auth-Email: $${CLOUDFLARE_EMAIL}\" -H \"X-Auth-Key: $${CLOUDFLARE_KEY}\" -H \"Content-Type: application/json\" --data '{\"purge_everything\":true}'"
+  #     - "docker exec traducir_traducir_1 curl -i http://localhost:5000/app/api/admin/migrate"
+  #   secrets: [cloudflare_zone, cloudflare_email, cloudflare_key]
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #     - /home/gervasio/docker/traducir-image:/var/traducir-image
+  #     - /home/gervasio/docker/traducir:/var/traducir
+  #   when:
+  #     event: deployment
