@@ -20,8 +20,9 @@ pipeline:
     commands:
       - "mkdir ~/.ssh"
       - "echo $${SSH_KEY} > ~/.ssh/id_rsa"
-      - "cat ~/.ssh/id_rsa"
+      - "echo $${SSH_KEY_PUB} > ~/.ssh/id_rsa.pub"
       - "chmod 0600 /root/.ssh/id_rsa"
+      - "chmod 0600 /root/.ssh/id_rsa.pub"
       - "git config --global user.name 'Deploy system'"
       - "git config --global user.email 'gmc+deploy@gmc.uy'"
       - "ssh-keyscan github.com >> ~/.ssh/known_hosts"
@@ -29,7 +30,7 @@ pipeline:
       - "git clone git@github.com:g3rv4-docker/traducir.git"
       - "rm -rf traducir/app"
       - "cp -r app traducir/app"
-    secrets: [ ssh_key ]
+    secrets: [ ssh_key, ssh_key_pub ]
     when:
       event: push
       # branch: master
