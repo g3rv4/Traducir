@@ -27,17 +27,17 @@ pipeline:
       - ls /root/.ssh
 
       - git clone git@github.com:g3rv4-docker/traducir.git
-      - rm -rf traducir/app
-      - cp -r app traducir/app
       - cd traducir
       - git checkout dev
+      - rm -rf app
+      - cp -r ../app .
       - git add app
       - "git commit -m \"Source update: ${DRONE_COMMIT_SHA}\""
       - git push
     secrets: [ ssh_key ]
     when:
       event: push
-      branch: master
+      # branch: master
   release-prod:
     image: g3rv4/traducir-builder
     commands:
