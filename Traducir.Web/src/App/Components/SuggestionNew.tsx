@@ -38,16 +38,17 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
         };
     }
 
-    public postSuggestion(approve: boolean) {
-        axios.put("/app/api/suggestions", {
-            Approve: approve,
-            RawString: this.props.rawString,
-            StringId: this.props.stringId,
-            Suggestion: this.state.suggestion
-        }).then(r => {
+    public async postSuggestion(approve: boolean) {
+        try {
+            await axios.put("/app/api/suggestions", {
+                Approve: approve,
+                RawString: this.props.rawString,
+                StringId: this.props.stringId,
+                Suggestion: this.state.suggestion
+            });
             this.props.refreshString(this.props.stringId);
             history.push("/filters");
-        }).catch(e => {
+        } catch (e) {
             if (e.response.status === 400) {
                 switch (e.response.data) {
                     case SuggestionCreationResult.DatabaseError:
@@ -78,7 +79,7 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
             } else {
                 this.props.showErrorMessage(e.response.status);
             }
-        });
+        }
     }
 
     public render(): JSX.Element | null {

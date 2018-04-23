@@ -6,7 +6,7 @@ export interface IStatsWithLinksProps {
     stats: IStats;
 }
 
-export default class StatsWithLinks extends React.Component<IStatsWithLinksProps, {}> {
+export default class StatsWithLinks extends React.Component<IStatsWithLinksProps> {
     public render() {
         return <div className="row text-center">
             <div className="col d-none d-lg-block">

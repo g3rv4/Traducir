@@ -43,7 +43,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         this.refreshString = this.refreshString.bind(this);
     }
 
-    public componentDidMount() {
+    public async componentDidMount() {
         axios.post<IUserInfo>("/app/api/me")
             .then(response => this.setState({ user: response.data }))
             .catch(error => this.setState({ user: undefined }));
@@ -56,13 +56,14 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
 
         const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/);
         if (stringMatch) {
-            axios.get<ISOString>(`/app/api/strings/${stringMatch[1]}`)
-                .then(r => {
-                    this.setState({
-                        currentString: r.data
-                    });
-                })
-                .catch(error => this.showErrorMessage(error.response.status));
+            try {
+                const r = await axios.get<ISOString>(`/app/api/strings/${stringMatch[1]}`);
+                this.setState({
+                    currentString: r.data
+                });
+            } catch (error) {
+                this.showErrorMessage(error.response.status);
+            }
         }
     }
 
@@ -85,23 +86,25 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         });
     }
 
-    public refreshString(stringIdToUpdate: number) {
+    public async refreshString(stringIdToUpdate: number) {
         const idx = _.findIndex(this.state.strings, s => s.id === stringIdToUpdate);
-        axios.get<ISOString>(`/app/api/strings/${stringIdToUpdate}`)
-            .then(r => {
-                r.data.touched = true;
+        const r = await axios.get<ISOString>(`/app/api/strings/${stringIdToUpdate}`);
+        r.data.touched = true;
 
-                const newStrings = this.state.strings.slice();
-                newStrings[idx] = r.data;
+        const newStrings = this.state.strings.slice();
+        newStrings[idx] = r.data;
 
-                this.setState({
-                    currentString: r.data,
-                    strings: newStrings
-                });
-                axios.get<IStats>("/app/api/strings/stats")
-                    .then(response => this.setState({ stats: response.data }))
-                    .catch(error => this.showErrorMessage(error.response.status));
-            });
+        this.setState({
+            currentString: r.data,
+            strings: newStrings
+        });
+
+        try {
+            const response = await axios.get<IStats>("/app/api/strings/stats");
+            this.setState({ stats: response.data });
+        } catch (error) {
+            this.showErrorMessage(error.response.status);
+        }
     }
 
     public resultsReceived(strings: ISOString[]) {
@@ -115,15 +118,15 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         if (typeof (messageOrCode) === "string") {
             alert(messageOrCode);
         } else {
-            const code: number = messageOrCode;
-            if (code === 401) {
+            if (messageOrCode === 401) {
                 alert("Your session has expired... you will be redirected to the log in page");
                 window.location.href = `/app/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`;
             } else {
-                alert("Unknown error. Code: " + code);
+                alert(`Unknown error. Code: ${messageOrCode}`);
             }
         }
     }
+
     public toggle() {
         this.setState({
             isOpen: !this.state.isOpen

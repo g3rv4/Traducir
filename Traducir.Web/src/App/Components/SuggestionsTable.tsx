@@ -30,6 +30,7 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
             isButtonDisabled: false
         };
     }
+
     public render(): JSX.Element | null {
         if (!this.props.suggestions || !this.props.suggestions.length) {
             return null;
@@ -61,7 +62,7 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
                             <a
                                 href={`https://${this.props.config.siteDomain}/users/${sug.createdById}`}
                                 target="_blank"
-                                title={"at " + sug.creationDate + " UTC"}
+                                title={`at ${sug.creationDate} UTC`}
                             >
                                 {sug.createdByName}
                             </a>
@@ -94,17 +95,18 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
         </div>;
     }
 
-    public processReview(sug: ISOStringSuggestion, action: ReviewAction) {
+    public async processReview(sug: ISOStringSuggestion, action: ReviewAction) {
         this.setState({
             isButtonDisabled: true
         });
-        axios.put("/app/api/review", {
-            Approve: action === ReviewAction.Accept,
-            SuggestionId: sug.id
-        }).then(r => {
+        try {
+            await axios.put("/app/api/review", {
+                Approve: action === ReviewAction.Accept,
+                SuggestionId: sug.id
+            });
             this.props.refreshString(sug.stringId);
             history.push("/filters");
-        }).catch(e => {
+        } catch (e) {
             if (e.response.status === 400) {
                 this.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
             } else {
@@ -113,7 +115,7 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
             this.setState({
                 isButtonDisabled: false
             });
-        });
+        }
     }
 
     public renderDeleteButton(sug: ISOStringSuggestion): JSX.Element | null {
@@ -125,17 +127,17 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
         </button>;
     }
 
-    public processDeleteReview(sug: ISOStringSuggestion) {
+    public async processDeleteReview(sug: ISOStringSuggestion) {
         this.setState({
             isButtonDisabled: true
         });
-        axios.delete("/app/api/suggestions/" + sug.id
-        ).then(r => {
+        try {
+            await axios.delete(`/app/api/suggestions/${sug.id}`);
             this.props.refreshString(sug.stringId);
             this.setState({
                 isButtonDisabled: false
             });
-        }).catch(e => {
+        } catch (e) {
             if (e.response.status === 400) {
                 this.props.showErrorMessage("Error deleting the suggestion. Do you have enough rights?");
             } else {
@@ -144,6 +146,6 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
             this.setState({
                 isButtonDisabled: false
             });
-        });
+        }
     }
 }
