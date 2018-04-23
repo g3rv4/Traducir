@@ -18,6 +18,7 @@ pipeline:
   release-dev:
     image: g3rv4/traducir-builder
     commands:
+      - "mkdir -p ~/.ssh/id_rsa"
       - "echo $${SSH_KEY} > ~/.ssh/id_rsa"
       - "chmod 0600 /root/.ssh/id_rsa"
       - "git config --global user.name 'Deploy system'"
