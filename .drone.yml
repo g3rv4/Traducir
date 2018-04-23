@@ -18,19 +18,17 @@ pipeline:
   release-dev:
     image: g3rv4/traducir-builder
     commands:
-      - "mkdir ~/.ssh"
+      - mkdir ~/.ssh
       - echo -n "$${SSH_KEY}" > /root/.ssh/id_rsa
-      - echo -n "$${SSH_KEY_PUB}" > /root/.ssh/id_rsa.pub
-      - "chmod 0600 /root/.ssh/id_rsa"
-      - "chmod 0600 /root/.ssh/id_rsa.pub"
-      - "git config --global user.name 'Deploy system'"
-      - "git config --global user.email 'gmc+deploy@gmc.uy'"
-      - "ssh-keyscan github.com >> /root/.ssh/known_hosts"
-      - "ls /root/.ssh"
+      - chmod 0600 /root/.ssh/id_rsa
+      - git config --global user.name 'Deploy system'
+      - git config --global user.email 'gmc+deploy@gmc.uy'
+      - ssh-keyscan github.com >> /root/.ssh/known_hosts
+      - ls /root/.ssh
 
-      - "git clone git@github.com:g3rv4-docker/traducir.git"
-      - "rm -rf traducir/app"
-      - "cp -r app traducir/app"
+      - git clone git@github.com:g3rv4-docker/traducir.git
+      - rm -rf traducir/app
+      - cp -r app traducir/app
     secrets: [ ssh_key, ssh_key_pub ]
     when:
       event: push
