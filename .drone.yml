@@ -31,7 +31,7 @@ pipeline:
       - cp -r app traducir/app
       - cd traducir
       - git add app
-      - git commit -m "Source update: ${DRONE_COMMIT_SHA}"
+      - "git commit -m \"Source update: ${DRONE_COMMIT_SHA}\""
       - git push
     secrets: [ ssh_key ]
     when:
