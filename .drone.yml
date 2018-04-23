@@ -6,35 +6,31 @@ pipeline:
 
       - "cd Traducir.Api"
       - "dotnet publish -c Release -f netcoreapp2.0 -o ../app/backend"
-  frontend:
+  # frontend:
+  #   image: g3rv4/traducir-builder
+  #   commands:
+  #     - "mkdir -p app/frontend"
+
+  #     - "cd Traducir.Web"
+  #     - "cp -r /var/node_modules node_modules"
+  #     - "npm run build"
+  #     - "cp -r ./dist/* ../app/frontend/"
+  release-dev:
     image: g3rv4/traducir-builder
     commands:
-      - "mkdir -p app/frontend"
+      - "echo $${SSH_KEY} > ~/.ssh/id_rsa"
+      - "chmod 0600 /root/.ssh/id_rsa"
+      - "git config --global user.name 'Deploy system'"
+      - "git config --global user.email 'gmc+deploy@gmc.uy'"
+      - "ssh-keyscan github.com >> ~/.ssh/known_hosts"
 
-      - "cd Traducir.Web"
-      - "cp -r /var/node_modules node_modules"
-      - "npm run build"
-      - "cp -r ./dist/* ../app/frontend/"
-  release-dev:
-    image: g3rv4/docker
-    commands:
-      - "rm -rf rm -rf /var/traducir-image/app"
-      - "cp -r app /var/traducir-image"
-
-      - "docker build -t g3rv4/traducir:dev /var/traducir-image"
-      - "docker stop traducir_traducir_dev_1"
-      - "docker rm -f traducir_traducir_dev_1"
-      - "docker-compose -f /var/traducir/docker-compose.yml up -d"
-      - "sleep 10"
-      - "curl -X DELETE \"https://api.cloudflare.com/client/v4/zones/$${CLOUDFLARE_ZONE}/purge_cache\" -H \"X-Auth-Email: $${CLOUDFLARE_EMAIL}\" -H \"X-Auth-Key: $${CLOUDFLARE_KEY}\" -H \"Content-Type: application/json\" --data '{\"purge_everything\":true}'"
-      - "docker exec traducir_traducir_dev_1 curl -i http://localhost:5000/app/api/admin/migrate"
-    secrets: [cloudflare_zone, cloudflare_email, cloudflare_key]
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /home/gervasio/docker/traducir-image:/var/traducir-image
-      - /home/gervasio/docker/traducir:/var/traducir
+      - "git clone git@github.com:g3rv4-docker/traducir.git"
+      - "rm -rf traducir/app"
+      - "cp -r app traducir/app"
+    secrets: [ ssh_key ]
     when:
       event: push
+      # branch: master
   release-prod:
     image: g3rv4/docker
     commands:
