@@ -27,10 +27,10 @@ pipeline:
       - ls /root/.ssh
 
       - git clone git@github.com:g3rv4-docker/traducir.git
-      - rm -rf traducir/app
-      - cp -r app traducir/app
       - cd traducir
       - git checkout dev
+      - rm -rf app
+      - cp -r ../app .
       - git add app
       - "git commit -m \"Source update: ${DRONE_COMMIT_SHA}\""
       - git push
