@@ -6,6 +6,7 @@ const TsCheckerWebpackPlugin = require("ts-checker-webpack-plugin");
 const path = require("path");
 
 module.exports = {
+    devtool: "source-map",
     entry: {
         index: './src/index.tsx',
         vendor: [
