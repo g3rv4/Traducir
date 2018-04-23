@@ -10,6 +10,6 @@ module.exports = merge(common, {
     },
     plugins: [
         new webpack.HashedModuleIdsPlugin(),
-        new UglifyJSPlugin()
+        new UglifyJSPlugin({ sourceMap: true })
     ],
 });

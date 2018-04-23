@@ -5,7 +5,6 @@ const _ = require('lodash');
 
 let merged = merge(common, {
     mode: "development",
-    devtool: "source-map",
     entry: {
         index: './src/index-hot.tsx',
     },
