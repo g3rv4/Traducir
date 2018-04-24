@@ -56,4 +56,5 @@ pipeline:
     secrets: [ ssh_key ]
     when:
       event: deployment
+
 branches: master
