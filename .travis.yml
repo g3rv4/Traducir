@@ -1,0 +1,8 @@
+sudo: required
+
+services:
+  - docker
+
+script:
+  - docker pull g3rv4/traducir-builder
+  - docker run -v '.:/var/app' g3rv4/traducir-builder dotnet build /var/app/Traducir.Api/Traducir.Api.csproj
