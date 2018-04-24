@@ -6,6 +6,4 @@ services:
   - docker
 
 script:
-  - docker run -v `pwd`:/var/app g3rv4/traducir-builder dotnet build /var/app/Traducir.Api/Traducir.Api.csproj
-  - docker run -v `pwd`:/var/app g3rv4/traducir-builder "cd /var/app/Traducir.Web && cp -r /var/node_modules node_modules && npm run build"
-
+  - docker run -v `pwd`:/var/app g3rv4/traducir-builder
