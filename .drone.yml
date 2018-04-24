@@ -36,7 +36,6 @@ pipeline:
     secrets: [ ssh_key ]
     when:
       event: push
-      branch: master
   release-prod:
     image: g3rv4/traducir-builder
     commands:
@@ -57,3 +56,4 @@ pipeline:
     secrets: [ ssh_key ]
     when:
       event: deployment
+branches: master
