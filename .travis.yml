@@ -3,5 +3,5 @@ services:
   - docker
 
 script:
-  - docker run -v /home/travis/build/g3rv4/Traducir:/var/app g3rv4/traducir-builder dotnet build /var/app/Traducir.Api/Traducir.Api.csproj
+  - docker run -v `pwd`:/var/app g3rv4/traducir-builder dotnet build /var/app/Traducir.Api/Traducir.Api.csproj
 
