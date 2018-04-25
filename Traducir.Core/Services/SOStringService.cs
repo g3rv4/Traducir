@@ -563,20 +563,29 @@ Select @idString;", new
         public async Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId)
         {
             const string sql = @"
-Select Top 100 sug.Id, sug.Suggestion, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
-       u.DisplayName LastStateUpdatedByName, s.OriginalString
+Declare @Ids Table
+(
+  Id int
+);
+
+Insert Into @Ids
+Select Top 100 Id
 From   StringSuggestions sug
-Join   Users u On u.Id = sug.LastStateUpdatedById
-Join   Strings s On s.Id = sug.StringId
 Where  sug.CreatedById = @userId
 Order By sug.CreationDate Desc;
+
+Select sug.Id, sug.Suggestion, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
+       u.DisplayName LastStateUpdatedByName, s.OriginalString
+From   StringSuggestions sug
+Join   @Ids ids On ids.Id = sug.Id
+Join   Users u On u.Id = sug.LastStateUpdatedById
+Join   Strings s On s.Id = sug.StringId;
 
 Select h.Id, h.StringSuggestionId, h.HistoryTypeId HistoryType, h.Comment, h.UserId, h.CreationDate,
        u.DisplayName UserName
 From   StringSuggestionHistory h
-Join   Users u On u.Id = h.UserId
-Join   StringSuggestions sug On sug.Id = h.StringSuggestionId
-Where  sug.CreatedById = @userId;
+Join   @Ids ids On ids.Id = h.StringSuggestionId
+Join   Users u On u.Id = h.UserId;
 ";
 
             using (var db = _dbService.GetConnection())
