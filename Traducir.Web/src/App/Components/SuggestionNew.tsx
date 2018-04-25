@@ -12,6 +12,7 @@ export interface ISuggestionNewProps {
     rawString: boolean;
     refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (messageOrCode: string | number) => void;
+    suggestion: string;
 }
 
 interface ISuggestionNewState {
@@ -30,12 +31,59 @@ enum SuggestionCreationResult {
 }
 
 export default class SuggestionNew extends React.Component<ISuggestionNewProps, ISuggestionNewState> {
+
     constructor(props: ISuggestionNewProps) {
         super(props);
 
         this.state = {
-            suggestion: ""
+            suggestion: this.props.suggestion
         };
+    }
+
+    public render(): JSX.Element | null {
+        if (!this.props.user || !this.props.user.canSuggest) {
+            return null;
+        }
+        return <form>
+            <div className="row">
+                <div className="col">
+                    <div className="form-group">
+                        <label htmlFor="suggestion" className="font-weight-bold">New Suggestion</label>
+                        <textarea
+                            className="form-control"
+                            id="suggestion"
+                            value={this.state.suggestion}
+                            onChange={e => this.setState({ suggestion: e.target.value })}
+                        />
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div className="mt-1">
+                    <div className="btn-group" role="group">
+                        <button
+                            type="button"
+                            className="btn btn-primary float-left"
+                            onClick={e => this.postSuggestion(false)}
+                        >
+                            Send new suggestion
+                        </button>
+                        {this.props.user.userType >= UserType.Reviewer &&
+                            <button
+                                type="button"
+                                className="btn btn-warning float-left"
+                                onClick={e => this.postSuggestion(true)}
+                            >
+                                Send final translation
+                            </button>}
+                    </div>
+                </div>
+            </div>
+        </form>;
+    }
+
+    componentWillReceiveProps(nextProps: ISuggestionNewProps) {
+        this.setState({ suggestion: nextProps.suggestion });
     }
 
     public async postSuggestion(approve: boolean) {
@@ -82,45 +130,4 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
         }
     }
 
-    public render(): JSX.Element | null {
-        if (!this.props.user || !this.props.user.canSuggest) {
-            return null;
-        }
-        return <form>
-            <div className="row">
-                <div className="col">
-                    <div className="form-group">
-                        <label htmlFor="suggestion" className="font-weight-bold">New Suggestion</label>
-                        <textarea
-                            className="form-control"
-                            id="suggestion"
-                            value={this.state.suggestion}
-                            onChange={e => this.setState({ suggestion: e.target.value })}
-                        />
-                    </div>
-                </div>
-            </div>
-            <div>
-                <div className="mt-1">
-                    <div className="btn-group" role="group">
-                        <button
-                            type="button"
-                            className="btn btn-primary float-left"
-                            onClick={e => this.postSuggestion(false)}
-                        >
-                            Send new suggestion
-                        </button>
-                        {this.props.user.userType >= UserType.Reviewer &&
-                            <button
-                                type="button"
-                                className="btn btn-warning float-left"
-                                onClick={e => this.postSuggestion(true)}
-                            >
-                                Send final translation
-                            </button>}
-                    </div>
-                </div>
-            </div>
-        </form>;
-    }
 }
