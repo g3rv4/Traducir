@@ -53,25 +53,6 @@ enum UrgencyStatus {
 }
 
 export default class Filters extends React.Component<IFiltersProps, IFiltersState> {
-    public submitForm = _.debounce(async () => {
-        this.props.onLoading();
-
-        try {
-            const response = await axios.post<ISOString[]>("/app/api/strings/query", this.state);
-            this.setState({ hasError: false });
-            this.props.onResultsFetched(response.data);
-
-        } catch (error) {
-            if (error.response.status === 400) {
-                this.setState({ hasError: true });
-                this.props.onResultsFetched([]);
-            } else {
-                this.props.showErrorMessage(error.response.status);
-            }
-        }
-
-    }, 1000);
-
     constructor(props: IFiltersProps) {
         super(props);
         this.state = this.getStateFromLocation(this.props.location);
@@ -79,92 +60,6 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
             history.replace("/");
             return;
         }
-    }
-
-    public hasFilter() {
-        return this.state.sourceRegex ||
-            this.state.translationRegex ||
-            this.state.key ||
-            this.state.translationStatus ||
-            this.state.suggestionsStatus ||
-            this.state.pushStatus ||
-            this.state.urgencyStatus;
-    }
-
-    public componentDidMount() {
-        if (this.hasFilter()) {
-            this.submitForm();
-        }
-    }
-
-    public componentWillReceiveProps(nextProps: IFiltersProps, context: any) {
-        if (nextProps.location.pathname === "/filters" &&
-            !nextProps.location.search &&
-            !this.hasFilter()) {
-            history.replace("/");
-            return;
-        }
-        if (this.props.location.search === nextProps.location.search ||
-            this.props.location.pathname === "/filters") {
-            return;
-        }
-
-        this.setState(this.getStateFromLocation(nextProps.location), () => {
-            if (!this.hasFilter() && !nextProps.location.pathname.startsWith("/string")) {
-                history.replace("/");
-                return;
-            }
-            this.submitForm();
-        });
-    }
-
-    public getStateFromLocation(location: Location) {
-        this.props.onLoading();
-        const parts: IFiltersState = parse(location.search);
-        return {
-            key: parts.key || "",
-            pushStatus: parts.pushStatus || PushStatus.AnyStatus,
-            sourceRegex: parts.sourceRegex || "",
-            suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
-            translationRegex: parts.translationRegex || "",
-            translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
-            urgencyStatus: parts.urgencyStatus || UrgencyStatus.AnyStatus
-        };
-    }
-
-    public handleField(updatedState: IFiltersState) {
-        this.setState({ ...updatedState, hasError: false }, () => {
-            if (!this.hasFilter()) {
-                history.replace("/");
-                return;
-            }
-            this.submitForm();
-
-            const newPath = `/filters?${this.currentPath()}`;
-            if (location.pathname.startsWith("/filters")) {
-                history.replace(newPath);
-            } else {
-                history.push(newPath);
-            }
-        });
-    }
-
-    public reset() {
-        this.setState({
-            key: "",
-            pushStatus: PushStatus.AnyStatus,
-            sourceRegex: "",
-            suggestionsStatus: SuggestionsStatus.AnyStatus,
-            translationRegex: "",
-            translationStatus: TranslationStatus.AnyStatus,
-            urgencyStatus: UrgencyStatus.AnyStatus
-        }, () => {
-            this.props.onResultsFetched([]);
-        });
-    }
-
-    public currentPath() {
-        return stringify(_.pickBy(this.state, e => e));
     }
 
     public render() {
@@ -285,5 +180,110 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                     }}
                 />}
         </>;
+    }
+
+    public submitForm = _.debounce(async () => {
+        this.props.onLoading();
+
+        try {
+            const response = await axios.post<ISOString[]>("/app/api/strings/query", this.state);
+            this.setState({ hasError: false });
+            this.props.onResultsFetched(response.data);
+
+        } catch (error) {
+            if (error.response.status === 400) {
+                this.setState({ hasError: true });
+                this.props.onResultsFetched([]);
+            } else {
+                this.props.showErrorMessage(error.response.status);
+            }
+        }
+
+    }, 1000);
+
+    public hasFilter() {
+        return this.state.sourceRegex ||
+            this.state.translationRegex ||
+            this.state.key ||
+            this.state.translationStatus ||
+            this.state.suggestionsStatus ||
+            this.state.pushStatus ||
+            this.state.urgencyStatus;
+    }
+
+    public componentDidMount() {
+        if (this.hasFilter()) {
+            this.submitForm();
+        }
+    }
+
+    public componentWillReceiveProps(nextProps: IFiltersProps, context: any) {
+        if (nextProps.location.pathname === "/filters" &&
+            !nextProps.location.search &&
+            !this.hasFilter()) {
+            history.replace("/");
+            return;
+        }
+        if (this.props.location.search === nextProps.location.search ||
+            this.props.location.pathname === "/filters") {
+            return;
+        }
+
+        this.setState(this.getStateFromLocation(nextProps.location), () => {
+            if (!this.hasFilter() && !nextProps.location.pathname.startsWith("/string")) {
+                history.replace("/");
+                return;
+            }
+            this.submitForm();
+        });
+    }
+
+    public getStateFromLocation(location: Location) {
+        this.props.onLoading();
+        const parts: IFiltersState = parse(location.search);
+        return {
+            key: parts.key || "",
+            pushStatus: parts.pushStatus || PushStatus.AnyStatus,
+            sourceRegex: parts.sourceRegex || "",
+            suggestionsStatus: parts.suggestionsStatus || SuggestionsStatus.AnyStatus,
+            translationRegex: parts.translationRegex || "",
+            translationStatus: parts.translationStatus || TranslationStatus.AnyStatus,
+            urgencyStatus: parts.urgencyStatus || UrgencyStatus.AnyStatus
+        };
+    }
+
+    public handleField(updatedState: IFiltersState) {
+        this.setState({ ...updatedState, hasError: false }, () => {
+            if (!this.hasFilter()) {
+                history.replace("/");
+                return;
+            }
+            this.submitForm();
+
+            const newPath = `/filters?${this.currentPath()}`;
+            if (location.pathname.startsWith("/filters")) {
+                history.replace(newPath);
+            } else {
+                history.push(newPath);
+            }
+        });
+    }
+
+    public reset() {
+        this.setState({
+            key: "",
+            pushStatus: PushStatus.AnyStatus,
+            sourceRegex: "",
+            suggestionsStatus: SuggestionsStatus.AnyStatus,
+            translationRegex: "",
+            translationStatus: TranslationStatus.AnyStatus,
+            urgencyStatus: UrgencyStatus.AnyStatus
+        }, () => {
+            this.props.onResultsFetched([]);
+        });
+    }
+
+    public currentPath() {
+        return stringify(_.pickBy(this.state, e => e));
     }
 }

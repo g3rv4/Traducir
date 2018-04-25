@@ -129,5 +129,4 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
             }
         }
     }
-
 }

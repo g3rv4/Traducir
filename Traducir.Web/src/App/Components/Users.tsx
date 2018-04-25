@@ -25,41 +25,6 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
         };
     }
 
-    public componentDidMount() {
-        this.refreshUsers();
-    }
-
-    public async refreshUsers() {
-        try {
-            const r = await axios.get<IUser[]>("/app/api/users");
-            this.setState({
-                users: r.data
-            });
-        } catch (e) {
-            if (e.response.status === 401) {
-                history.push("/");
-            } else {
-                this.props.showErrorMessage(e.response.status);
-            }
-        }
-    }
-
-    public async updateUserType(user: IUser, newType: UserType) {
-        try {
-            await axios.put("/app/api/users/change-type", {
-                UserId: user.id,
-                UserType: newType
-            });
-            this.refreshUsers();
-        } catch (e) {
-            if (e.response.status === 400) {
-                this.props.showErrorMessage("Error updating user type");
-            } else {
-                this.props.showErrorMessage(e.response.status);
-            }
-        }
-    }
-
     public render() {
         return <>
             <div className="m-2 text-center">
@@ -110,5 +75,40 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
                 </tbody>
             </table>
         </>;
+    }
+
+    public componentDidMount() {
+        this.refreshUsers();
+    }
+
+    public async refreshUsers() {
+        try {
+            const r = await axios.get<IUser[]>("/app/api/users");
+            this.setState({
+                users: r.data
+            });
+        } catch (e) {
+            if (e.response.status === 401) {
+                history.push("/");
+            } else {
+                this.props.showErrorMessage(e.response.status);
+            }
+        }
+    }
+
+    public async updateUserType(user: IUser, newType: UserType) {
+        try {
+            await axios.put("/app/api/users/change-type", {
+                UserId: user.id,
+                UserType: newType
+            });
+            this.refreshUsers();
+        } catch (e) {
+            if (e.response.status === 400) {
+                this.props.showErrorMessage("Error updating user type");
+            } else {
+                this.props.showErrorMessage(e.response.status);
+            }
+        }
     }
 }

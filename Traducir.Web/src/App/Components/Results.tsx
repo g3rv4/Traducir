@@ -16,6 +16,29 @@ export default class Results extends React.Component<IResultsProps> {
         super(props);
     }
 
+    public render() {
+        return <>
+            <div className="m-2 text-center">
+                <h2>Results {this.props.results &&
+                    this.props.results.length > 0 &&
+                    !this.props.isLoading &&
+                    `(${this.props.results.length})`}</h2>
+            </div>
+            <table className="table">
+                <thead className="thead-light">
+                    <tr>
+                        <th>String</th>
+                        <th>Translation</th>
+                        <th>Suggestions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {this.renderRows(this.props.results)}
+                </tbody>
+            </table>
+        </>;
+    }
+
     public renderSuggestions(str: ISOString): React.ReactFragment | null {
         if (!str.suggestions || !str.suggestions.length) {
             return null;
@@ -57,29 +80,6 @@ export default class Results extends React.Component<IResultsProps> {
                 <td>{str.translation}</td>
                 <td>{this.renderSuggestions(str)}</td>
             </tr>)}
-        </>;
-    }
-
-    public render() {
-        return <>
-            <div className="m-2 text-center">
-                <h2>Results {this.props.results &&
-                    this.props.results.length > 0 &&
-                    !this.props.isLoading &&
-                    `(${this.props.results.length})`}</h2>
-            </div>
-            <table className="table">
-                <thead className="thead-light">
-                    <tr>
-                        <th>String</th>
-                        <th>Translation</th>
-                        <th>Suggestions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {this.renderRows(this.props.results)}
-                </tbody>
-            </table>
         </>;
     }
 }

@@ -52,7 +52,7 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
             </div>
             <div>
                 <button type="button" className="btn btn-sm btn-primary" onClick={e => this.copyOriginalString()}>
-                    copiar al cuadro de sugerencia
+                    Copy as suggestion 
                 </button>
             </div>
             {this.props.str.variant && <div>
@@ -117,5 +117,4 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
     public copyOriginalString() {
         this.setState({ suggested: this.props.str.originalString });
     }
-
 }
