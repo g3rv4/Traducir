@@ -27,7 +27,6 @@ module.exports = {
     },
 
     plugins: [
-        new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({
             template: "./src/index.ejs",
             chunks: ['vendor', 'index']
@@ -40,21 +39,8 @@ module.exports = {
             tslint: path.resolve("tslint.json"), // optional
             memoryLimit: 512, // optional, maximum memory usage in MB
             diagnosticFormatter: "ts-loader", // optional, one of "ts-loader", "stylish", "codeframe"
-          })
+        })
     ],
-
-    optimization: {
-        splitChunks: {
-            cacheGroups: {
-                default: false,
-                commons: {
-                    test: /[\\/]node_modules[\\/]/,
-                    name: "vendor",
-                    chunks: "all"
-                }
-            }
-        }
-    },
 
     module: {
         rules: [
@@ -76,17 +62,6 @@ module.exports = {
                 enforce: "pre",
                 test: /\.js$/,
                 loader: "source-map-loader"
-            },
-
-            {
-                test: /\.less$/,
-                use: [{
-                    loader: "style-loader" // creates style nodes from JS strings
-                }, {
-                    loader: "css-loader" // translates CSS into CommonJS
-                }, {
-                    loader: "less-loader" // compiles Less to CSS
-                }]
             }
         ]
     }

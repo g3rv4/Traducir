@@ -6,7 +6,8 @@
   "scripts": {
     "start": "webpack-dev-server --hot --config webpack.dev-hot.js",
     "start-g3rv4": "webpack-dev-server --hot --public traducir.g3rv4.win --config webpack.dev-hot.js",
-    "build": "webpack --config webpack.prod.js"
+    "build": "webpack --config webpack.prod.js",
+    "build-test": "webpack --config webpack.test.js"
   },
   "author": "",
   "license": "ISC",
