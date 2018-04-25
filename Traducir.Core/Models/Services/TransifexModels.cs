@@ -31,8 +31,10 @@ namespace Traducir.Core.Models.Services
 
     public class TransifexStringToPush
     {
+        #pragma warning disable CA1822
         [DataMember(Name = "reviewed")]
-        public static bool Reviewed => true;
+        public bool Reviewed => true;
+        #pragma warning restore CA1822
 
         [IgnoreDataMember]
         public string Key { get; set; }
