@@ -18,6 +18,7 @@ export interface ISuggestionsProps {
 
 export interface ISuggestionsState {
     rawString: boolean;
+    suggested: string;
 }
 
 export default class Suggestions extends React.Component<ISuggestionsProps, ISuggestionsState> {
@@ -25,10 +26,58 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
         super(props);
 
         this.state = {
-            rawString: false
+            rawString: false,
+            suggested: ""
         };
 
         this.onCheckboxChange = this.onCheckboxChange.bind(this);
+    }
+
+    public render() {
+        return <>
+            <div>
+                <span className="font-weight-bold">Key: </span>
+                <a href={`https://www.transifex.com/${this.props.config.transifexPath}/$?q=key%3A${this.props.str.key}`} target="_blank">{this.props.str.key}</a>
+            </div>
+            <div>
+                <span className="font-weight-bold">This string needs a new translation ASAP: </span> {this.renderUrgency()}
+            </div>
+            {this.props.user && this.props.user.canReview && <div>
+                <span className="font-weight-bold">Raw string?: </span> <input type="checkbox" checked={this.state.rawString} onChange={this.onCheckboxChange} />
+            </div>}
+            <div>
+                <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
+            </div>
+            <div>
+                <button type="button" className="btn btn-sm btn-primary" onClick={e => this.copyOriginalString()}>
+                    Copy as suggestion
+                </button>
+            </div>
+            {this.props.str.variant && <div>
+                <span className="font-weight-bold">Variant:</span> {this.props.str.variant.replace("VARIANT: ", "")}
+            </div>}
+            <div>
+                <span className="font-weight-bold">Current Translation:</span> {this.props.str.translation ?
+                    <pre className="d-inline">{this.props.str.translation}</pre> :
+                    <i>Missing translation</i>}
+            </div>
+            <SuggestionsTable
+                user={this.props.user}
+                config={this.props.config}
+                suggestions={this.props.str.suggestions}
+                refreshString={this.props.refreshString}
+                showErrorMessage={this.props.showErrorMessage}
+            />
+
+            <SuggestionNew
+                user={this.props.user}
+                stringId={this.props.str.id}
+                rawString={this.state.rawString}
+                refreshString={this.props.refreshString}
+                showErrorMessage={this.props.showErrorMessage}
+                suggestion={this.state.suggested}
+            />
+        </>;
     }
 
     public async updateUrgency(isUrgent: boolean) {
@@ -63,44 +112,7 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
         this.setState({ rawString: !this.state.rawString });
     }
 
-    public render() {
-        return <>
-            <div>
-                <span className="font-weight-bold">Key: </span>
-                <a href={`https://www.transifex.com/${this.props.config.transifexPath}/$?q=key%3A${this.props.str.key}`} target="_blank">{this.props.str.key}</a>
-            </div>
-            <div>
-                <span className="font-weight-bold">This string needs a new translation ASAP: </span> {this.renderUrgency()}
-            </div>
-            {this.props.user && this.props.user.canReview && <div>
-                <span className="font-weight-bold">Raw string?: </span> <input type="checkbox" checked={this.state.rawString} onChange={this.onCheckboxChange} />
-            </div>}
-            <div>
-                <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
-            </div>
-            {this.props.str.variant && <div>
-                <span className="font-weight-bold">Variant:</span> {this.props.str.variant.replace("VARIANT: ", "")}
-            </div>}
-            <div>
-                <span className="font-weight-bold">Current Translation:</span> {this.props.str.translation ?
-                    <pre className="d-inline">{this.props.str.translation}</pre> :
-                    <i>Missing translation</i>}
-            </div>
-            <SuggestionsTable
-                user={this.props.user}
-                config={this.props.config}
-                suggestions={this.props.str.suggestions}
-                refreshString={this.props.refreshString}
-                showErrorMessage={this.props.showErrorMessage}
-            />
-
-            <SuggestionNew
-                user={this.props.user}
-                stringId={this.props.str.id}
-                rawString={this.state.rawString}
-                refreshString={this.props.refreshString}
-                showErrorMessage={this.props.showErrorMessage}
-            />
-        </>;
+    public copyOriginalString() {
+        this.setState({ suggested: this.props.str.originalString });
     }
 }

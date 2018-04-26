@@ -43,104 +43,6 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         this.refreshString = this.refreshString.bind(this);
     }
 
-    public async componentDidMount() {
-        axios.post<IUserInfo>("/app/api/me")
-            .then(response => this.setState({ user: response.data }))
-            .catch(error => this.setState({ user: undefined }));
-        axios.get<IConfig>("/app/api/config")
-            .then(response => this.setState({ config: response.data }))
-            .catch(error => this.showErrorMessage(error.response.status));
-        axios.get<IStats>("/app/api/strings/stats")
-            .then(response => this.setState({ stats: response.data }))
-            .catch(error => this.showErrorMessage(error.response.status));
-
-        const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/);
-        if (stringMatch) {
-            try {
-                const r = await axios.get<ISOString>(`/app/api/strings/${stringMatch[1]}`);
-                this.setState({
-                    currentString: r.data
-                });
-            } catch (error) {
-                this.showErrorMessage(error.response.status);
-            }
-        }
-    }
-
-    public renderLogInLogOut() {
-        const returnUrl = encodeURIComponent(location.pathname + location.search);
-        if (!this.state || !this.state.user) {
-            return <NavItem>
-                <NavLink href={`/app/login?returnUrl=${returnUrl}`}>Log in!</NavLink>
-            </NavItem>;
-        } else if (this.state.user) {
-            return <NavItem>
-                <NavLink href={`/app/logout?returnUrl=${returnUrl}`}>Log out</NavLink>
-            </NavItem>;
-        }
-    }
-
-    public loadSuggestions(str: ISOString) {
-        this.setState({
-            currentString: str
-        });
-    }
-
-    public async refreshString(stringIdToUpdate: number) {
-        const idx = _.findIndex(this.state.strings, s => s.id === stringIdToUpdate);
-        const r = await axios.get<ISOString>(`/app/api/strings/${stringIdToUpdate}`);
-        r.data.touched = true;
-
-        const newStrings = this.state.strings.slice();
-        newStrings[idx] = r.data;
-
-        this.setState({
-            currentString: r.data,
-            strings: newStrings
-        });
-
-        try {
-            const response = await axios.get<IStats>("/app/api/strings/stats");
-            this.setState({ stats: response.data });
-        } catch (error) {
-            this.showErrorMessage(error.response.status);
-        }
-    }
-
-    public resultsReceived(strings: ISOString[]) {
-        this.setState({
-            isLoading: false,
-            strings
-        });
-    }
-
-    public showErrorMessage(messageOrCode: string | number) {
-        if (typeof (messageOrCode) === "string") {
-            alert(messageOrCode);
-        } else {
-            if (messageOrCode === 401) {
-                alert("Your session has expired... you will be redirected to the log in page");
-                window.location.href = `/app/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`;
-            } else {
-                alert(`Unknown error. Code: ${messageOrCode}`);
-            }
-        }
-    }
-
-    public toggle() {
-        this.setState({
-            isOpen: !this.state.isOpen
-        });
-    }
-
-    public isOpen() {
-        return this.props.location.pathname.startsWith("/string/");
-    }
-
-    public onToggle() {
-        history.push("/filters");
-    }
-
     public render() {
         return <>
             <Navbar color="dark" dark expand="lg" className="fixed-top">
@@ -246,6 +148,104 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                 </Modal>
             </div>
         </>;
+    }
+
+    public async componentDidMount() {
+        axios.post<IUserInfo>("/app/api/me")
+            .then(response => this.setState({ user: response.data }))
+            .catch(error => this.setState({ user: undefined }));
+        axios.get<IConfig>("/app/api/config")
+            .then(response => this.setState({ config: response.data }))
+            .catch(error => this.showErrorMessage(error.response.status));
+        axios.get<IStats>("/app/api/strings/stats")
+            .then(response => this.setState({ stats: response.data }))
+            .catch(error => this.showErrorMessage(error.response.status));
+
+        const stringMatch = location.pathname.match(/^\/string\/([0-9]+)$/);
+        if (stringMatch) {
+            try {
+                const r = await axios.get<ISOString>(`/app/api/strings/${stringMatch[1]}`);
+                this.setState({
+                    currentString: r.data
+                });
+            } catch (error) {
+                this.showErrorMessage(error.response.status);
+            }
+        }
+    }
+
+    public renderLogInLogOut() {
+        const returnUrl = encodeURIComponent(location.pathname + location.search);
+        if (!this.state || !this.state.user) {
+            return <NavItem>
+                <NavLink href={`/app/login?returnUrl=${returnUrl}`}>Log in!</NavLink>
+            </NavItem>;
+        } else if (this.state.user) {
+            return <NavItem>
+                <NavLink href={`/app/logout?returnUrl=${returnUrl}`}>Log out</NavLink>
+            </NavItem>;
+        }
+    }
+
+    public loadSuggestions(str: ISOString) {
+        this.setState({
+            currentString: str
+        });
+    }
+
+    public async refreshString(stringIdToUpdate: number) {
+        const idx = _.findIndex(this.state.strings, s => s.id === stringIdToUpdate);
+        const r = await axios.get<ISOString>(`/app/api/strings/${stringIdToUpdate}`);
+        r.data.touched = true;
+
+        const newStrings = this.state.strings.slice();
+        newStrings[idx] = r.data;
+
+        this.setState({
+            currentString: r.data,
+            strings: newStrings
+        });
+
+        try {
+            const response = await axios.get<IStats>("/app/api/strings/stats");
+            this.setState({ stats: response.data });
+        } catch (error) {
+            this.showErrorMessage(error.response.status);
+        }
+    }
+
+    public resultsReceived(strings: ISOString[]) {
+        this.setState({
+            isLoading: false,
+            strings
+        });
+    }
+
+    public showErrorMessage(messageOrCode: string | number) {
+        if (typeof (messageOrCode) === "string") {
+            alert(messageOrCode);
+        } else {
+            if (messageOrCode === 401) {
+                alert("Your session has expired... you will be redirected to the log in page");
+                window.location.href = `/app/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`;
+            } else {
+                alert(`Unknown error. Code: ${messageOrCode}`);
+            }
+        }
+    }
+
+    public toggle() {
+        this.setState({
+            isOpen: !this.state.isOpen
+        });
+    }
+
+    public isOpen() {
+        return this.props.location.pathname.startsWith("/string/");
+    }
+
+    public onToggle() {
+        history.push("/filters");
     }
 }
 
