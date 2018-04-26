@@ -53,6 +53,24 @@ enum UrgencyStatus {
 }
 
 export default class Filters extends React.Component<IFiltersProps, IFiltersState> {
+
+    public submitForm = _.debounce(async () => {
+        this.props.onLoading();
+        try {
+            const response = await axios.post<ISOString[]>("/app/api/strings/query", this.state);
+            this.setState({ hasError: false });
+            this.props.onResultsFetched(response.data);
+
+        } catch (error) {
+            if (error.response.status === 400) {
+                this.setState({ hasError: true });
+                this.props.onResultsFetched([]);
+            } else {
+                this.props.showErrorMessage(error.response.status);
+            }
+        }
+    }, 1000);
+
     constructor(props: IFiltersProps) {
         super(props);
         this.state = this.getStateFromLocation(this.props.location);
@@ -181,25 +199,6 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                 />}
         </>;
     }
-
-    public submitForm = _.debounce(async () => {
-        this.props.onLoading();
-
-        try {
-            const response = await axios.post<ISOString[]>("/app/api/strings/query", this.state);
-            this.setState({ hasError: false });
-            this.props.onResultsFetched(response.data);
-
-        } catch (error) {
-            if (error.response.status === 400) {
-                this.setState({ hasError: true });
-                this.props.onResultsFetched([]);
-            } else {
-                this.props.showErrorMessage(error.response.status);
-            }
-        }
-
-    }, 1000);
 
     public hasFilter() {
         return this.state.sourceRegex ||

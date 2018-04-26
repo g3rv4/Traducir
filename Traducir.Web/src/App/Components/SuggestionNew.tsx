@@ -82,7 +82,7 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
         </form>;
     }
 
-    componentWillReceiveProps(nextProps: ISuggestionNewProps) {
+    public componentWillReceiveProps(nextProps: ISuggestionNewProps) {
         this.setState({ suggestion: nextProps.suggestion });
     }
 

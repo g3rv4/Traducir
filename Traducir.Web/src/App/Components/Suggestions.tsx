@@ -21,8 +21,6 @@ export interface ISuggestionsState {
     suggested: string;
 }
 
-
-
 export default class Suggestions extends React.Component<ISuggestionsProps, ISuggestionsState> {
     constructor(props: ISuggestionsProps) {
         super(props);
@@ -52,7 +50,7 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
             </div>
             <div>
                 <button type="button" className="btn btn-sm btn-primary" onClick={e => this.copyOriginalString()}>
-                    Copy as suggestion 
+                    Copy as suggestion
                 </button>
             </div>
             {this.props.str.variant && <div>
