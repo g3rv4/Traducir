@@ -16,6 +16,7 @@ import Filters from "./Components/Filters";
 import Results from "./Components/Results";
 import StatsWithLinks from "./Components/StatsWithLinks";
 import Suggestions from "./Components/Suggestions";
+import SuggestionsHistory from "./Components/SuggestionsHistory";
 import Users from "./Components/Users";
 
 export interface ITraducirState {
@@ -69,9 +70,14 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                                 </DropdownMenu>
                             </UncontrolledDropdown>
                             {this.state.user &&
-                                <NavItem>
-                                    <Link to="/users" className="nav-link">Users</Link>
-                                </NavItem>
+                                <>
+                                    <NavItem>
+                                        <Link to="/users" className="nav-link">Users</Link>
+                                    </NavItem>
+                                    <NavItem>
+                                        <Link to={`/suggestions/${this.state.user.id}`} className="nav-link">My Suggestions</Link>
+                                    </NavItem>
+                                </>
                             }
                             {this.renderLogInLogOut()}
                         </Nav>
@@ -89,6 +95,18 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                                     showErrorMessage={this.showErrorMessage}
                                     currentUser={this.state.user}
                                     config={this.state.config}
+                                /> :
+                                null
+                        }
+                    />
+                    <Route
+                        path="/suggestions/:userId"
+                        render={p =>
+                            this.state.config ?
+                                <SuggestionsHistory
+                                    showErrorMessage={this.showErrorMessage}
+                                    currentUser={this.state.user}
+                                    location={p.location}
                                 /> :
                                 null
                         }
