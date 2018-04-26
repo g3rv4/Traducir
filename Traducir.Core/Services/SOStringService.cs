@@ -574,7 +574,7 @@ From   StringSuggestions sug
 Where  sug.CreatedById = @userId
 Order By sug.CreationDate Desc;
 
-Select sug.Id, sug.Suggestion, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
+Select sug.Id, sug.Suggestion, sug.StringId, sug.StateId State, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
        u.DisplayName LastStateUpdatedByName, s.OriginalString
 From   StringSuggestions sug
 Join   @Ids ids On ids.Id = sug.Id

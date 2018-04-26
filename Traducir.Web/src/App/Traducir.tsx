@@ -107,6 +107,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                                     showErrorMessage={this.showErrorMessage}
                                     currentUser={this.state.user}
                                     location={p.location}
+                                    config={this.state.config}
                                 /> :
                                 null
                         }
