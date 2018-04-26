@@ -145,6 +145,14 @@ namespace Traducir.Api.Controllers
             return Json(result.Take(2000));
         }
 
+        [HttpGet]
+        [Authorize]
+        [Route("app/api/suggestions-by-user/{userId:INT}")]
+        public async Task<IActionResult> GetSuggestionsByUser(int userId)
+        {
+            return Json(await _soStringService.GetSuggestionsByUser(userId));
+        }
+
         [HttpPut]
         [Authorize(Policy = TraducirPolicy.CanSuggest)]
         [Route("app/api/suggestions")]

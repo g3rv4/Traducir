@@ -38,6 +38,8 @@ namespace Traducir.Core.Services
         Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId);
 
         Task<bool> DeleteSuggestionAsync(int suggestionId, int userId);
+
+        Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId);
     }
 
     public class SOStringService : ISOStringService
@@ -555,6 +557,50 @@ Select @idString;", new
                 }
 
                 return false;
+            }
+        }
+
+        public async Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId)
+        {
+            const string sql = @"
+Declare @Ids Table
+(
+  Id int
+);
+
+Insert Into @Ids
+Select Top 100 Id
+From   StringSuggestions sug
+Where  sug.CreatedById = @userId
+Order By sug.CreationDate Desc;
+
+Select sug.Id, sug.Suggestion, sug.StringId, sug.StateId State, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
+       u.DisplayName LastStateUpdatedByName, s.OriginalString
+From   StringSuggestions sug
+Join   @Ids ids On ids.Id = sug.Id
+Join   Users u On u.Id = sug.LastStateUpdatedById
+Join   Strings s On s.Id = sug.StringId;
+
+Select h.Id, h.StringSuggestionId, h.HistoryTypeId HistoryType, h.Comment, h.UserId, h.CreationDate,
+       u.DisplayName UserName
+From   StringSuggestionHistory h
+Join   @Ids ids On ids.Id = h.StringSuggestionId
+Join   Users u On u.Id = h.UserId;
+";
+
+            using (var db = _dbService.GetConnection())
+            using (var reader = await db.QueryMultipleAsync(sql, new { userId }))
+            {
+                var suggestions = (await reader.ReadAsync<SOStringSuggestion>()).AsList();
+                var histories = (await reader.ReadAsync<SOStringSuggestionHistory>()).AsList();
+                var historiesById = histories.ToLookup(h => h.StringSuggestionId);
+
+                foreach (var suggestion in suggestions)
+                {
+                    suggestion.Histories = historiesById[suggestion.Id].ToArray();
+                }
+
+                return suggestions.ToImmutableArray();
             }
         }
 
