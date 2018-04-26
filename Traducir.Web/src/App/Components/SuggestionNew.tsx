@@ -40,7 +40,7 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
         };
     }
 
-    public render(): JSX.Element | null {
+    public render(): React.ReactNode {
         if (!this.props.user || !this.props.user.canSuggest) {
             return null;
         }

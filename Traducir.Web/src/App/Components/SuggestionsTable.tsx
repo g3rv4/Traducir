@@ -31,7 +31,7 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
         };
     }
 
-    public render(): JSX.Element | null {
+    public render(): React.ReactNode {
         if (!this.props.suggestions || !this.props.suggestions.length) {
             return null;
         }
@@ -74,7 +74,7 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
         </table>;
     }
 
-    public renderSuggestionActions(sug: ISOStringSuggestion): JSX.Element | null {
+    public renderSuggestionActions(sug: ISOStringSuggestion): React.ReactNode {
         if (!this.props.user || !this.props.user.canReview) {
             return null;
         }
@@ -118,7 +118,7 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
         }
     }
 
-    public renderDeleteButton(sug: ISOStringSuggestion): JSX.Element | null {
+    public renderDeleteButton(sug: ISOStringSuggestion): React.ReactNode {
         if (!this.props.user || sug.createdById !== this.props.user.id) {
             return null;
         }

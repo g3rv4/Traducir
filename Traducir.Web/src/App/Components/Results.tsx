@@ -39,7 +39,7 @@ export default class Results extends React.Component<IResultsProps> {
         </>;
     }
 
-    public renderSuggestions(str: ISOString): React.ReactFragment | null {
+    public renderSuggestions(str: ISOString): React.ReactNode {
         if (!str.suggestions || !str.suggestions.length) {
             return null;
         }
