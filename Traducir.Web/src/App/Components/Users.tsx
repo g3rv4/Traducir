@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import * as React from "react";
+import { Link } from "react-router-dom";
 import history from "../../history";
 import IConfig from "../../Models/Config";
 import IUser from "../../Models/User";
@@ -49,6 +50,7 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
                             <td>{userTypeToString(u.userType)}</td>
                             <td>{this.props.currentUser && this.props.currentUser.canManageUsers &&
                                 <div className="btn-group" role="group">
+                                    <Link to={`/suggestions/${u.id}`} className="btn btn-sm btn-primary">view suggestions</Link>
                                     {u.userType === UserType.User &&
                                         <button type="button" className="btn btn-sm btn-warning" onClick={e => this.updateUserType(u, UserType.TrustedUser)}>
                                             Make trusted user
