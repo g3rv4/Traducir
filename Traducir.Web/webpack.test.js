@@ -5,12 +5,5 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 const common = require('./webpack.common.js');
 
 module.exports = merge(common, {
-    mode: "production",
-    output: {
-        filename: "[name].[chunkhash].bundle.js"
-    },
-    plugins: [
-        new webpack.HashedModuleIdsPlugin(),
-        new UglifyJSPlugin({ sourceMap: true })
-    ],
+    mode: "development",
 });

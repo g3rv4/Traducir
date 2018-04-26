@@ -1,27 +1,27 @@
 {
-    "defaultSeverity": "error",
-    "extends": [
-        "tslint:recommended",
-        "tslint-react"
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended",
+    "tslint-react"
+  ],
+  "jsRules": {},
+  "rules": {
+    "arrow-parens": [
+      true,
+      "ban-single-arg-parens"
     ],
-    "jsRules": {},
-    "rules": {
-        "arrow-parens": [
-            true,
-            "ban-single-arg-parens"
-        ],
-        "max-line-length": false,
-        "trailing-comma": [
-            true,
-            {
-                "multiline": "never",
-                "singleline": "never"
-            }
-        ],
-        "jsx-wrap-multiline": false,
-        "jsx-boolean-value": false,
-        "jsx-no-multiline-js": false,
-        "jsx-no-lambda": false
-    },
-    "rulesDirectory": []
+    "max-line-length": false,
+    "trailing-comma": [
+      true,
+      {
+        "multiline": "never",
+        "singleline": "never"
+      }
+    ],
+    "jsx-wrap-multiline": false,
+    "jsx-boolean-value": false,
+    "jsx-no-multiline-js": false,
+    "jsx-no-lambda": false
+  },
+  "rulesDirectory": []
 }

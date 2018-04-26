@@ -18,10 +18,13 @@ indent_style = tab
 
 # XML Project Files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
-indent_size = 2
+indent_size = 4
 
 # Configuration Files
-[*.{json,xml,yml,config,props,targets,nuspec,resx,ruleset}]
+[*.{xml,yml,config,props,targets,nuspec,resx,ruleset}]
+indent_size = 4
+
+[*.json]
 indent_size = 2
 
 # Markdown Files
@@ -29,8 +32,8 @@ indent_size = 2
 trim_trailing_whitespace = false
 
 # Web Files
-[*.{htm,html,js,ts,css,scss,less}]
-indent_size = 2
+[*.{htm,html,js,ts,css,scss,less,tsx}]
+indent_size = 4
 insert_final_newline = true
 
 # Bash Files
