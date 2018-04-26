@@ -48,11 +48,7 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
             <div>
                 <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
             </div>
-            <div>
-                <button type="button" className="btn btn-sm btn-primary" onClick={e => this.copyOriginalString()}>
-                    Copy as suggestion
-                </button>
-            </div>
+            {this.renderCopyButton()}
             {this.props.str.variant && <div>
                 <span className="font-weight-bold">Variant:</span> {this.props.str.variant.replace("VARIANT: ", "")}
             </div>}
@@ -106,6 +102,20 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
         return this.props.str.isUrgent
             ? <span>Yes <a href="#" className="btn btn-sm btn-warning" onClick={e => this.updateUrgency(false)}>Mark as non urgent</a></span>
             : <span>No <a href="#" className="btn btn-sm btn-danger" onClick={e => this.updateUrgency(true)}>Mark as urgent</a></span>;
+    }
+
+    public renderCopyButton(): JSX.Element | null {
+        if (!this.props.user) {
+            return null;
+        }
+        return <>
+            <div>
+            <button type="button" className="btn btn-sm btn-primary" onClick={e => this.copyOriginalString()}>
+                Copy as suggestion
+                </button>
+            </div>
+            </>;
+
     }
 
     public onCheckboxChange() {
