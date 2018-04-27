@@ -652,7 +652,7 @@ Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
             const string sql = @"
 Select   Id, [Key], OriginalString, Translation, NeedsPush, IsUrgent, Variant, CreationDate
 From     Strings
-Where    DeletionDate Is Null
+Where    IsNull(DeletionDate, @deletionDateLimit) >= @deletionDateLimit
 -- And   Id = @stringId
 Order By IsUrgent Desc, OriginalString Asc;
 
@@ -661,7 +661,7 @@ Select    ss.Id, ss.StringId, ss.Suggestion, ss.StateId State,
           ss.LastStateUpdatedById, uu.DisplayName LastStateUpdatedByName,
           ss.CreationDate
 From      StringSuggestions ss
-Join      Strings s On s.Id = ss.StringId And s.DeletionDate Is Null
+Join      Strings s On s.Id = ss.StringId And IsNull(s.DeletionDate, @deletionDateLimit) >= @deletionDateLimit
 Join      Users u On ss.CreatedById = u.Id
 Left Join Users uu On uu.Id = ss.LastStateUpdatedById
 Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
@@ -674,7 +674,8 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
             {
                 StringSuggestionState.Created,
                 StringSuggestionState.ApprovedByTrustedUser,
-                stringId
+                stringId,
+                deletionDateLimit = DateTime.UtcNow.AddDays(-5)
             }))
             {
                 var strings = (await reader.ReadAsync<SOString>()).AsList();
