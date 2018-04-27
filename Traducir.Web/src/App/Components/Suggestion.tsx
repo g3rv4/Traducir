@@ -6,6 +6,7 @@ import IConfig from "../../Models/Config";
 import ISOStringSuggestion, { StringSuggestionState } from "../../Models/SOStringSuggestion";
 import IUserInfo from "../../Models/UserInfo";
 import { UserType } from "../../Models/UserType";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 
 interface ISuggestionProps {
     sug: ISOStringSuggestion;
@@ -31,7 +32,7 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
             isButtonDisabled: false
         };
     }
-    public render() {
+    public render(): NonUndefinedReactNode {
         return <tr className={this.props.sug.state === StringSuggestionState.ApprovedByTrustedUser ? "table-success" : ""}>
             <td><pre>{this.props.sug.suggestion}</pre></td>
             <td>{this.props.sug.lastStateUpdatedByName &&
@@ -57,23 +58,22 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
     }
 
     public renderDeleteButton(): React.ReactNode {
-        if (!this.props.user || this.props.sug.createdById !== this.props.user.id) {
-            return null;
-        }
-        return <button type="button" className="btn btn-sm btn-danger" onClick={this.deleteReview} disabled={this.state.isButtonDisabled}>
-            DELETE
+        if (this.props.user && this.props.sug.createdById === this.props.user.id) {
+            return <button type="button" className="btn btn-sm btn-danger" onClick={this.deleteReview} disabled={this.state.isButtonDisabled}>
+                DELETE
         </button>;
+        }
     }
 
     public renderSuggestionActions(): React.ReactNode {
         if (!this.props.user || !this.props.user.canReview) {
-            return null;
+            return;
         }
 
         if (this.props.sug.state === StringSuggestionState.ApprovedByTrustedUser &&
             this.props.user.userType === UserType.TrustedUser) {
             // a trusted user can't act on a suggestion approved by a trusted user
-            return null;
+            return;
         }
 
         return <div className="btn-group" role="group">
@@ -87,7 +87,7 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
     }
 
     @autobind()
-    public async deleteReview() {
+    public async deleteReview(): Promise<void> {
         this.setState({
             isButtonDisabled: true
         });
@@ -110,16 +110,16 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
     }
 
     @autobind()
-    public acceptSuggestion() {
+    public acceptSuggestion(): void {
         this.processReview(ReviewAction.Accept);
     }
 
     @autobind()
-    public rejectSuggestion() {
+    public rejectSuggestion(): void {
         this.processReview(ReviewAction.Reject);
     }
 
-    private async processReview(action: ReviewAction) {
+    private async processReview(action: ReviewAction): Promise<void> {
         this.setState({
             isButtonDisabled: true
         });

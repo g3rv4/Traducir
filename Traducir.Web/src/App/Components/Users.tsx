@@ -6,6 +6,7 @@ import history from "../../history";
 import IConfig from "../../Models/Config";
 import IUser from "../../Models/User";
 import IUserInfo from "../../Models/UserInfo";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 import User from "./User";
 
 export interface IUsersProps {
@@ -27,7 +28,7 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
         };
     }
 
-    public render() {
+    public render(): NonUndefinedReactNode {
         return <>
             <div className="m-2 text-center">
                 <h2>Users</h2>
@@ -54,12 +55,12 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
         </>;
     }
 
-    public componentDidMount() {
+    public componentDidMount(): void {
         this.refreshUsers();
     }
 
     @autobind()
-    public async refreshUsers() {
+    public async refreshUsers(): Promise<void> {
         try {
             const r = await axios.get<IUser[]>("/app/api/users");
             this.setState({

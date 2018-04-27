@@ -1,13 +1,14 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import IStats from "../../Models/Stats";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 
 export interface IStatsWithLinksProps {
     stats: IStats;
 }
 
 export default class StatsWithLinks extends React.Component<IStatsWithLinksProps> {
-    public render() {
+    public render(): NonUndefinedReactNode {
         return <div className="row text-center">
             <div className="col d-none d-lg-block">
                 <div className="btn-group" role="group" aria-label="Basic example">

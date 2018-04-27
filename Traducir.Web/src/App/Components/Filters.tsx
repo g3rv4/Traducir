@@ -6,7 +6,7 @@ import { parse, stringify } from "query-string";
 import * as React from "react";
 import { Link, Redirect } from "react-router-dom";
 import history from "../../history";
-
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 import ISOString from "./../../Models/SOString";
 
 interface IFiltersState {
@@ -55,7 +55,7 @@ enum UrgencyStatus {
 
 export default class Filters extends React.Component<IFiltersProps, IFiltersState> {
 
-    public submitForm = _.debounce(async () => {
+    public submitForm: (() => Promise<void>) & _.Cancelable = _.debounce(async () => {
         this.props.onLoading();
         try {
             const response = await axios.post<ISOString[]>("/app/api/strings/query", this.state);
@@ -81,7 +81,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
         }
     }
 
-    public render() {
+    public render(): NonUndefinedReactNode {
         return <>
             <div className="m-2 text-center">
                 <h2>Filters</h2>
@@ -201,23 +201,23 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
         </>;
     }
 
-    public hasFilter() {
-        return this.state.sourceRegex ||
+    public hasFilter(): boolean {
+        return !!(this.state.sourceRegex ||
             this.state.translationRegex ||
             this.state.key ||
             this.state.translationStatus ||
             this.state.suggestionsStatus ||
             this.state.pushStatus ||
-            this.state.urgencyStatus;
+            this.state.urgencyStatus);
     }
 
-    public componentDidMount() {
+    public componentDidMount(): void {
         if (this.hasFilter()) {
             this.submitForm();
         }
     }
 
-    public componentWillReceiveProps(nextProps: IFiltersProps, context: any) {
+    public componentWillReceiveProps(nextProps: IFiltersProps, context: any): void {
         if (nextProps.location.pathname === "/filters" &&
             !nextProps.location.search &&
             !this.hasFilter()) {
@@ -238,7 +238,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
         });
     }
 
-    public getStateFromLocation(location: Location) {
+    public getStateFromLocation(location: Location): IFiltersState {
         this.props.onLoading();
         const parts: IFiltersState = parse(location.search);
         return {
@@ -253,7 +253,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
     }
 
     @autobind()
-    public reset() {
+    public reset(): void {
         this.setState({
             key: "",
             pushStatus: PushStatus.AnyStatus,
@@ -267,41 +267,41 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
         });
     }
 
-    public currentPath() {
+    public currentPath(): string {
         return stringify(_.pickBy(this.state, e => e));
     }
 
     @autobind()
-    public handleChangeSourceRegex(e: React.ChangeEvent<HTMLInputElement>) {
+    public handleChangeSourceRegex(e: React.ChangeEvent<HTMLInputElement>): void {
         this.handleField({ sourceRegex: e.target.value });
     }
 
     @autobind()
-    public handleChangeTranslationRegex(e: React.ChangeEvent<HTMLInputElement>) {
+    public handleChangeTranslationRegex(e: React.ChangeEvent<HTMLInputElement>): void {
         this.handleField({ translationRegex: e.target.value });
     }
 
     @autobind()
-    public handleChangeTranslationStatus(e: React.ChangeEvent<HTMLSelectElement>) {
+    public handleChangeTranslationStatus(e: React.ChangeEvent<HTMLSelectElement>): void {
         this.handleField({ translationStatus: parseInt(e.target.value, 10) });
     }
 
     @autobind()
-    public handleChangeSuggestionStatus(e: React.ChangeEvent<HTMLSelectElement>) {
+    public handleChangeSuggestionStatus(e: React.ChangeEvent<HTMLSelectElement>): void {
         this.handleField({ suggestionsStatus: parseInt(e.target.value, 10) });
     }
 
     @autobind()
-    public handleChangeKey(e: React.ChangeEvent<HTMLInputElement>) {
+    public handleChangeKey(e: React.ChangeEvent<HTMLInputElement>): void {
         this.handleField({ key: e.target.value });
     }
 
     @autobind()
-    public handleChangeUrgencyStatus(e: React.ChangeEvent<HTMLSelectElement>) {
+    public handleChangeUrgencyStatus(e: React.ChangeEvent<HTMLSelectElement>): void {
         this.handleField({ urgencyStatus: parseInt(e.target.value, 10) });
     }
 
-    private handleField(updatedState: IFiltersState) {
+    private handleField(updatedState: IFiltersState): void {
         this.setState({ ...updatedState, hasError: false }, () => {
             if (!this.hasFilter()) {
                 history.replace("/");

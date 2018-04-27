@@ -4,6 +4,7 @@ import React = require("react");
 import history from "../../history";
 import ISOString from "../../Models/SOString";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 
 interface IResultProps {
     str: ISOString;
@@ -11,7 +12,7 @@ interface IResultProps {
 }
 
 export default class Result extends React.Component<IResultProps> {
-    public render() {
+    public render(): NonUndefinedReactNode {
         return <tr
             onClick={this.goToString}
             className={this.props.str.isUrgent ? "table-danger" : this.props.str.touched ? "table-success" : ""}
@@ -24,7 +25,7 @@ export default class Result extends React.Component<IResultProps> {
 
     private renderSuggestions(): React.ReactNode {
         if (!this.props.str.suggestions || !this.props.str.suggestions.length) {
-            return null;
+            return;
         }
 
         const approved = _.filter(this.props.str.suggestions, s => s.state === StringSuggestionState.ApprovedByTrustedUser).length;
@@ -38,7 +39,7 @@ export default class Result extends React.Component<IResultProps> {
     }
 
     @autobind()
-    private goToString() {
+    private goToString(): void {
         this.props.loadSuggestions(this.props.str);
         history.push(`/string/${this.props.str.id}`);
     }

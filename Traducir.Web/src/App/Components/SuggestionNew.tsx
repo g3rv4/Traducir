@@ -6,6 +6,7 @@ import history from "../../history";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
 import IUserInfo from "../../Models/UserInfo";
 import { UserType } from "../../Models/UserType";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 
 export interface ISuggestionNewProps {
     user?: IUserInfo;
@@ -41,7 +42,7 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
         };
     }
 
-    public render(): React.ReactNode {
+    public render(): NonUndefinedReactNode {
         if (!this.props.user || !this.props.user.canSuggest) {
             return null;
         }
@@ -83,26 +84,26 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
         </form>;
     }
 
-    public componentWillReceiveProps(nextProps: ISuggestionNewProps) {
+    public componentWillReceiveProps(nextProps: ISuggestionNewProps): void {
         this.setState({ suggestion: nextProps.suggestion });
     }
 
     @autobind()
-    public updateSuggestion(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    public updateSuggestion(e: React.ChangeEvent<HTMLTextAreaElement>): void {
         this.setState({ suggestion: e.target.value });
     }
 
     @autobind()
-    public postSuggestionForReview() {
+    public postSuggestionForReview(): void {
         this.postSuggestion(false);
     }
 
     @autobind()
-    public postApprovedSuggestion() {
+    public postApprovedSuggestion(): void {
         this.postSuggestion(true);
     }
 
-    private async postSuggestion(approve: boolean) {
+    private async postSuggestion(approve: boolean): Promise<void> {
         try {
             await axios.put("/app/api/suggestions", {
                 Approve: approve,

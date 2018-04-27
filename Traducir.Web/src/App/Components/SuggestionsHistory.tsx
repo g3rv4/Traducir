@@ -6,6 +6,7 @@ import IConfig from "../../Models/Config";
 import ISOStringSuggestion, { StringSuggestionState, suggestionStateToString } from "../../Models/SOStringSuggestion";
 import { suggestionHistoryTypeToString } from "../../Models/SOStringSuggestionHistory";
 import IUserInfo from "../../Models/UserInfo";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 
 export interface ISuggestionsHistoryProps {
     showErrorMessage: (messageOrCode: string | number) => void;
@@ -27,17 +28,17 @@ export default class SuggestionsHistory extends React.Component<ISuggestionsHist
         };
     }
 
-    public async componentDidMount() {
+    public componentDidMount(): void {
         this.userChanged(this.props.location);
     }
 
-    public componentWillReceiveProps(nextProps: ISuggestionsHistoryProps, context: any) {
+    public componentWillReceiveProps(nextProps: ISuggestionsHistoryProps, context: any): void {
         if (nextProps.location.pathname !== this.props.location.pathname) {
             this.userChanged(nextProps.location);
         }
     }
 
-    public render(): React.ReactNode {
+    public render(): NonUndefinedReactNode {
         if (!this.props.currentUser || !this.state.suggestions) {
             return null;
         }
@@ -100,7 +101,7 @@ export default class SuggestionsHistory extends React.Component<ISuggestionsHist
         }
     }
 
-    public async userChanged(location: Location) {
+    public async userChanged(location: Location): Promise<void> {
         const userId = location.pathname.split("/").pop();
         try {
             const r = await axios.get<ISOStringSuggestion[]>(`/app/api/suggestions-by-user/${userId}`);

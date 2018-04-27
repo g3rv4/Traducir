@@ -6,6 +6,7 @@ import history from "../../history";
 import IConfig from "../../Models/Config";
 import ISOString from "../../Models/SOString";
 import IUserInfo from "../../Models/UserInfo";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 import SuggestionNew from "./SuggestionNew";
 import SuggestionsTable from "./SuggestionsTable";
 
@@ -32,7 +33,7 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
         };
     }
 
-    public render() {
+    public render(): NonUndefinedReactNode {
         return <>
             <div>
                 <span className="font-weight-bold">Key: </span>
@@ -47,7 +48,11 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
             <div>
                 <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
             </div>
-            {this.renderCopyButton()}
+            {this.props.user && <div>
+                <button type="button" className="btn btn-sm btn-primary" onClick={this.copyOriginalString}>
+                    Copy as suggestion
+                </button>
+            </div>}
             {this.props.str.variant && <div>
                 <span className="font-weight-bold">Variant:</span> {this.props.str.variant.replace("VARIANT: ", "")}
             </div>}
@@ -75,7 +80,7 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
         </>;
     }
 
-    public renderUrgency() {
+    public renderUrgency(): React.ReactNode {
         if (!this.props.user || !this.props.user.canSuggest) {
             return <span>{this.props.str.isUrgent ? "Yes" : "No"}</span>;
         }
@@ -84,41 +89,27 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
             : <span>No <a href="#" className="btn btn-sm btn-danger" onClick={this.setUrgent}>Mark as urgent</a></span>;
     }
 
-    public renderCopyButton(): React.ReactNode {
-        if (!this.props.user) {
-            return null;
-        }
-        return <>
-            <div>
-                <button type="button" className="btn btn-sm btn-primary" onClick={this.copyOriginalString}>
-                    Copy as suggestion
-                </button>
-            </div>
-        </>;
-
-    }
-
     @autobind()
-    public onCheckboxChange() {
+    public onCheckboxChange(): void {
         this.setState({ rawString: !this.state.rawString });
     }
 
     @autobind()
-    public copyOriginalString() {
+    public copyOriginalString(): void {
         this.setState({ suggested: this.props.str.originalString });
     }
 
     @autobind()
-    public setUrgent() {
+    public setUrgent(): void {
         this.updateUrgency(true);
     }
 
     @autobind()
-    public setNonUrgent() {
+    public setNonUrgent(): void {
         this.updateUrgency(false);
     }
 
-    private async updateUrgency(isUrgent: boolean) {
+    private async updateUrgency(isUrgent: boolean): Promise<void> {
         try {
             await axios.put("/app/api/manage-urgency", {
                 IsUrgent: isUrgent,

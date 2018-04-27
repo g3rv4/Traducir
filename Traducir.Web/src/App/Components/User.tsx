@@ -6,6 +6,7 @@ import IConfig from "../../Models/Config";
 import IUser from "../../Models/User";
 import IUserInfo from "../../Models/UserInfo";
 import { UserType, userTypeToString } from "../../Models/UserType";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 
 interface IUserProps {
     user: IUser;
@@ -16,7 +17,7 @@ interface IUserProps {
 }
 
 export default class User extends React.Component<IUserProps> {
-    public render() {
+    public render(): NonUndefinedReactNode {
         return <tr>
             <td>
                 <a href={`https://${this.props.config.siteDomain}/users/${this.props.user.id}`} target="_blank">
@@ -53,21 +54,21 @@ export default class User extends React.Component<IUserProps> {
     }
 
     @autobind()
-    private makeTrustedUser() {
+    private makeTrustedUser(): void {
         this.updateUserType(UserType.TrustedUser);
     }
 
     @autobind()
-    private makeRegularUser() {
+    private makeRegularUser(): void {
         this.updateUserType(UserType.User);
     }
 
     @autobind()
-    private banUser() {
+    private banUser(): void {
         this.updateUserType(UserType.Banned);
     }
 
-    private async updateUserType(newType: UserType) {
+    private async updateUserType(newType: UserType): Promise<void> {
         try {
             await axios.put("/app/api/users/change-type", {
                 UserId: this.props.user.id,

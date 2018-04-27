@@ -4,6 +4,7 @@ import IConfig from "../../Models/Config";
 import ISOStringSuggestion, { StringSuggestionState } from "../../Models/SOStringSuggestion";
 import IUserInfo from "../../Models/UserInfo";
 import { UserType } from "../../Models/UserType";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 import Suggestion from "./Suggestion";
 
 export interface ISuggestionsTableProps {
@@ -15,7 +16,7 @@ export interface ISuggestionsTableProps {
 }
 
 export default class SuggestionsTable extends React.Component<ISuggestionsTableProps> {
-    public render(): React.ReactNode {
+    public render(): NonUndefinedReactNode {
         if (!this.props.suggestions || !this.props.suggestions.length) {
             return null;
         }

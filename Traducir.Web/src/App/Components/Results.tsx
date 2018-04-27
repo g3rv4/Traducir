@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import ISOString from "../../Models/SOString";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 import Result from "./Result";
 
 export interface IResultsProps {
@@ -15,7 +16,7 @@ export default class Results extends React.Component<IResultsProps> {
         super(props);
     }
 
-    public render() {
+    public render(): NonUndefinedReactNode {
         return <>
             <div className="m-2 text-center">
                 <h2>Results {this.props.results &&
@@ -38,7 +39,7 @@ export default class Results extends React.Component<IResultsProps> {
         </>;
     }
 
-    public renderRows(strings: ISOString[]): React.ReactFragment {
+    public renderRows(strings: ISOString[]): React.ReactNode {
         if (this.props.isLoading) {
             return <tr>
                 <td colSpan={3} className="text-center">Loading...</td>
