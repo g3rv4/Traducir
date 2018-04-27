@@ -20,7 +20,8 @@
     ],
     "jsx-wrap-multiline": false,
     "jsx-boolean-value": false,
-    "jsx-no-multiline-js": false
+    "jsx-no-multiline-js": false,
+    "typedef": [true, "call-signature", "parameter", "property-declaration", "member-variable-declaration"]
   },
   "rulesDirectory": []
 }

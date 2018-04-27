@@ -12,13 +12,15 @@ import history from "../history";
 import IConfig from "../Models/Config";
 import ISOString from "../Models/SOString";
 import IStats from "../Models/Stats";
-import IUserInfo, { userTypeToString } from "../Models/UserInfo";
+import IUserInfo from "../Models/UserInfo";
+import { userTypeToString } from "../Models/UserType";
 import Filters from "./Components/Filters";
 import Results from "./Components/Results";
 import StatsWithLinks from "./Components/StatsWithLinks";
 import Suggestions from "./Components/Suggestions";
 import SuggestionsHistory from "./Components/SuggestionsHistory";
 import Users from "./Components/Users";
+import { NonUndefinedReactNode } from "./NonUndefinedReactNode";
 
 export interface ITraducirState {
     user?: IUserInfo;
@@ -41,7 +43,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         };
     }
 
-    public render() {
+    public render(): NonUndefinedReactNode {
         return <>
             <Navbar color="dark" dark expand="lg" className="fixed-top">
                 <div className="container">
@@ -113,7 +115,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         </>;
     }
 
-    public async componentDidMount() {
+    public async componentDidMount(): Promise<void> {
         axios.post<IUserInfo>("/app/api/me")
             .then(response => this.setState({ user: response.data }))
             .catch(error => this.setState({ user: undefined }));
@@ -137,8 +139,19 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         }
     }
 
+    public renderLogInLogOut(): React.ReactNode {
+        const returnUrl = encodeURIComponent(location.pathname + location.search);
+        return !this.state.user ?
+            <NavItem>
+                <NavLink href={`/app/login?returnUrl=${returnUrl}`}>Log in!</NavLink>
+            </NavItem> :
+            <NavItem>
+                <NavLink href={`/app/logout?returnUrl=${returnUrl}`}>Log out</NavLink>
+            </NavItem>;
+    }
+
     @autobind()
-    public renderUsers() {
+    public renderUsers(): NonUndefinedReactNode {
         return this.state.config ?
             <Users
                 showErrorMessage={this.showErrorMessage}
@@ -146,11 +159,10 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                 config={this.state.config}
             /> :
             null;
-
     }
 
     @autobind()
-    public renderSuggestionsHistory(p: RouteComponentProps<any>) {
+    public renderSuggestionsHistory(p: RouteComponentProps<any>): NonUndefinedReactNode {
         return this.state.config ?
             <SuggestionsHistory
                 showErrorMessage={this.showErrorMessage}
@@ -162,7 +174,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
     }
 
     @autobind()
-    public renderHome(p: RouteComponentProps<any>) {
+    public renderHome(p: RouteComponentProps<any>): NonUndefinedReactNode {
         return <>
             <Filters
                 onResultsFetched={this.resultsReceived}
@@ -189,14 +201,14 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
     }
 
     @autobind()
-    public renderStats() {
+    public renderStats(): NonUndefinedReactNode {
         return this.state.stats ?
             <StatsWithLinks stats={this.state.stats} /> :
             null;
     }
 
     @autobind()
-    public renderResults() {
+    public renderResults(): NonUndefinedReactNode {
         return <Results
             results={this.state.strings}
             loadSuggestions={this.loadSuggestions}
@@ -204,35 +216,22 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         />;
     }
 
-    public renderLogInLogOut() {
-        const returnUrl = encodeURIComponent(location.pathname + location.search);
-        if (!this.state || !this.state.user) {
-            return <NavItem>
-                <NavLink href={`/app/login?returnUrl=${returnUrl}`}>Log in!</NavLink>
-            </NavItem>;
-        } else if (this.state.user) {
-            return <NavItem>
-                <NavLink href={`/app/logout?returnUrl=${returnUrl}`}>Log out</NavLink>
-            </NavItem>;
-        }
-    }
-
     @autobind()
-    public handleLoading() {
+    public handleLoading(): void {
         this.setState({
             isLoading: true
         });
     }
 
     @autobind()
-    public loadSuggestions(str: ISOString) {
+    public loadSuggestions(str: ISOString): void {
         this.setState({
             currentString: str
         });
     }
 
     @autobind()
-    public async refreshString(stringIdToUpdate: number) {
+    public async refreshString(stringIdToUpdate: number): Promise<void> {
         const idx = _.findIndex(this.state.strings, s => s.id === stringIdToUpdate);
         const r = await axios.get<ISOString>(`/app/api/strings/${stringIdToUpdate}`);
         r.data.touched = true;
@@ -254,14 +253,14 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
     }
 
     @autobind()
-    public resultsReceived(strings: ISOString[]) {
+    public resultsReceived(strings: ISOString[]): void {
         this.setState({
             isLoading: false,
             strings
         });
     }
 
-    public showErrorMessage(messageOrCode: string | number) {
+    public showErrorMessage(messageOrCode: string | number): void {
         if (typeof (messageOrCode) === "string") {
             alert(messageOrCode);
         } else {
@@ -275,17 +274,17 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
     }
 
     @autobind()
-    public toggle() {
+    public toggle(): void {
         this.setState({
             isOpen: !this.state.isOpen
         });
     }
 
-    public isOpen() {
+    public isOpen(): boolean {
         return this.props.location.pathname.startsWith("/string/");
     }
 
-    public onToggle() {
+    public onToggle(): void {
         history.push("/filters");
     }
 }
