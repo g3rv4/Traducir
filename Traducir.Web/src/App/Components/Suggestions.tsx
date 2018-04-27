@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import { autobind } from "core-decorators";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import history from "../../history";
@@ -29,8 +30,6 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
             rawString: false,
             suggested: ""
         };
-
-        this.onCheckboxChange = this.onCheckboxChange.bind(this);
     }
 
     public render() {
@@ -76,7 +75,50 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
         </>;
     }
 
-    public async updateUrgency(isUrgent: boolean) {
+    public renderUrgency() {
+        if (!this.props.user || !this.props.user.canSuggest) {
+            return <span>{this.props.str.isUrgent ? "Yes" : "No"}</span>;
+        }
+        return this.props.str.isUrgent
+            ? <span>Yes <a href="#" className="btn btn-sm btn-warning" onClick={this.setNonUrgent}>Mark as non urgent</a></span>
+            : <span>No <a href="#" className="btn btn-sm btn-danger" onClick={this.setUrgent}>Mark as urgent</a></span>;
+    }
+
+    public renderCopyButton(): JSX.Element | null {
+        if (!this.props.user) {
+            return null;
+        }
+        return <>
+            <div>
+                <button type="button" className="btn btn-sm btn-primary" onClick={this.copyOriginalString}>
+                    Copy as suggestion
+                </button>
+            </div>
+        </>;
+
+    }
+
+    @autobind()
+    public onCheckboxChange() {
+        this.setState({ rawString: !this.state.rawString });
+    }
+
+    @autobind()
+    public copyOriginalString() {
+        this.setState({ suggested: this.props.str.originalString });
+    }
+
+    @autobind()
+    public setUrgent() {
+        this.updateUrgency(true);
+    }
+
+    @autobind()
+    public setNonUrgent() {
+        this.updateUrgency(false);
+    }
+
+    private async updateUrgency(isUrgent: boolean) {
         try {
             await axios.put("/app/api/manage-urgency", {
                 IsUrgent: isUrgent,
@@ -93,36 +135,5 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
                 this.props.showErrorMessage(e.response.status);
             }
         }
-    }
-
-    public renderUrgency() {
-        if (!this.props.user || !this.props.user.canSuggest) {
-            return <span>{this.props.str.isUrgent ? "Yes" : "No"}</span>;
-        }
-        return this.props.str.isUrgent
-            ? <span>Yes <a href="#" className="btn btn-sm btn-warning" onClick={e => this.updateUrgency(false)}>Mark as non urgent</a></span>
-            : <span>No <a href="#" className="btn btn-sm btn-danger" onClick={e => this.updateUrgency(true)}>Mark as urgent</a></span>;
-    }
-
-    public renderCopyButton(): JSX.Element | null {
-        if (!this.props.user) {
-            return null;
-        }
-        return <>
-            <div>
-            <button type="button" className="btn btn-sm btn-primary" onClick={e => this.copyOriginalString()}>
-                Copy as suggestion
-                </button>
-            </div>
-            </>;
-
-    }
-
-    public onCheckboxChange() {
-        this.setState({ rawString: !this.state.rawString });
-    }
-
-    public copyOriginalString() {
-        this.setState({ suggested: this.props.str.originalString });
     }
 }

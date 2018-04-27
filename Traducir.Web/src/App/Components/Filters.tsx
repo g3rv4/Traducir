@@ -1,4 +1,5 @@
 import axios from "axios";
+import { autobind } from "core-decorators";
 import { Location } from "history";
 import * as _ from "lodash";
 import { parse, stringify } from "query-string";
@@ -95,7 +96,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                             id="sourceRegex"
                             placeholder="^question"
                             value={this.state.sourceRegex}
-                            onChange={e => this.handleField({ sourceRegex: e.target.value })}
+                            onChange={this.handleChangeSourceRegex}
                         />
                     </div>
                 </div>
@@ -108,7 +109,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                             id="translationRegex"
                             placeholder="(?i)pregunta$"
                             value={this.state.translationRegex}
-                            onChange={e => this.handleField({ translationRegex: e.target.value })}
+                            onChange={this.handleChangeTranslationRegex}
                         />
                     </div>
                 </div>
@@ -121,7 +122,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                             className="form-control"
                             id="withoutTranslation"
                             value={this.state.translationStatus}
-                            onChange={e => this.handleField({ translationStatus: parseInt(e.target.value, 10) })}
+                            onChange={this.handleChangeTranslationStatus}
                         >
                             <option value={TranslationStatus.AnyStatus}>Any string</option>
                             <option value={TranslationStatus.WithoutTranslation}>Only strings without translation</option>
@@ -136,7 +137,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                             className="form-control"
                             id="suggestionsStatus"
                             value={this.state.suggestionsStatus}
-                            onChange={e => this.handleField({ suggestionsStatus: parseInt(e.target.value, 10) })}
+                            onChange={this.handleChangeSuggestionStatus}
                         >
                             <option value={SuggestionsStatus.AnyStatus}>Any string</option>
                             <option value={SuggestionsStatus.DoesNotHaveSuggestions}>Strings without suggestions</option>
@@ -156,7 +157,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                             className="form-control"
                             id="key"
                             value={this.state.key}
-                            onChange={e => this.handleField({ key: e.target.value })}
+                            onChange={this.handleChangeKey}
                         />
                     </div>
                 </div>
@@ -167,7 +168,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
                             className="form-control"
                             id="urgencyStatus"
                             value={this.state.urgencyStatus}
-                            onChange={e => this.handleField({ urgencyStatus: parseInt(e.target.value, 10) })}
+                            onChange={this.handleChangeUrgencyStatus}
                         >
                             <option value={UrgencyStatus.AnyStatus}>Any string</option>
                             <option value={UrgencyStatus.IsUrgent}>Is urgent</option>
@@ -187,7 +188,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
             }
             <div className="row text-center mb-5">
                 <div className="col">
-                    <Link to="/" className="btn btn-secondary" onClick={e => this.reset()}>Reset</Link>
+                    <Link to="/" className="btn btn-secondary" onClick={this.reset}>Reset</Link>
                 </div>
             </div>
             {location.pathname === "/filters" && location.search === "" && this.hasFilter() &&
@@ -251,23 +252,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
         };
     }
 
-    public handleField(updatedState: IFiltersState) {
-        this.setState({ ...updatedState, hasError: false }, () => {
-            if (!this.hasFilter()) {
-                history.replace("/");
-                return;
-            }
-            this.submitForm();
-
-            const newPath = `/filters?${this.currentPath()}`;
-            if (location.pathname.startsWith("/filters")) {
-                history.replace(newPath);
-            } else {
-                history.push(newPath);
-            }
-        });
-    }
-
+    @autobind()
     public reset() {
         this.setState({
             key: "",
@@ -284,5 +269,52 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
 
     public currentPath() {
         return stringify(_.pickBy(this.state, e => e));
+    }
+
+    @autobind()
+    public handleChangeSourceRegex(e: React.ChangeEvent<HTMLInputElement>) {
+        this.handleField({ sourceRegex: e.target.value });
+    }
+
+    @autobind()
+    public handleChangeTranslationRegex(e: React.ChangeEvent<HTMLInputElement>) {
+        this.handleField({ translationRegex: e.target.value });
+    }
+
+    @autobind()
+    public handleChangeTranslationStatus(e: React.ChangeEvent<HTMLSelectElement>) {
+        this.handleField({ translationStatus: parseInt(e.target.value, 10) });
+    }
+
+    @autobind()
+    public handleChangeSuggestionStatus(e: React.ChangeEvent<HTMLSelectElement>) {
+        this.handleField({ suggestionsStatus: parseInt(e.target.value, 10) });
+    }
+
+    @autobind()
+    public handleChangeKey(e: React.ChangeEvent<HTMLInputElement>) {
+        this.handleField({ key: e.target.value });
+    }
+
+    @autobind()
+    public handleChangeUrgencyStatus(e: React.ChangeEvent<HTMLSelectElement>) {
+        this.handleField({ urgencyStatus: parseInt(e.target.value, 10) });
+    }
+
+    private handleField(updatedState: IFiltersState) {
+        this.setState({ ...updatedState, hasError: false }, () => {
+            if (!this.hasFilter()) {
+                history.replace("/");
+                return;
+            }
+            this.submitForm();
+
+            const newPath = `/filters?${this.currentPath()}`;
+            if (location.pathname.startsWith("/filters")) {
+                history.replace(newPath);
+            } else {
+                history.push(newPath);
+            }
+        });
     }
 }

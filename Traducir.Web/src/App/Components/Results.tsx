@@ -1,9 +1,9 @@
-import * as _ from "lodash";
 import * as React from "react";
 import { Link } from "react-router-dom";
-import history from "../../history";
+
 import ISOString from "../../Models/SOString";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
+import Result from "./Result";
 
 export interface IResultsProps {
     results: ISOString[];
@@ -39,26 +39,6 @@ export default class Results extends React.Component<IResultsProps> {
         </>;
     }
 
-    public renderSuggestions(str: ISOString): React.ReactFragment | null {
-        if (!str.suggestions || !str.suggestions.length) {
-            return null;
-        }
-
-        const approved = _.filter(str.suggestions, s => s.state === StringSuggestionState.ApprovedByTrustedUser).length;
-        const pending = _.filter(str.suggestions, s => s.state === StringSuggestionState.Created).length;
-
-        return <>
-            {approved > 0 && <span className="text-success">{approved}</span>}
-            {approved > 0 && pending > 0 && <span> - </span>}
-            {pending > 0 && <span className="text-danger">{pending}</span>}
-        </>;
-    }
-
-    public goToString(str: ISOString) {
-        this.props.loadSuggestions(str);
-        history.push(`/string/${str.id}`);
-    }
-
     public renderRows(strings: ISOString[]): React.ReactFragment {
         if (this.props.isLoading) {
             return <tr>
@@ -71,15 +51,11 @@ export default class Results extends React.Component<IResultsProps> {
             </tr>;
         }
         return <>
-            {strings.map(str => <tr
+            {strings.map(str => <Result
                 key={str.id}
-                onClick={e => this.goToString(str)}
-                className={str.isUrgent ? "table-danger" : str.touched ? "table-success" : ""}
-            >
-                <td>{str.originalString}</td>
-                <td>{str.translation}</td>
-                <td>{this.renderSuggestions(str)}</td>
-            </tr>)}
+                str={str}
+                loadSuggestions={this.props.loadSuggestions}
+            />)}
         </>;
     }
 }
