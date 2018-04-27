@@ -1,10 +1,10 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import * as React from "react";
-import history from "../../history";
 import IConfig from "../../Models/Config";
 import ISOStringSuggestion, { StringSuggestionState } from "../../Models/SOStringSuggestion";
 import IUserInfo from "../../Models/UserInfo";
 import { UserType } from "../../Models/UserType";
+import Suggestion from "./Suggestion";
 
 export interface ISuggestionsTableProps {
     suggestions: ISOStringSuggestion[];
@@ -14,23 +14,7 @@ export interface ISuggestionsTableProps {
     showErrorMessage: (messageOrCode: string | number) => void;
 }
 
-interface ISuggestionsTableState {
-    isButtonDisabled?: boolean;
-}
-
-enum ReviewAction {
-    Accept = 1,
-    Reject = 2
-}
-
-export default class SuggestionsTable extends React.Component<ISuggestionsTableProps, ISuggestionsTableState> {
-    constructor(props: ISuggestionsTableProps) {
-        super(props);
-        this.state = {
-            isButtonDisabled: false
-        };
-    }
-
+export default class SuggestionsTable extends React.Component<ISuggestionsTableProps> {
     public render(): React.ReactNode {
         if (!this.props.suggestions || !this.props.suggestions.length) {
             return null;
@@ -47,105 +31,15 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
                 </tr>
             </thead>
             <tbody>
-                {this.props.suggestions.map(sug =>
-                    <tr key={sug.id} className={sug.state === StringSuggestionState.ApprovedByTrustedUser ? "table-success" : ""}>
-                        <td><pre>{sug.suggestion}</pre></td>
-                        <td>{sug.lastStateUpdatedByName &&
-                            <a
-                                href={`https://${this.props.config.siteDomain}/users/${sug.lastStateUpdatedById}`}
-                                target="_blank"
-                            >
-                                {sug.lastStateUpdatedByName}
-                            </a>
-                        }</td>
-                        <td>
-                            <a
-                                href={`https://${this.props.config.siteDomain}/users/${sug.createdById}`}
-                                target="_blank"
-                                title={`at ${sug.creationDate} UTC`}
-                            >
-                                {sug.createdByName}
-                            </a>
-                        </td>
-                        <td>{this.renderDeleteButton(sug)}</td>
-                        <td>{this.renderSuggestionActions(sug)}</td>
-                    </tr>)}
+                {this.props.suggestions.map(sug => <Suggestion
+                    key={sug.id}
+                    sug={sug}
+                    config={this.props.config}
+                    user={this.props.user}
+                    refreshString={this.props.refreshString}
+                    showErrorMessage={this.props.showErrorMessage}
+                />)}
             </tbody>
         </table>;
-    }
-
-    public renderSuggestionActions(sug: ISOStringSuggestion): React.ReactNode {
-        if (!this.props.user || !this.props.user.canReview) {
-            return null;
-        }
-
-        if (sug.state === StringSuggestionState.ApprovedByTrustedUser &&
-            this.props.user.userType === UserType.TrustedUser) {
-            // a trusted user can't act on a suggestion approved by a trusted user
-            return null;
-        }
-
-        return <div className="btn-group" role="group">
-            <button type="button" className="btn btn-sm btn-success" onClick={e => this.processReview(sug, ReviewAction.Accept)} disabled={this.state.isButtonDisabled}>
-                <i className="fas fa-thumbs-up" />
-            </button>
-            <button type="button" className="btn btn-sm btn-danger" onClick={e => this.processReview(sug, ReviewAction.Reject)} disabled={this.state.isButtonDisabled}>
-                <i className="fas fa-thumbs-down" />
-            </button>
-        </div>;
-    }
-
-    public async processReview(sug: ISOStringSuggestion, action: ReviewAction) {
-        this.setState({
-            isButtonDisabled: true
-        });
-        try {
-            await axios.put("/app/api/review", {
-                Approve: action === ReviewAction.Accept,
-                SuggestionId: sug.id
-            });
-            this.props.refreshString(sug.stringId);
-            history.push("/filters");
-        } catch (e) {
-            if (e.response.status === 400) {
-                this.props.showErrorMessage("Error reviewing the suggestion. Do you have enough rights?");
-            } else {
-                this.props.showErrorMessage(e.response.status);
-            }
-            this.setState({
-                isButtonDisabled: false
-            });
-        }
-    }
-
-    public renderDeleteButton(sug: ISOStringSuggestion): React.ReactNode {
-        if (!this.props.user || sug.createdById !== this.props.user.id) {
-            return null;
-        }
-        return <button type="button" className="btn btn-sm btn-danger" onClick={e => this.processDeleteReview(sug)} disabled={this.state.isButtonDisabled}>
-            DELETE
-        </button>;
-    }
-
-    public async processDeleteReview(sug: ISOStringSuggestion) {
-        this.setState({
-            isButtonDisabled: true
-        });
-        try {
-            await axios.delete(`/app/api/suggestions/${sug.id}`);
-            this.props.refreshString(sug.stringId);
-            this.setState({
-                isButtonDisabled: false
-            });
-        } catch (e) {
-            if (e.response.status === 400) {
-                this.props.showErrorMessage("Error deleting the suggestion. Do you have enough rights?");
-            } else {
-                this.props.showErrorMessage(e.response.status);
-            }
-            this.setState({
-                isButtonDisabled: false
-            });
-        }
     }
 }

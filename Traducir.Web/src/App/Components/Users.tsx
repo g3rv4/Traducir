@@ -1,11 +1,12 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
+import { autobind } from "core-decorators";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import history from "../../history";
 import IConfig from "../../Models/Config";
 import IUser from "../../Models/User";
 import IUserInfo from "../../Models/UserInfo";
-import { UserType, userTypeToString } from "../../Models/UserType";
+import User from "./User";
 
 export interface IUsersProps {
     showErrorMessage: (messageOrCode: string | number) => void;
@@ -40,40 +41,14 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
                     </tr>
                 </thead>
                 <tbody>
-                    {this.state.users.map(u =>
-                        <tr key={u.id}>
-                            <td>
-                                <a href={`https://${this.props.config.siteDomain}/users/${u.id}`} target="_blank">
-                                    {u.displayName} {u.isModerator ? "♦" : ""}
-                                </a>
-                            </td>
-                            <td>{userTypeToString(u.userType)}</td>
-                            <td>{this.props.currentUser && this.props.currentUser.canManageUsers &&
-                                <div className="btn-group" role="group">
-                                    <Link to={`/suggestions/${u.id}`} className="btn btn-sm btn-primary">view suggestions</Link>
-                                    {u.userType === UserType.User &&
-                                        <button type="button" className="btn btn-sm btn-warning" onClick={e => this.updateUserType(u, UserType.TrustedUser)}>
-                                            Make trusted user
-                                        </button>
-                                    }
-                                    {u.userType === UserType.Banned &&
-                                        <button type="button" className="btn btn-sm btn-warning" onClick={e => this.updateUserType(u, UserType.User)}>
-                                            Lift Ban
-                                        </button>
-                                    }
-                                    {u.userType === UserType.TrustedUser &&
-                                        <button type="button" className="btn btn-sm btn-danger" onClick={e => this.updateUserType(u, UserType.User)}>
-                                            Make regular user
-                                        </button>
-                                    }
-                                    {u.userType !== UserType.Banned && u.userType !== UserType.TrustedUser && u.userType !== UserType.Reviewer && !u.isModerator &&
-                                        <button type="button" className="btn btn-sm btn-danger" onClick={e => this.updateUserType(u, UserType.Banned)}>
-                                            Ban User
-                                        </button>
-                                    }
-                                </div>
-                            }</td>
-                        </tr>)}
+                    {this.state.users.map(u => <User
+                        key={u.id}
+                        user={u}
+                        currentUser={this.props.currentUser}
+                        config={this.props.config}
+                        refreshUsers={this.refreshUsers}
+                        showErrorMessage={this.props.showErrorMessage}
+                    />)}
                 </tbody>
             </table>
         </>;
@@ -83,6 +58,7 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
         this.refreshUsers();
     }
 
+    @autobind()
     public async refreshUsers() {
         try {
             const r = await axios.get<IUser[]>("/app/api/users");
@@ -92,22 +68,6 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
         } catch (e) {
             if (e.response.status === 401) {
                 history.push("/");
-            } else {
-                this.props.showErrorMessage(e.response.status);
-            }
-        }
-    }
-
-    public async updateUserType(user: IUser, newType: UserType) {
-        try {
-            await axios.put("/app/api/users/change-type", {
-                UserId: user.id,
-                UserType: newType
-            });
-            this.refreshUsers();
-        } catch (e) {
-            if (e.response.status === 400) {
-                this.props.showErrorMessage("Error updating user type");
             } else {
                 this.props.showErrorMessage(e.response.status);
             }

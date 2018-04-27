@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import { autobind } from "core-decorators";
 import * as _ from "lodash";
 import * as React from "react";
 import { Link, Route, RouteComponentProps, Switch, withRouter } from "react-router-dom";
@@ -38,10 +39,6 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
             isOpen: false,
             strings: []
         };
-
-        this.loadSuggestions = this.loadSuggestions.bind(this);
-        this.resultsReceived = this.resultsReceived.bind(this);
-        this.refreshString = this.refreshString.bind(this);
     }
 
     public render() {
@@ -50,7 +47,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                 <div className="container">
                     <Link to="/" className="navbar-brand d-none d-lg-block">{this.state.config && this.state.config.friendlyName} Translations 🦄{this.state.user && ` ${this.state.user.name} (${userTypeToString(this.state.user.userType)})`}</Link>
                     <Link to="/" className="navbar-brand d-lg-none">{this.state.config && this.state.config.friendlyName} Translations 🦄</Link>
-                    <NavbarToggler onClick={e => this.toggle()} />
+                    <NavbarToggler onClick={this.toggle} />
                     <Collapse isOpen={this.state.isOpen} navbar>
                         <Nav className="ml-auto" navbar>
                             <NavItem>
@@ -89,67 +86,14 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                     <Route
                         path="/users"
                         exact
-                        render={p =>
-                            this.state.config ?
-                                <Users
-                                    showErrorMessage={this.showErrorMessage}
-                                    currentUser={this.state.user}
-                                    config={this.state.config}
-                                /> :
-                                null
-                        }
+                        render={this.renderUsers}
                     />
                     <Route
                         path="/suggestions/:userId"
-                        render={p =>
-                            this.state.config ?
-                                <SuggestionsHistory
-                                    showErrorMessage={this.showErrorMessage}
-                                    currentUser={this.state.user}
-                                    location={p.location}
-                                    config={this.state.config}
-                                /> :
-                                null
-                        }
+                        render={this.renderSuggestionsHistory}
                     />
                     <Route
-                        render={p => <>
-                            <Filters
-                                onResultsFetched={this.resultsReceived}
-                                onLoading={() => this.setState({ isLoading: true })}
-                                showErrorMessage={this.showErrorMessage}
-                                location={p.location}
-                            />
-                            <Switch>
-                                <Route
-                                    path="/"
-                                    exact
-                                    render={q =>
-                                        this.state.stats ?
-                                            <StatsWithLinks stats={this.state.stats} /> :
-                                            null
-                                    }
-                                />
-                                {this.state.strings.length === 0 &&
-                                    <Route
-                                        path="/string/"
-                                        render={q =>
-                                            this.state.stats ?
-                                                <StatsWithLinks stats={this.state.stats} /> :
-                                                null
-                                        }
-                                    />}
-                                <Route
-                                    render={q =>
-                                        <Results
-                                            results={this.state.strings}
-                                            loadSuggestions={this.loadSuggestions}
-                                            isLoading={this.state.isLoading}
-                                        />
-                                    }
-                                />
-                            </Switch>
-                        </>}
+                        render={this.renderHome}
                     />
                 </Switch>
                 <Modal isOpen={this.isOpen()} toggle={this.onToggle} className="w-95 mw-100">
@@ -193,6 +137,73 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         }
     }
 
+    @autobind()
+    public renderUsers() {
+        return this.state.config ?
+            <Users
+                showErrorMessage={this.showErrorMessage}
+                currentUser={this.state.user}
+                config={this.state.config}
+            /> :
+            null;
+
+    }
+
+    @autobind()
+    public renderSuggestionsHistory(p: RouteComponentProps<any>) {
+        return this.state.config ?
+            <SuggestionsHistory
+                showErrorMessage={this.showErrorMessage}
+                currentUser={this.state.user}
+                location={p.location}
+                config={this.state.config}
+            /> :
+            null;
+    }
+
+    @autobind()
+    public renderHome(p: RouteComponentProps<any>) {
+        return <>
+            <Filters
+                onResultsFetched={this.resultsReceived}
+                onLoading={this.handleLoading}
+                showErrorMessage={this.showErrorMessage}
+                location={p.location}
+            />
+            <Switch>
+                <Route
+                    path="/"
+                    exact
+                    render={this.renderStats}
+                />
+                {this.state.strings.length === 0 &&
+                    <Route
+                        path="/string/"
+                        render={this.renderStats}
+                    />}
+                <Route
+                    render={this.renderResults}
+                />
+            </Switch>
+        </>;
+    }
+
+    @autobind()
+    public renderStats() {
+        return this.state.stats ?
+            <StatsWithLinks stats={this.state.stats} /> :
+            null;
+    }
+
+    @autobind()
+    public renderResults() {
+        return <Results
+            results={this.state.strings}
+            loadSuggestions={this.loadSuggestions}
+            isLoading={this.state.isLoading}
+        />;
+    }
+
     public renderLogInLogOut() {
         const returnUrl = encodeURIComponent(location.pathname + location.search);
         if (!this.state || !this.state.user) {
@@ -206,12 +217,21 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         }
     }
 
+    @autobind()
+    public handleLoading() {
+        this.setState({
+            isLoading: true
+        });
+    }
+
+    @autobind()
     public loadSuggestions(str: ISOString) {
         this.setState({
             currentString: str
         });
     }
 
+    @autobind()
     public async refreshString(stringIdToUpdate: number) {
         const idx = _.findIndex(this.state.strings, s => s.id === stringIdToUpdate);
         const r = await axios.get<ISOString>(`/app/api/strings/${stringIdToUpdate}`);
@@ -233,6 +253,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         }
     }
 
+    @autobind()
     public resultsReceived(strings: ISOString[]) {
         this.setState({
             isLoading: false,
@@ -253,6 +274,7 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         }
     }
 
+    @autobind()
     public toggle() {
         this.setState({
             isOpen: !this.state.isOpen

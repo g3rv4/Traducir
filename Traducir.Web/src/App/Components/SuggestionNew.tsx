@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import { autobind } from "core-decorators";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import history from "../../history";
@@ -53,7 +54,7 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
                             className="form-control"
                             id="suggestion"
                             value={this.state.suggestion}
-                            onChange={e => this.setState({ suggestion: e.target.value })}
+                            onChange={this.updateSuggestion}
                         />
                     </div>
                 </div>
@@ -64,7 +65,7 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
                         <button
                             type="button"
                             className="btn btn-primary float-left"
-                            onClick={e => this.postSuggestion(false)}
+                            onClick={this.postSuggestionForReview}
                         >
                             Send new suggestion
                         </button>
@@ -72,7 +73,7 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
                             <button
                                 type="button"
                                 className="btn btn-warning float-left"
-                                onClick={e => this.postSuggestion(true)}
+                                onClick={this.postApprovedSuggestion}
                             >
                                 Send final translation
                             </button>}
@@ -86,7 +87,22 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
         this.setState({ suggestion: nextProps.suggestion });
     }
 
-    public async postSuggestion(approve: boolean) {
+    @autobind()
+    public updateSuggestion(e: React.ChangeEvent<HTMLTextAreaElement>) {
+        this.setState({ suggestion: e.target.value });
+    }
+
+    @autobind()
+    public postSuggestionForReview() {
+        this.postSuggestion(false);
+    }
+
+    @autobind()
+    public postApprovedSuggestion() {
+        this.postSuggestion(true);
+    }
+
+    private async postSuggestion(approve: boolean) {
         try {
             await axios.put("/app/api/suggestions", {
                 Approve: approve,
