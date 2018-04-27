@@ -48,7 +48,11 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
             <div>
                 <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{this.props.str.originalString}</pre>
             </div>
-            {this.renderCopyButton()}
+            {this.props.user && <div>
+                <button type="button" className="btn btn-sm btn-primary" onClick={this.copyOriginalString}>
+                    Copy as suggestion
+                </button>
+            </div>}
             {this.props.str.variant && <div>
                 <span className="font-weight-bold">Variant:</span> {this.props.str.variant.replace("VARIANT: ", "")}
             </div>}
@@ -83,18 +87,6 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
         return this.props.str.isUrgent
             ? <span>Yes <a href="#" className="btn btn-sm btn-warning" onClick={this.setNonUrgent}>Mark as non urgent</a></span>
             : <span>No <a href="#" className="btn btn-sm btn-danger" onClick={this.setUrgent}>Mark as urgent</a></span>;
-    }
-
-    public renderCopyButton(): React.ReactNode {
-        if (this.props.user) {
-            return <>
-                <div>
-                    <button type="button" className="btn btn-sm btn-primary" onClick={this.copyOriginalString}>
-                        Copy as suggestion
-                </button>
-                </div>
-            </>;
-        }
     }
 
     @autobind()

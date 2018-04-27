@@ -201,14 +201,14 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
         </>;
     }
 
-    public hasFilter(): any | undefined {
-        return this.state.sourceRegex ||
+    public hasFilter(): boolean {
+        return !!(this.state.sourceRegex ||
             this.state.translationRegex ||
             this.state.key ||
             this.state.translationStatus ||
             this.state.suggestionsStatus ||
             this.state.pushStatus ||
-            this.state.urgencyStatus;
+            this.state.urgencyStatus);
     }
 
     public componentDidMount(): void {

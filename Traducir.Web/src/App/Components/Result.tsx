@@ -24,16 +24,18 @@ export default class Result extends React.Component<IResultProps> {
     }
 
     private renderSuggestions(): React.ReactNode {
-        if (this.props.str.suggestions && this.props.str.suggestions.length) {
-            const approved = _.filter(this.props.str.suggestions, s => s.state === StringSuggestionState.ApprovedByTrustedUser).length;
-            const pending = _.filter(this.props.str.suggestions, s => s.state === StringSuggestionState.Created).length;
-
-            return <>
-                {approved > 0 && <span className="text-success">{approved}</span>}
-                {approved > 0 && pending > 0 && <span> - </span>}
-                {pending > 0 && <span className="text-danger">{pending}</span>}
-            </>;
+        if (!this.props.str.suggestions || !this.props.str.suggestions.length) {
+            return;
         }
+
+        const approved = _.filter(this.props.str.suggestions, s => s.state === StringSuggestionState.ApprovedByTrustedUser).length;
+        const pending = _.filter(this.props.str.suggestions, s => s.state === StringSuggestionState.Created).length;
+
+        return <>
+            {approved > 0 && <span className="text-success">{approved}</span>}
+            {approved > 0 && pending > 0 && <span> - </span>}
+            {pending > 0 && <span className="text-danger">{pending}</span>}
+        </>;
     }
 
     @autobind()
