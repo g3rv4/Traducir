@@ -1,4 +1,5 @@
 import axios from "axios";
+import { autobind } from "core-decorators";
 import * as React from "react";
 import { Link } from "react-router-dom";
 import history from "../../history";
@@ -43,6 +44,7 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
                     {this.state.users.map(u => <User
                         key={u.id}
                         user={u}
+                        currentUser={this.props.currentUser}
                         config={this.props.config}
                         refreshUsers={this.refreshUsers}
                         showErrorMessage={this.props.showErrorMessage}
@@ -56,6 +58,7 @@ export default class Users extends React.Component<IUsersProps, IUsersState> {
         this.refreshUsers();
     }
 
+    @autobind()
     public async refreshUsers() {
         try {
             const r = await axios.get<IUser[]>("/app/api/users");
