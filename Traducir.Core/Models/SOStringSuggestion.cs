@@ -22,5 +22,9 @@ namespace Traducir.Core.Models
         public int? LastStateUpdatedById { get; set; }
 
         public DateTime CreationDate { get; set; }
+
+        public string OriginalString { get; set; }
+
+        public SOStringSuggestionHistory[] Histories { get; set; }
     }
 }

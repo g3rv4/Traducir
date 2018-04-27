@@ -22,7 +22,7 @@ export default class Result extends React.Component<IResultProps> {
         </tr>;
     }
 
-    private renderSuggestions(): React.ReactFragment | null {
+    private renderSuggestions(): React.ReactNode {
         if (!this.props.str.suggestions || !this.props.str.suggestions.length) {
             return null;
         }

@@ -15,7 +15,7 @@ export interface ISuggestionsTableProps {
 }
 
 export default class SuggestionsTable extends React.Component<ISuggestionsTableProps> {
-    public render(): JSX.Element | null {
+    public render(): React.ReactNode {
         if (!this.props.suggestions || !this.props.suggestions.length) {
             return null;
         }

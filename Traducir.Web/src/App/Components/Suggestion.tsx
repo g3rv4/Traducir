@@ -56,7 +56,7 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
         </tr>;
     }
 
-    public renderDeleteButton(): JSX.Element | null {
+    public renderDeleteButton(): React.ReactNode {
         if (!this.props.user || this.props.sug.createdById !== this.props.user.id) {
             return null;
         }
@@ -65,7 +65,7 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
         </button>;
     }
 
-    public renderSuggestionActions(): JSX.Element | null {
+    public renderSuggestionActions(): React.ReactNode {
         if (!this.props.user || !this.props.user.canReview) {
             return null;
         }

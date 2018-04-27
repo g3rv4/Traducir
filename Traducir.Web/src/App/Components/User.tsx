@@ -1,6 +1,7 @@
 import axios from "axios";
 import { autobind } from "core-decorators";
 import React = require("react");
+import { Link } from "react-router-dom";
 import IConfig from "../../Models/Config";
 import IUser from "../../Models/User";
 import IUserInfo from "../../Models/UserInfo";
@@ -25,6 +26,7 @@ export default class User extends React.Component<IUserProps> {
             <td>{userTypeToString(this.props.user.userType)}</td>
             <td>{this.props.currentUser && this.props.currentUser.canManageUsers &&
                 <div className="btn-group" role="group">
+                    <Link to={`/suggestions/${this.props.user.id}`} className="btn btn-sm btn-primary">view suggestions</Link>
                     {this.props.user.userType === UserType.User &&
                         <button type="button" className="btn btn-sm btn-warning" onClick={this.makeTrustedUser}>
                             Make trusted user

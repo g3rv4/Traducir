@@ -84,7 +84,7 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
             : <span>No <a href="#" className="btn btn-sm btn-danger" onClick={this.setUrgent}>Mark as urgent</a></span>;
     }
 
-    public renderCopyButton(): JSX.Element | null {
+    public renderCopyButton(): React.ReactNode {
         if (!this.props.user) {
             return null;
         }

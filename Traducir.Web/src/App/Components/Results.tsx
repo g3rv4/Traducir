@@ -1,6 +1,5 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
-
 import ISOString from "../../Models/SOString";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
 import Result from "./Result";
