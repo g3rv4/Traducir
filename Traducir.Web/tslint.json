@@ -21,7 +21,14 @@
     "jsx-wrap-multiline": false,
     "jsx-boolean-value": false,
     "jsx-no-multiline-js": false,
-    "typedef": [true, "call-signature", "parameter", "property-declaration", "member-variable-declaration"]
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter",
+      "property-declaration",
+      "member-variable-declaration"
+    ],
+    "non-undefined-react-node-on-render": true
   },
-  "rulesDirectory": []
+  "rulesDirectory": "./src/rules"
 }
