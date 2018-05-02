@@ -61,6 +61,11 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
                     <pre className="d-inline">{this.props.str.translation}</pre> :
                     <i>Missing translation</i>}
             </div>
+            {this.props.user && this.props.str.translation && < div >
+                <button type="button" className="btn btn-sm btn-primary" onClick={this.copyTranslatedString}>
+                    Copy as suggestion
+                </button>
+            </div>}
             <SuggestionsTable
                 user={this.props.user}
                 config={this.props.config}
@@ -97,6 +102,11 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
     @autobind()
     public copyOriginalString(): void {
         this.setState({ suggested: this.props.str.originalString });
+    }
+
+    @autobind()
+    public copyTranslatedString(): void {
+        this.setState({ suggested: this.props.str.translation });
     }
 
     @autobind()
