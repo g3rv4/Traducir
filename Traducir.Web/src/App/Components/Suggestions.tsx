@@ -109,7 +109,6 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
         this.setState({ suggested: this.props.str.translation });
     }
 
-
     @autobind()
     public setUrgent(): void {
         this.updateUrgency(true);
