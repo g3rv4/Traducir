@@ -7,6 +7,8 @@ import ISOStringSuggestion, { StringSuggestionState, suggestionStateToString } f
 import { suggestionHistoryTypeToString } from "../../Models/SOStringSuggestionHistory";
 import IUserInfo from "../../Models/UserInfo";
 import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
+import SuggestionHistoryFilters from "./SuggestionHistoryFilters";
+import SuggestionHistoryTable from "./SuggestionsHistoryTable";
 
 export interface ISuggestionsHistoryProps {
     showErrorMessage: (messageOrCode: string | number) => void;
@@ -42,51 +44,58 @@ export default class SuggestionsHistory extends React.Component<ISuggestionsHist
         if (!this.props.currentUser || !this.state.suggestions) {
             return null;
         }
-        return this.state.suggestions.map(sug => <div key={sug.id} className="mt-5">
+        return <>
             <div>
-                <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{sug.originalString}</pre>
+                <SuggestionHistoryFilters
+                userid={this.props.currentUser.id}
+                />
             </div>
-            <div>
-                <span className="font-weight-bold">Suggestion:</span> <pre className="d-inline">{sug.suggestion}</pre>
-            </div>
-            <div>
-                <span className="font-weight-bold">State:</span> <span className={`badge ${this.getBadgeClassFromState(sug.state)}`}>{suggestionStateToString(sug.state)}</span>
-            </div>
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>Event</th>
-                        <th>User</th>
-                        <th>Comment</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sug.histories.map(sugHistory => <tr key={sugHistory.id}>
-                        <td>
-                            {suggestionHistoryTypeToString(sugHistory.historyType)}
-                        </td>
-                        <td>
-                            <a
-                                href={`https://${this.props.config.siteDomain}/users/${sugHistory.userId}`}
-                                target="_blank"
-                                title={`at ${sug.creationDate} UTC`}
-                            >
-                                {sugHistory.userName}
-                            </a>
-                        </td>
-                        <td>
-                            {sugHistory.comment}
-                        </td>
-                        <td>
-                            {sugHistory.creationDate}
-                        </td>
-                    </tr>)}
-                </tbody>
-            </table>
-        </div>);
-    }
-
+            {this.state.suggestions.map(sug => <div key={sug.id} className="mt-5">
+                <div>
+                    <span className="font-weight-bold">Original String:</span> <pre className="d-inline">{sug.originalString}</pre>
+                </div>
+                <div>
+                    <span className="font-weight-bold">Suggestion:</span> <pre className="d-inline">{sug.suggestion}</pre>
+                </div>
+                <div>
+                    <span className="font-weight-bold">State:</span> <span className={`badge ${this.getBadgeClassFromState(sug.state)}`}>{suggestionStateToString(sug.state)}</span>
+                </div>
+                <table className="table">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>User</th>
+                            <th>Comment</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sug.histories.map(sugHistory => <tr key={sugHistory.id}>
+                            <td>
+                                {suggestionHistoryTypeToString(sugHistory.historyType)}
+                            </td>
+                            <td>
+                                <a
+                                    href={`https://${this.props.config.siteDomain}/users/${sugHistory.userId}`}
+                                    target="_blank"
+                                    title={`at ${sug.creationDate} UTC`}
+                                >
+                                    {sugHistory.userName}
+                                </a>
+                            </td>
+                            <td>
+                                {sugHistory.comment}
+                            </td>
+                            <td>
+                                {sugHistory.creationDate}
+                            </td>
+                        </tr>)}
+                    </tbody>
+                </table>
+            </div>)}
+            </>
+        }
+    
     public getBadgeClassFromState(state: StringSuggestionState): string | undefined {
         switch (state) {
             case StringSuggestionState.Created:
