@@ -8,7 +8,7 @@ export interface ISuggestionHistoryFiltersProps {
 
 export default class Filters extends React.Component<ISuggestionHistoryFiltersProps> {
     public render(): NonUndefinedReactNode {
-        return <div className="row text-center">
+        return <div className="row text-center mt-3">
             <div className="col d-none d-lg-block">
                 <div className="btn-group" role="group" aria-label="Basic example">
                     <Link to={"/suggestions/" + this.props.userid} className="btn btn-info">All</Link>

@@ -563,11 +563,6 @@ Select @idString;", new
         public async Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId, int? filterId)
         {
             string hasFilters = string.Empty;
-            if (filterId.HasValue)
-            {
-                hasFilters = "And sug.StateId = " + filterId.ToString();
-            }
-
             string sql = $@"
 Declare @Ids Table
 (
@@ -578,7 +573,7 @@ Insert Into @Ids
 Select Top 100 Id
 From   StringSuggestions sug
 Where  sug.CreatedById = @userId
-{hasFilters}
+{(filterId.HasValue ? "And sug.StateId = @filterId" : string.Empty)}
 Order By sug.CreationDate Desc;
 
 Select sug.Id, sug.Suggestion, sug.StringId, sug.StateId State, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
@@ -596,7 +591,7 @@ Join   Users u On u.Id = h.UserId;
 ";
 
             using (var db = _dbService.GetConnection())
-            using (var reader = await db.QueryMultipleAsync(sql, new { userId }))
+            using (var reader = await db.QueryMultipleAsync(sql, new { userId, filterId }))
             {
                 var suggestions = (await reader.ReadAsync<SOStringSuggestion>()).AsList();
                 var histories = (await reader.ReadAsync<SOStringSuggestionHistory>()).AsList();
