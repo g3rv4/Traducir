@@ -1,9 +1,12 @@
 import * as React from "react";
-import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
+import IConfig from "../../Models/Config";
 import ISOStringSuggestion, { StringSuggestionState, suggestionStateToString } from "../../Models/SOStringSuggestion";
- 
+import { suggestionHistoryTypeToString } from "../../Models/SOStringSuggestionHistory";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
+
 interface ISuggestionsHistoryProps {
     suggestions?: ISOStringSuggestion[];
+    config: IConfig;
 }
 
 export default class Filters extends React.Component<ISuggestionsHistoryProps> {
@@ -59,5 +62,19 @@ export default class Filters extends React.Component<ISuggestionsHistoryProps> {
                 </tbody>
             </table>
         </div>);
+    }
+
+    public getBadgeClassFromState(state: StringSuggestionState): string | undefined {
+        switch (state) {
+            case StringSuggestionState.Created:
+                return "badge-secondary";
+            case StringSuggestionState.ApprovedByReviewer:
+            case StringSuggestionState.ApprovedByTrustedUser:
+                return "badge-success";
+            case StringSuggestionState.Rejected:
+                return "badge-danger";
+            case StringSuggestionState.DeletedByOwner:
+                return "badge-dark";
+        }
     }
 }

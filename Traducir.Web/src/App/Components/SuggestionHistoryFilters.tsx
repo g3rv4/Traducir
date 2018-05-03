@@ -1,6 +1,6 @@
 import * as React from "react";
-import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 import { Link } from "react-router-dom";
+import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 
 export interface ISuggestionHistoryFiltersProps {
     userid: number;
@@ -17,7 +17,7 @@ export default class Filters extends React.Component<ISuggestionHistoryFiltersPr
                     <Link to={"/suggestions/" + this.props.userid + "?filterId=3"} className="btn btn-info">ApprovedByReviewer</Link>
                     <Link to={"/suggestions/" + this.props.userid + "?filterId=4"} className="btn btn-info">Rejected</Link>
                     <Link to={"/suggestions/" + this.props.userid + "?filterId=5"} className="btn btn-info">DeletedByOwner</Link>
-                    <Link to={"/suggestions/" + this.props.userid + "?filterId=6"} className="btn btn-info">DismissedByOtherString</Link>                    
+                    <Link to={"/suggestions/" + this.props.userid + "?filterId=6"} className="btn btn-info">DismissedByOtherString</Link>
                 </div>
             </div>
         </div>;
