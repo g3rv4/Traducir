@@ -147,10 +147,10 @@ namespace Traducir.Api.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("app/api/suggestions-by-user/{userId:INT}")]
-        public async Task<IActionResult> GetSuggestionsByUser(int userId)
+        [Route("app/api/suggestions-by-user/{userId:INT}/{filterId:Int?}")]
+        public async Task<IActionResult> GetSuggestionsByUser(int userId, int? filterId)
         {
-            return Json(await _soStringService.GetSuggestionsByUser(userId));
+            return Json(await _soStringService.GetSuggestionsByUser(userId, filterId));
         }
 
         [HttpPut]

@@ -33,14 +33,9 @@ export default class SuggestionsHistory extends React.Component<ISuggestionsHist
         this.userChanged(this.props.location);
     }
 
-    public componentDidUpdate(prevProps: ISuggestionsHistoryProps, prevState: ISuggestionsHistoryState): void {
-        if (this.props.location !== prevProps.location) {
-            this.userChanged(this.props.location);
-        }
-    }
-
     public componentWillReceiveProps(nextProps: ISuggestionsHistoryProps, context: any): void {
-        if (nextProps.location.pathname !== this.props.location.pathname) {
+        if ((nextProps.location.pathname !== this.props.location.pathname)
+            || (nextProps.location.search !== this.props.location.search)) {
             this.userChanged(nextProps.location);
         }
     }
@@ -64,7 +59,12 @@ export default class SuggestionsHistory extends React.Component<ISuggestionsHist
         const userId = location.pathname.split("/").pop();
         const filterId = location.search.substring(location.search.lastIndexOf("=") + 1);
         try {
-            const r = await axios.get<ISOStringSuggestion[]>(`/app/api/suggestions-by-user/${userId}`);
+            const r = await axios.get<ISOStringSuggestion[]>(`/app/api/suggestions-by-user/${userId}`,
+                {
+                    params: {
+                        filterId
+                    }
+                });
             this.setState({
                 suggestions: r.data
             });

@@ -39,7 +39,7 @@ namespace Traducir.Core.Services
 
         Task<bool> DeleteSuggestionAsync(int suggestionId, int userId);
 
-        Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId);
+        Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId, int? filterId);
     }
 
     public class SOStringService : ISOStringService
@@ -560,9 +560,15 @@ Select @idString;", new
             }
         }
 
-        public async Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId)
+        public async Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId, int? filterId)
         {
-            const string sql = @"
+            string hasFilters = string.Empty;
+            if (filterId.HasValue)
+            {
+                hasFilters = "And sug.StateId = " + filterId.ToString();
+            }
+
+            string sql = $@"
 Declare @Ids Table
 (
   Id int
@@ -572,6 +578,7 @@ Insert Into @Ids
 Select Top 100 Id
 From   StringSuggestions sug
 Where  sug.CreatedById = @userId
+{hasFilters}
 Order By sug.CreationDate Desc;
 
 Select sug.Id, sug.Suggestion, sug.StringId, sug.StateId State, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
