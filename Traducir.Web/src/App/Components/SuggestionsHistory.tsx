@@ -57,9 +57,9 @@ export default class SuggestionsHistory extends React.Component<ISuggestionsHist
 
     public async userChanged(location: Location): Promise<void> {
         const userId = location.pathname.split("/").pop();
-        const filterId = location.search.substring(location.search.lastIndexOf("=") + 1);
+        const stateId = location.search.substring(location.search.lastIndexOf("=") + 1);
         try {
-            const r = await axios.get<ISOStringSuggestion[]>(`/app/api/suggestions-by-user/${userId}`, {params: {filterId}});
+            const r = await axios.get<ISOStringSuggestion[]>(`/app/api/suggestions-by-user/${userId}`, {params: {stateId}});
             this.setState({
                 suggestions: r.data
             });

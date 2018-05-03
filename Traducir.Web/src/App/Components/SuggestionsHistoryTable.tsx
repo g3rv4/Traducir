@@ -20,9 +20,13 @@ export default class Filters extends React.Component<ISuggestionsHistoryProps> {
             return null;
         }
         if (this.props.suggestions.length === 0) {
-            return <div className="mt-5 center-block">
-                No results (sad trombone)
-                </div>;
+            return <div className="row">
+                <div className="col">
+                    <div className="mx-auto mt-5 w-50 p-3 bg-dark text-white text-center">
+                        <span>No results (sad trombone)</span>
+                    </div>
+                </div>
+            </div>;
         }
         return this.props.suggestions.map(sug => <div key={sug.id} className="mt-5">
             <div>
