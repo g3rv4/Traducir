@@ -22,7 +22,7 @@ export default class Filters extends React.Component<ISuggestionsHistoryProps> {
         if (this.props.suggestions.length === 0) {
             return <div className="row">
                 <div className="col">
-                    <div className="mx-auto mt-5 w-50 p-3 bg-dark text-white text-center">
+                    <div className="mx-auto mt-5 w-50 p-3 text-center">
                         <span>No results (sad trombone)</span>
                     </div>
                 </div>

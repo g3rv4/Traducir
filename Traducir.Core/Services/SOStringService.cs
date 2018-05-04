@@ -39,7 +39,7 @@ namespace Traducir.Core.Services
 
         Task<bool> DeleteSuggestionAsync(int suggestionId, int userId);
 
-        Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId, int? stateId);
+        Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId, StringSuggestionState? state);
     }
 
     public class SOStringService : ISOStringService
@@ -560,7 +560,7 @@ Select @idString;", new
             }
         }
 
-        public async Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId, int? stateId)
+        public async Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId, StringSuggestionState? state)
         {
             string hasFilters = string.Empty;
             string sql = $@"
@@ -573,7 +573,7 @@ Insert Into @Ids
 Select Top 100 Id
 From   StringSuggestions sug
 Where  sug.CreatedById = @userId
-{(stateId.HasValue ? "And sug.StateId = @stateId" : string.Empty)}
+{(state.HasValue ? "And sug.StateId = @state" : string.Empty)}
 Order By sug.CreationDate Desc;
 
 Select sug.Id, sug.Suggestion, sug.StringId, sug.StateId State, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
@@ -591,7 +591,7 @@ Join   Users u On u.Id = h.UserId;
 ";
 
             using (var db = _dbService.GetConnection())
-            using (var reader = await db.QueryMultipleAsync(sql, new { userId, stateId }))
+            using (var reader = await db.QueryMultipleAsync(sql, new { userId, state }))
             {
                 var suggestions = (await reader.ReadAsync<SOStringSuggestion>()).AsList();
                 var histories = (await reader.ReadAsync<SOStringSuggestionHistory>()).AsList();

@@ -148,9 +148,9 @@ namespace Traducir.Api.Controllers
         [HttpGet]
         [Authorize]
         [Route("app/api/suggestions-by-user/{userId:INT}")]
-        public async Task<IActionResult> GetSuggestionsByUser(int userId, int? stateId)
+        public async Task<IActionResult> GetSuggestionsByUser(int userId, StringSuggestionState? state)
         {
-            return Json(await _soStringService.GetSuggestionsByUser(userId, stateId));
+            return Json(await _soStringService.GetSuggestionsByUser(userId, state));
         }
 
         [HttpPut]
