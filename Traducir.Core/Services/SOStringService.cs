@@ -576,12 +576,12 @@ Where  sug.CreatedById = @userId
 {(state.HasValue ? "And sug.StateId = @state" : string.Empty)}
 Order By sug.CreationDate Desc;
 
-Select sug.Id, sug.Suggestion, sug.StringId, sug.StateId State, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
-       u.DisplayName LastStateUpdatedByName, s.OriginalString
-From   StringSuggestions sug
-Join   @Ids ids On ids.Id = sug.Id
-Join   Users u On u.Id = sug.LastStateUpdatedById
-Join   Strings s On s.Id = sug.StringId;
+Select    sug.Id, sug.Suggestion, sug.StringId, sug.StateId State, sug.CreationDate, sug.LastStateUpdatedDate, sug.LastStateUpdatedById,
+          u.DisplayName LastStateUpdatedByName, s.OriginalString
+From      StringSuggestions sug
+Join      @Ids ids On ids.Id = sug.Id
+Left Join Users u On u.Id = sug.LastStateUpdatedById
+Join      Strings s On s.Id = sug.StringId;
 
 Select h.Id, h.StringSuggestionId, h.HistoryTypeId HistoryType, h.Comment, h.UserId, h.CreationDate,
        u.DisplayName UserName
