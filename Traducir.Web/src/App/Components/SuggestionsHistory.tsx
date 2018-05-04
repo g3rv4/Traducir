@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Location } from "history";
+import { parse, stringify } from "query-string";
 import * as React from "react";
 import history from "../../history";
 import IConfig from "../../Models/Config";
@@ -18,6 +19,10 @@ export interface ISuggestionsHistoryProps {
 
 interface ISuggestionsHistoryState {
     suggestions?: ISOStringSuggestion[];
+}
+
+interface ISuggestionState {
+    state: number | undefined;
 }
 
 export default class SuggestionsHistory extends React.Component<ISuggestionsHistoryProps, ISuggestionsHistoryState> {
@@ -57,9 +62,9 @@ export default class SuggestionsHistory extends React.Component<ISuggestionsHist
 
     public async userChanged(location: Location): Promise<void> {
         const userId = location.pathname.split("/").pop();
-        const state = location.search.substring(location.search.lastIndexOf("=") + 1);
+        const parts: ISuggestionState = parse(location.search);
         try {
-            const r = await axios.get<ISOStringSuggestion[]>(`/app/api/suggestions-by-user/${userId}`, {params: {state}});
+            const r = await axios.get<ISOStringSuggestion[]>(`/app/api/suggestions-by-user/${userId}`, { params: { state: parts.state}});
             this.setState({
                 suggestions: r.data
             });
