@@ -17,6 +17,7 @@ interface IFiltersState {
     suggestionsStatus?: SuggestionsStatus;
     pushStatus?: PushStatus;
     urgencyStatus?: UrgencyStatus;
+    ignoredStatus?: IgnoreStatus;
     hasError?: boolean;
 }
 
@@ -51,6 +52,12 @@ enum UrgencyStatus {
     AnyStatus = 0,
     IsUrgent = 1,
     IsNotUrgent = 2
+}
+
+enum IgnoreStatus {
+    AvoidIgnored = 0,
+    OnlyIgnored = 1,
+    IncludeIgnored = 2
 }
 
 export default class Filters extends React.Component<IFiltersProps, IFiltersState> {
@@ -208,7 +215,8 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
             this.state.translationStatus ||
             this.state.suggestionsStatus ||
             this.state.pushStatus ||
-            this.state.urgencyStatus);
+            this.state.urgencyStatus ||
+            this.state.ignoredStatus);
     }
 
     public componentDidMount(): void {
@@ -242,6 +250,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
         this.props.onLoading();
         const parts: IFiltersState = parse(location.search);
         return {
+            ignoredStatus: parts.ignoredStatus || IgnoreStatus.AvoidIgnored,
             key: parts.key || "",
             pushStatus: parts.pushStatus || PushStatus.AnyStatus,
             sourceRegex: parts.sourceRegex || "",

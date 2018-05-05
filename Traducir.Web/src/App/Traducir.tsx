@@ -213,6 +213,8 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
             results={this.state.strings}
             loadSuggestions={this.loadSuggestions}
             isLoading={this.state.isLoading}
+            currentUser={this.state.user}
+            updateIgnore={this.updateIgnore}
         />;
     }
 
@@ -232,24 +234,14 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
 
     @autobind()
     public async refreshString(stringIdToUpdate: number): Promise<void> {
-        const idx = _.findIndex(this.state.strings, s => s.id === stringIdToUpdate);
         const r = await axios.get<ISOString>(`/app/api/strings/${stringIdToUpdate}`);
-        r.data.touched = true;
+        await this.updateStrings([r.data]);
+    }
 
-        const newStrings = this.state.strings.slice();
-        newStrings[idx] = r.data;
-
-        this.setState({
-            currentString: r.data,
-            strings: newStrings
-        });
-
-        try {
-            const response = await axios.get<IStats>("/app/api/strings/stats");
-            this.setState({ stats: response.data });
-        } catch (error) {
-            this.showErrorMessage(error.response.status);
-        }
+    @autobind()
+    public async refreshStringsByKey(keyToUpdate: string): Promise<void> {
+        const r = await axios.get<ISOString[]>(`/app/api/strings/by-key/${keyToUpdate}`);
+        await this.updateStrings(r.data);
     }
 
     @autobind()
@@ -286,6 +278,49 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
 
     public onToggle(): void {
         history.push("/filters");
+    }
+
+    private async updateStrings(strs: ISOString[]): Promise<void> {
+        const newStrings = this.state.strings.slice();
+
+        for (const str of strs) {
+            const idx = _.findIndex(newStrings, s => s.id === str.id);
+            if (idx === -1) {
+                continue;
+            }
+
+            str.touched = true;
+            newStrings[idx] = str;
+        }
+
+        this.setState({
+            currentString: strs.length === 1 ? strs[0] : undefined,
+            strings: newStrings
+        });
+
+        try {
+            const response = await axios.get<IStats>("/app/api/strings/stats");
+            this.setState({ stats: response.data });
+        } catch (error) {
+            this.showErrorMessage(error.response.status);
+        }
+    }
+
+    @autobind
+    private async updateIgnore(str: ISOString, ignored: boolean): Promise<void> {
+        try {
+            await axios.put("/app/api/manage-ignore", {
+                Ignored: ignored,
+                StringId: str.id
+            });
+            this.refreshStringsByKey(str.familyKey);
+        } catch (e) {
+            if (e.response.status === 400) {
+                this.showErrorMessage("Failed ignoring the string");
+            } else {
+                this.showErrorMessage(e.response.status);
+            }
+        }
     }
 }
 

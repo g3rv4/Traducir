@@ -36,12 +36,12 @@ namespace Traducir.Api.Controllers
         {
             return Json(new
             {
-                TotalStrings = (await _soStringService.GetStringsAsync()).Length,
-                WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation)).Length,
-                WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions)).Length,
-                WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval)).Length,
-                WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview)).Length,
-                UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent)).Length,
+                TotalStrings = (await _soStringService.GetStringsAsync(s => !s.IsIgnored)).Length,
+                WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation && !s.IsIgnored)).Length,
+                WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions && !s.IsIgnored)).Length,
+                WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval && !s.IsIgnored)).Length,
+                WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview && !s.IsIgnored)).Length,
+                UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent && !s.IsIgnored)).Length,
             });
         }
 
@@ -50,6 +50,13 @@ namespace Traducir.Api.Controllers
         public async Task<IActionResult> GetString(int stringId)
         {
             return Json(await _soStringService.GetStringByIdAsync(stringId));
+        }
+
+        [HttpGet]
+        [Route("app/api/strings/by-key/{key}")]
+        public async Task<IActionResult> GetStringsByKey(string key)
+        {
+            return Json(await _soStringService.GetStringsAsync(s => s.FamilyKey == key));
         }
 
         [HttpPost]
@@ -83,6 +90,11 @@ namespace Traducir.Api.Controllers
             if (model.UrgencyStatus != UrgencyStatus.AnyStatus)
             {
                 ComposePredicate(s => s.IsUrgent == (model.UrgencyStatus == UrgencyStatus.IsUrgent));
+            }
+
+            if (model.IgnoredStatus != IgnoredStatus.IncludeIgnored)
+            {
+                ComposePredicate(s => s.IsIgnored == (model.IgnoredStatus == IgnoredStatus.OnlyIgnored));
             }
 
             if (model.SuggestionsStatus != SuggestionApprovalStatus.AnyStatus)
@@ -254,6 +266,24 @@ namespace Traducir.Api.Controllers
                 model.StringId,
                 model.IsUrgent,
                 User.GetClaim<int>(ClaimType.Id));
+            if (success)
+            {
+                return new EmptyResult();
+            }
+
+            return BadRequest();
+        }
+
+        [HttpPut]
+        [Authorize(Policy = TraducirPolicy.CanReview)]
+        [Route("app/api/manage-ignore")]
+        public async Task<IActionResult> ManageIgnore([FromBody] ManageIgnoreViewModel model)
+        {
+            var success = await _soStringService.ManageIgnoreAsync(
+                model.StringId,
+                model.Ignored,
+                User.GetClaim<int>(ClaimType.Id),
+                User.GetClaim<UserType>(ClaimType.UserType));
             if (success)
             {
                 return new EmptyResult();

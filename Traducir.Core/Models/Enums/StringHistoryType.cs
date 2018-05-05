@@ -9,5 +9,7 @@ namespace Traducir.Core.Models.Enums
         TranslationUpdatedFromDump = 5,
         MadeUrgent = 6,
         MadeNotUrgent = 7,
+        Ignored = 8,
+        UnIgnored = 9,
     }
 }

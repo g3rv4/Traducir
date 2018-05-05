@@ -2,13 +2,16 @@ import * as React from "react";
 import { Link } from "react-router-dom";
 import ISOString from "../../Models/SOString";
 import { StringSuggestionState } from "../../Models/SOStringSuggestion";
+import IUserInfo from "../../Models/UserInfo";
 import { NonUndefinedReactNode } from "../NonUndefinedReactNode";
 import Result from "./Result";
 
 export interface IResultsProps {
     results: ISOString[];
+    currentUser?: IUserInfo;
     isLoading: boolean;
     loadSuggestions: (str: ISOString) => void;
+    updateIgnore(str: ISOString, ignored: boolean): Promise<void>;
 }
 
 export default class Results extends React.Component<IResultsProps> {
@@ -55,6 +58,8 @@ export default class Results extends React.Component<IResultsProps> {
                 key={str.id}
                 str={str}
                 loadSuggestions={this.props.loadSuggestions}
+                currentUser={this.props.currentUser}
+                updateIgnore={this.props.updateIgnore}
             />)}
         </>;
     }
