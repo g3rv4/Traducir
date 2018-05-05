@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CsvHelper;
 using Dapper;
 using StackExchange.Profiling;
+using Traducir.Core.Helpers;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Models.Services;
@@ -36,6 +37,8 @@ namespace Traducir.Core.Services
         Task UpdateTranslationsFromSODump();
 
         Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId);
+
+        Task<bool> ManageIgnoreAsync(int stringId, bool isIgnored, int userId, UserType userType);
 
         Task<bool> DeleteSuggestionAsync(int suggestionId, int userId);
 
@@ -517,6 +520,49 @@ Where  Id = @stringId", new
             return true;
         }
 
+        public async Task<bool> ManageIgnoreAsync(int stringId, bool isIgnored, int userId, UserType userType)
+        {
+            var str = await GetStringByIdAsync(stringId);
+            if (str == null)
+            {
+                return false;
+            }
+
+            if (userType < UserType.TrustedUser)
+            {
+                return false;
+            }
+
+            if (str.IsIgnored == isIgnored)
+            {
+                return true;
+            }
+
+            using (var db = _dbService.GetConnection())
+            {
+                await db.ExecuteAsync(@"
+Insert Into StringHistory
+            (StringId, UserId, HistoryTypeId, CreationDate)
+Select Id, @userId, @historyType, @now
+From   Strings
+Where  FamilyKey = @familyKey;
+
+Update Strings
+Set    IsIgnored = @isIgnored
+Where  FamilyKey = @familyKey", new
+                {
+                    isIgnored,
+                    userId,
+                    familyKey = str.FamilyKey,
+                    historyType = isIgnored ? StringHistoryType.Ignored : StringHistoryType.UnIgnored,
+                    now = DateTime.UtcNow
+                });
+            }
+
+            await RefreshCacheAsync(str.FamilyKey);
+            return true;
+        }
+
         public async Task<bool> DeleteSuggestionAsync(int suggestionId, int userId)
         {
             using (var db = _dbService.GetConnection())
@@ -649,13 +695,19 @@ Constraint PK_ImportTable Primary Key Clustered (NormalizedKey Asc)
             Strings = ImmutableArray<SOString>.Empty;
         }
 
-        private async Task RefreshCacheAsync(int? stringId = null)
+        private Task RefreshCacheAsync(string familyKey)
         {
-            const string sql = @"
-Select   Id, [Key], OriginalString, Translation, NeedsPush, IsUrgent, Variant, CreationDate
+            return RefreshCacheAsync(null, familyKey);
+        }
+
+        private async Task RefreshCacheAsync(int? stringId = null, string familyKey = null)
+        {
+            string sql = $@"
+Select   Id, [Key], FamilyKey, OriginalString, Translation, NeedsPush, IsUrgent, IsIgnored, Variant, CreationDate
 From     Strings
 Where    IsNull(DeletionDate, @deletionDateLimit) >= @deletionDateLimit
--- And   Id = @stringId
+{(stringId.HasValue ? "And Id = @stringId" : string.Empty)}
+{(familyKey.HasValue() ? "And FamilyKey = @familyKey" : string.Empty)}
 Order By IsUrgent Desc, OriginalString Asc;
 
 Select    ss.Id, ss.StringId, ss.Suggestion, ss.StateId State,
@@ -666,17 +718,18 @@ From      StringSuggestions ss
 Join      Strings s On s.Id = ss.StringId And IsNull(s.DeletionDate, @deletionDateLimit) >= @deletionDateLimit
 Join      Users u On ss.CreatedById = u.Id
 Left Join Users uu On uu.Id = ss.LastStateUpdatedById
-Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
--- And s.Id = @stringId";
-            var finalSql = stringId.HasValue ? sql.Replace("--", string.Empty) : sql;
+Where     ss.StateId In ({{=Created}}, {{=ApprovedByTrustedUser}})
+{(stringId.HasValue ? "And s.Id = @stringId" : string.Empty)}
+{(familyKey.HasValue() ? "And s.FamilyKey = @familyKey" : string.Empty)}";
 
             using (MiniProfiler.Current.Step("Refreshing the strings cache"))
             using (var db = _dbService.GetConnection())
-            using (var reader = await db.QueryMultipleAsync(finalSql, new
+            using (var reader = await db.QueryMultipleAsync(sql, new
             {
                 StringSuggestionState.Created,
                 StringSuggestionState.ApprovedByTrustedUser,
                 stringId,
+                familyKey,
                 deletionDateLimit = DateTime.UtcNow.AddDays(-5)
             }))
             {
@@ -699,6 +752,15 @@ Where     ss.StateId In ({=Created}, {=ApprovedByTrustedUser})
                 if (stringId.HasValue)
                 {
                     StringsById[stringId.Value] = stringsById[stringId.Value];
+                    Strings = StringsById.Values.OrderByDescending(s => s.IsUrgent).ThenBy(s => s.OriginalString).ToImmutableArray();
+                }
+                else if (familyKey.HasValue())
+                {
+                    foreach (var str in strings)
+                    {
+                        StringsById[str.Id] = str;
+                    }
+
                     Strings = StringsById.Values.OrderByDescending(s => s.IsUrgent).ThenBy(s => s.OriginalString).ToImmutableArray();
                 }
                 else

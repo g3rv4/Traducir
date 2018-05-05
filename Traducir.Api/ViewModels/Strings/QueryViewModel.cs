@@ -1,12 +1,16 @@
 namespace Traducir.Api.ViewModels.Strings
 {
-    #pragma warning disable CA1717
+#pragma warning disable CA1717
     public enum SuggestionApprovalStatus
     {
         AnyStatus = 0, // will default to this one
+
         DoesNotHaveSuggestions = 1,
+
         HasSuggestionsNeedingReview = 2,
+
         HasSuggestionsNeedingApproval = 3,
+
         HasSuggestionsNeedingReviewApprovedByTrustedUser = 4
     }
 
@@ -36,7 +40,16 @@ namespace Traducir.Api.ViewModels.Strings
 
         IsNotUrgent = 2
     }
-    #pragma warning restore CA1717
+
+    public enum IgnoredStatus
+    {
+        AvoidIgnored = 0,
+
+        OnlyIgnored = 1,
+
+        IncludeIgnored = 2
+    }
+#pragma warning restore CA1717
 
     public class QueryViewModel
     {
@@ -53,5 +66,7 @@ namespace Traducir.Api.ViewModels.Strings
         public PushStatus PushStatus { get; set; }
 
         public UrgencyStatus UrgencyStatus { get; set; }
+
+        public IgnoredStatus IgnoredStatus { get; set; }
     }
 }

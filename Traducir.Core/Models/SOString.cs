@@ -19,6 +19,8 @@ namespace Traducir.Core.Models
 
         public string Key { get; set; }
 
+        public string FamilyKey { get; set; }
+
         public string OriginalString { get; set; }
 
         public string Translation { get; set; }
@@ -28,6 +30,8 @@ namespace Traducir.Core.Models
         public bool NeedsPush { get; set; }
 
         public bool IsUrgent { get; set; }
+
+        public bool IsIgnored { get; set; }
 
         public string Variant { get; set; }
 
