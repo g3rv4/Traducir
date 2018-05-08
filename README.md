@@ -6,6 +6,15 @@ We, on the Stack Overflow en español community have been struggling with keepin
 
 Users can go to traducir.win and do searches of existing strings and their current status. If they choose to log in (by using their Stack Exchange accounts) they can suggest translations. If they happen to be a mod, then they're automatically made reviewers.
 
+## How to use traducir.win?
+
+If you didn't yet please read [Traduciendo el sitio… Esta vez, con más control sobre el proceso
+](https://es.meta.stackoverflow.com/q/3378).
+
+Go to https://traducir.win. You will found that the user interface is pretty intuitive. Just bear in mind that not all the strings should be translated, only those that are found on the user interface of target Stack Exchange site should be. At this time https://traducir.win only has [Stack Overflow en español](https://es.stackoverflow.com) as a target site.
+
+To learn the ropes of app follow the [tour](/docs/TOUR.md)
+
 ## What technologies is it using?
 The backend runs a .NET Core web application and the frontend is a React SPA. As a database, it uses SQL Server. There's a [docker image](https://hub.docker.com/r/g3rv4/traducir/) that's what's used to run this (and that image gets updated automatically on every push to `master`).
 
