@@ -264,6 +264,7 @@ export default class Filters extends React.Component<IFiltersProps, IFiltersStat
     @autobind()
     public reset(): void {
         this.setState({
+            hasError: false,
             key: "",
             pushStatus: PushStatus.AnyStatus,
             sourceRegex: "",
