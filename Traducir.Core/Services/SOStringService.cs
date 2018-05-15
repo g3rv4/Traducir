@@ -157,8 +157,8 @@ From      ImportTable feed
 Left Join Strings s On s.NormalizedKey = feed.NormalizedKey
 Where     s.NormalizedKey Is Null;
 
-Insert Into Strings ([Key], NormalizedKey, Variant, OriginalString, Translation, CreationDate)
-Select [Key], feed.NormalizedKey, feed.Variant, feed.OriginalString, feed.Translation, @now
+Insert Into Strings ([Key], NormalizedKey, FamilyKey, Variant, OriginalString, Translation, CreationDate)
+Select [Key], feed.NormalizedKey, Left([Key], 32), feed.Variant, feed.OriginalString, feed.Translation, @now
 From   ImportTable feed
 Join   @NormalizedKeysToInsert s On s.NormalizedKey = feed.NormalizedKey;
 
