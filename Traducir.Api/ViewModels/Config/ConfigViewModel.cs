@@ -7,5 +7,7 @@ namespace Traducir.Api.ViewModels.Config
         public string FriendlyName { get; set; }
 
         public string TransifexPath { get; set; }
+
+        public string VapidPublic { get; set; }
     }
 }

@@ -1,7 +1,6 @@
 import axios from "axios";
 import { autobind } from "core-decorators";
 import * as React from "react";
-import { Link } from "react-router-dom";
 import history from "../../history";
 import IConfig from "../../Models/Config";
 import IUser from "../../Models/User";

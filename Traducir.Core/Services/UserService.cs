@@ -15,7 +15,11 @@ namespace Traducir.Core.Services
 
         Task<List<User>> GetUsersAsync();
 
+        Task<NotificationSettings> GetNotificationSettings(int userId);
+
         Task<bool> ChangeUserTypeAsync(int userId, UserType userType, int editorId);
+
+        Task<bool> UpdateNotificationSettings(int userId, NotificationSettings newSettings);
     }
 
     public class UserService : IUserService
@@ -57,7 +61,8 @@ Where    Id = @Id", user);
             using (var db = _dbService.GetConnection())
             {
                 return await db.QueryFirstOrDefaultAsync<User>(@"
-Select *
+Select Id, DisplayName, IsModerator, IsBanned, IsTrusted, IsReviewer,
+       CreationDate, LastSeenDate
 From   Users
 Where  Id = @userId", new
                 {
@@ -70,7 +75,10 @@ Where  Id = @userId", new
         {
             using (var db = _dbService.GetConnection())
             {
-                return (await db.QueryAsync<User>("Select * From Users")).AsList();
+                return (await db.QueryAsync<User>(@"
+Select Id, DisplayName, IsModerator, IsBanned, IsTrusted, IsReviewer,
+       CreationDate, LastSeenDate
+From Users")).AsList();
             }
         }
 
@@ -111,6 +119,48 @@ And    IsReviewer = 0;", new
                     HistoryDemotedToRegularUser = UserHistoryType.DemotedToRegularUser
                 });
                 return rows > 0;
+            }
+        }
+
+        public async Task<NotificationSettings> GetNotificationSettings(int userId)
+        {
+            using (var db = _dbService.GetConnection())
+            {
+                return await db.QueryFirstOrDefaultAsync<NotificationSettings>(@"
+Select NotifyUrgentStrings, NotifySuggestionsAwaitingApproval, NotifySuggestionsAwaitingReview,
+       NotifyStringsPushedToTransifex, NotifySuggestionsApproved, NotifySuggestionsRejected,
+       NotifySuggestionsReviewed, NotifySuggestionsOverriden
+From   Users
+Where  Id = @userId", new { userId });
+            }
+        }
+
+        public async Task<bool> UpdateNotificationSettings(int userId, NotificationSettings newSettings)
+        {
+            using (var db = _dbService.GetConnection())
+            {
+                return (await db.ExecuteAsync(@"
+Update Users
+Set    NotifyUrgentStrings = @NotifyUrgentStrings,
+       NotifySuggestionsAwaitingApproval = @NotifySuggestionsAwaitingApproval,
+       NotifySuggestionsAwaitingReview = @NotifySuggestionsAwaitingReview,
+       NotifyStringsPushedToTransifex = @NotifyStringsPushedToTransifex,
+       NotifySuggestionsApproved = @NotifySuggestionsApproved,
+       NotifySuggestionsRejected = @NotifySuggestionsRejected,
+       NotifySuggestionsReviewed = @NotifySuggestionsReviewed,
+       NotifySuggestionsOverriden = @NotifySuggestionsOverriden
+Where  Id = @userId", new
+                {
+                    newSettings.NotifyUrgentStrings,
+                    newSettings.NotifySuggestionsAwaitingApproval,
+                    newSettings.NotifySuggestionsAwaitingReview,
+                    newSettings.NotifyStringsPushedToTransifex,
+                    newSettings.NotifySuggestionsApproved,
+                    newSettings.NotifySuggestionsRejected,
+                    newSettings.NotifySuggestionsReviewed,
+                    newSettings.NotifySuggestionsOverriden,
+                    userId
+                })) == 1;
             }
         }
     }

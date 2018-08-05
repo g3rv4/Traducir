@@ -20,7 +20,8 @@ namespace Traducir.Api.Controllers
             {
                 SiteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN"),
                 FriendlyName = _configuration.GetValue<string>("FRIENDLY_NAME"),
-                TransifexPath = _configuration.GetValue<string>("TRANSIFEX_LINK_PATH")
+                TransifexPath = _configuration.GetValue<string>("TRANSIFEX_LINK_PATH"),
+                VapidPublic = _configuration.GetValue<string>("VAPID_PUBLIC"),
             });
         }
     }

@@ -127,6 +127,29 @@ namespace Traducir.Api.Controllers
             });
         }
 
+        [HttpGet]
+        [Authorize]
+        [Route("app/api/me/notification-settings")]
+        public async Task<IActionResult> NotificationSettings()
+        {
+            var userId = User.GetClaim<int>(ClaimType.Id);
+            return Json(await _userService.GetNotificationSettings(userId));
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("app/api/me/notification-settings")]
+        public async Task<IActionResult> UpdateNotificationSettings([FromBody] NotificationSettings newSettings)
+        {
+            var userId = User.GetClaim<int>(ClaimType.Id);
+            if (await _userService.UpdateNotificationSettings(userId, newSettings))
+            {
+                return BadRequest();
+            }
+
+            return new EmptyResult();
+        }
+
         [Authorize]
         [Route("app/api/users")]
         public async Task<IActionResult> GetUsers()

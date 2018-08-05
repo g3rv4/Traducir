@@ -15,6 +15,7 @@ import IStats from "../Models/Stats";
 import IUserInfo from "../Models/UserInfo";
 import { userTypeToString } from "../Models/UserType";
 import Filters from "./Components/Filters";
+import Notifications from "./Components/Notifications";
 import Results from "./Components/Results";
 import StatsWithLinks from "./Components/StatsWithLinks";
 import Suggestions from "./Components/Suggestions";
@@ -76,6 +77,9 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                                     <NavItem>
                                         <Link to={`/suggestions/${this.state.user.id}`} className="nav-link">My Suggestions</Link>
                                     </NavItem>
+                                    <NavItem>
+                                        <Link to={`/notifications`} className="nav-link">My Notifications</Link>
+                                    </NavItem>
                                 </>
                             }
                             {this.renderLogInLogOut()}
@@ -89,6 +93,11 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                         path="/users"
                         exact
                         render={this.renderUsers}
+                    />
+                    <Route
+                        path="/notifications"
+                        exact
+                        render={this.renderNotifications}
                     />
                     <Route
                         path="/suggestions/:userId"
@@ -154,6 +163,17 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
     public renderUsers(): NonUndefinedReactNode {
         return this.state.config ?
             <Users
+                showErrorMessage={this.showErrorMessage}
+                currentUser={this.state.user}
+                config={this.state.config}
+            /> :
+            null;
+    }
+
+    @autobind()
+    public renderNotifications(): NonUndefinedReactNode {
+        return this.state.config && this.state.user ?
+            <Notifications
                 showErrorMessage={this.showErrorMessage}
                 currentUser={this.state.user}
                 config={this.state.config}
