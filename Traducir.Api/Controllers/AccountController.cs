@@ -139,10 +139,15 @@ namespace Traducir.Api.Controllers
         [HttpPut]
         [Authorize]
         [Route("app/api/me/notification-settings")]
-        public async Task<IActionResult> UpdateNotificationSettings([FromBody] NotificationSettings newSettings)
+        public async Task<IActionResult> UpdateNotificationSettings([FromBody] UpdateNotificationSettingsViewModel model)
         {
             var userId = User.GetClaim<int>(ClaimType.Id);
-            if (await _userService.UpdateNotificationSettings(userId, newSettings))
+            if (!await _userService.UpdateNotificationSettings(userId, model.Notifications))
+            {
+                return BadRequest();
+            }
+
+            if (!await _userService.AddNotificationBrowser(userId, model.Subscription.ToWebPushSubscription()))
             {
                 return BadRequest();
             }

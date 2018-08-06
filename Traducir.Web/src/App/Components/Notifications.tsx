@@ -84,7 +84,7 @@ export default class Notifications extends React.Component<INotificationsProps, 
                 </div>
             </div>
             <div className="text-center mt-4">
-                <button className="btn btn-primary mr-2" onClick={this.subscribeUserToPush}>Save and add current browser</button>
+                <button className="btn btn-primary mr-2" onClick={this.saveAndAddBrowser}>Save and add current browser</button>
                 <button className="btn btn-danger">Stop receiving notifications everywhere</button>
             </div>
         </>;
@@ -102,7 +102,7 @@ export default class Notifications extends React.Component<INotificationsProps, 
         return navigator.serviceWorker.register("/lib/service-worker.js");
     }
 
-    public askPermission(): Promise<NotificationPermission> {
+    public async askPermission(): Promise<NotificationPermission> {
         return new Promise<NotificationPermission>((resolve, reject) => {
             const permissionResult = Notification.requestPermission(result => {
                 resolve(result);
@@ -124,8 +124,7 @@ export default class Notifications extends React.Component<INotificationsProps, 
                 userVisibleOnly: true
             };
 
-            const pushSubscription = await registration.pushManager.subscribe(subscribeOptions);
-            return pushSubscription;
+            return await registration.pushManager.subscribe(subscribeOptions);
         } catch (e) {
             this.props.showErrorMessage("Error asking for permission");
             throw e;
@@ -133,8 +132,24 @@ export default class Notifications extends React.Component<INotificationsProps, 
     }
 
     @autobind
-    public saveAndAddBrowser(): void {
-        const t = 1;
+    public async saveAndAddBrowser(): Promise<void> {
+        if (!this.state.notifications) {
+            return;
+        }
+        try {
+            const subscription = await this.subscribeUserToPush();
+            await axios.put("/app/api/me/notification-settings",
+                {
+                    notifications: this.state.notifications,
+                    subscription
+                });
+        } catch (e) {
+            if (e.response.status === 401) {
+                history.push("/");
+            } else {
+                this.props.showErrorMessage(e.response.status);
+            }
+        }
     }
 
     @autobind

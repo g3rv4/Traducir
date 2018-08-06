@@ -1,9 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.Extensions.Configuration;
+using Traducir.Core.Helpers;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
+using WebPush;
 
 namespace Traducir.Core.Services
 {
@@ -20,15 +26,28 @@ namespace Traducir.Core.Services
         Task<bool> ChangeUserTypeAsync(int userId, UserType userType, int editorId);
 
         Task<bool> UpdateNotificationSettings(int userId, NotificationSettings newSettings);
+
+        Task<bool> AddNotificationBrowser(int userId, WebPushSubscription subscription);
+
+        Task<bool> SendNotification(int userId, string text, string topic = null);
     }
 
     public class UserService : IUserService
     {
         private readonly IDbService _dbService;
+        private readonly VapidDetails _vapidDetails;
+        private readonly WebPushClient _webPushClient;
 
-        public UserService(IDbService dbService)
+        public UserService(IDbService dbService, IConfiguration configuration)
         {
             _dbService = dbService;
+
+            var subject = configuration.GetValue<string>("VAPID_SUBJECT");
+            var publicKey = configuration.GetValue<string>("VAPID_PUBLIC");
+            var privateKey = configuration.GetValue<string>("VAPID_PRIVATE");
+
+            _vapidDetails = new VapidDetails(subject, publicKey, privateKey);
+            _webPushClient = new WebPushClient();
         }
 
         public async Task UpsertUserAsync(User user)
@@ -162,6 +181,90 @@ Where  Id = @userId", new
                     userId
                 })) == 1;
             }
+        }
+
+        public async Task<bool> AddNotificationBrowser(int userId, WebPushSubscription subscription)
+        {
+            using (var db = _dbService.GetConnection())
+            {
+                var existingNotifications = (await GetCurrentSubscriptions(userId, db)).AsList();
+                if (!existingNotifications.Any(n => n.Endpoint == subscription.Endpoint))
+                {
+                    existingNotifications.Add(subscription);
+                }
+                else
+                {
+                    return true;
+                }
+
+                return (await SetCurrentSubscriptions(userId, existingNotifications, db)) == 1;
+            }
+        }
+
+        public async Task<bool> SendNotification(int userId, string text, string topic = null)
+        {
+            using (var db = _dbService.GetConnection())
+            {
+                var endpointsToRemove = new List<string>();
+                var success = false;
+
+                var currentSubscriptions = await GetCurrentSubscriptions(userId, db);
+                var options = new Dictionary<string, object>
+                {
+                    ["vapidDetails"] = _vapidDetails
+                };
+                if (topic.HasValue())
+                {
+                    options["headers"] = new Dictionary<string, object>
+                    {
+                        ["topic"] = topic
+                    };
+                }
+
+                foreach (var subscriptionData in currentSubscriptions)
+                {
+                    var subscription = new PushSubscription(subscriptionData.Endpoint, subscriptionData.P256dh, subscriptionData.Auth);
+                    try
+                    {
+                        await _webPushClient.SendNotificationAsync(subscription, text, options);
+                        success = true;
+                    }
+                    catch (WebPushException exception)
+                    {
+                        if (exception.StatusCode == HttpStatusCode.NotFound || exception.StatusCode == HttpStatusCode.Gone)
+                        {
+                            endpointsToRemove.Add(subscriptionData.Endpoint);
+                        }
+                    }
+                }
+
+                if (endpointsToRemove.Count > 0)
+                {
+                    await SetCurrentSubscriptions(userId, currentSubscriptions.Where(s => !endpointsToRemove.Contains(s.Endpoint)), db);
+                }
+
+                return success;
+            }
+        }
+
+        private static Task<IEnumerable<WebPushSubscription>> GetCurrentSubscriptions(int userId, DbConnection db)
+        {
+            return db.QueryAsync<WebPushSubscription>(@"
+Select      json_value(a.value, '$.Endpoint') Endpoint,
+            json_value(a.value, '$.Auth') Auth,
+            json_value(a.value, '$.P256dh') P256dh
+From        Users u
+Cross Apply OpenJson(u.NotificationDetails, '$') a
+Where       Id = @userId", new { userId });
+        }
+
+        private static Task<int> SetCurrentSubscriptions(int userId, IEnumerable<WebPushSubscription> subscriptions, DbConnection db)
+        {
+            var content = Jil.JSON.Serialize(subscriptions);
+            return db.ExecuteAsync(@"
+Update Users
+Set    NotificationDetails = @content
+Where  Id = @userId", new { userId, content });
         }
     }
 }

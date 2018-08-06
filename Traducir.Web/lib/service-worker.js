@@ -1,5 +1,5 @@
 self.addEventListener('push', function(event) {
-    const promiseChain = self.registration.showNotification('Hello, World.');
+    const promiseChain = self.registration.showNotification(event.data.text());
 
     event.waitUntil(promiseChain);
   });
