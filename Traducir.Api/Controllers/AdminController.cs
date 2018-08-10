@@ -14,12 +14,17 @@ namespace Traducir.Api.Controllers
     {
         private readonly ITransifexService _transifexService;
         private readonly ISOStringService _soStringService;
+        private readonly INotificationService _notificationService;
         private readonly IConfiguration _configuration;
 
-        public AdminController(ITransifexService transifexService, ISOStringService soStringService, IConfiguration configuration)
+        public AdminController(ITransifexService transifexService,
+                               ISOStringService soStringService,
+                               INotificationService notificationService,
+                               IConfiguration configuration)
         {
             _transifexService = transifexService;
             _soStringService = soStringService;
+            _notificationService = notificationService;
             _configuration = configuration;
         }
 
@@ -60,6 +65,13 @@ namespace Traducir.Api.Controllers
                 await _transifexService.PushStringsToTransifexAsync(stringsToPush);
             }
 
+            return new EmptyResult();
+        }
+
+        [Route("app/api/admin/generate-notifications")]
+        public async Task<IActionResult> GenerateNotifications()
+        {
+            await _notificationService.GenerateNotifications();
             return new EmptyResult();
         }
 

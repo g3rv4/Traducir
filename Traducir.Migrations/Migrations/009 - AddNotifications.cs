@@ -118,6 +118,16 @@ If dbo.fnColumnExists('Users', 'NotificationDetails') = 0
 Begin
     Alter Table Users Add NotificationDetails VarChar(Max) Null;
 End
+
+If dbo.fnColumnExists('Users', 'NotificationsIntervalId') = 0
+Begin
+    Alter Table Users Add NotificationsIntervalId TinyInt Not Null Default(3);
+End
+
+If dbo.fnColumnExists('Users', 'NotificationsIntervalValue') = 0
+Begin
+    Alter Table Users Add NotificationsIntervalValue SmallInt Not Null Default(7);
+End
 ");
         }
 

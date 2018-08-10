@@ -3,7 +3,7 @@ import { autobind } from "core-decorators";
 import * as React from "react";
 import history from "../../history";
 import IConfig from "../../Models/Config";
-import INotificationSettings from "../../Models/INotificationSettings";
+import { INotificationSettings, NotificationInterval } from "../../Models/INotificationSettings";
 import IUserInfo from "../../Models/UserInfo";
 import nameofFactory from "../../nameofFactory";
 import urlBase64ToUint8Array from "../../urlBase64ToUint8Array";
@@ -20,6 +20,16 @@ export interface INotificationsProps {
 interface INotificationsState {
     notifications?: INotificationSettings;
     supportsPush: boolean;
+}
+
+class Comp : React.Component {
+    function render(){
+        return <li onclick={}></li>
+    }
+
+    function handler(){
+        this.props.toggleState(this.props.nombre)
+    }
 }
 
 export default class Notifications extends React.Component<INotificationsProps, INotificationsState> {
@@ -81,6 +91,17 @@ export default class Notifications extends React.Component<INotificationsProps, 
                         <li className={this.getClass(n.notifySuggestionsReviewed)} data-name={nameof("notifySuggestionsReviewed")} onClick={this.toggleState}>Suggestion reviewed</li>
                         <li className={this.getClass(n.notifySuggestionsOverriden)} data-name={nameof("notifySuggestionsOverriden")} onClick={this.toggleState}>Suggestion overriden</li>
                     </ul>
+                </div>
+            </div>
+            <div className="col">
+                <div className="row">
+                    Notify me about the same type of event every
+                    <input type="number" value={this.state.notifications.notificationsIntervalValue} onChange={this.updateNotificationIntervalValue} />
+                    <select value={this.state.notifications.notificationsInterval} onChange={this.updateNotificationInterval}>
+                        <option value={NotificationInterval.Days}>days</option>
+                        <option value={NotificationInterval.Hours}>hours</option>
+                        <option value={NotificationInterval.Minutes}>minutes</option>
+                    </select>
                 </div>
             </div>
             <div className="text-center mt-4">
@@ -167,9 +188,34 @@ export default class Notifications extends React.Component<INotificationsProps, 
     }
 
     @autobind
+    public updateNotificationIntervalValue(e: React.FormEvent<HTMLInputElement>): void {
+        const notifications = this.state.notifications;
+        if (!notifications) {
+            return;
+        }
+        notifications.notificationsIntervalValue = parseInt(e.currentTarget.value, 10);
+        this.setState({
+            notifications
+        });
+    }
+
+    @autobind
+    public updateNotificationInterval(e: React.FormEvent<HTMLSelectElement>): void {
+        const notifications = this.state.notifications;
+        if (!notifications) {
+            return;
+        }
+        notifications.notificationsInterval = parseInt(e.currentTarget.value, 10);
+        this.setState({
+            notifications
+        });
+    }
+
+    @autobind
     public async refreshNotifications(): Promise<void> {
         try {
             const r = await axios.get<INotificationSettings>("/app/api/me/notification-settings");
+
             this.setState({
                 notifications: r.data
             });

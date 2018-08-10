@@ -1,3 +1,5 @@
+using Traducir.Core.Models.Enums;
+
 namespace Traducir.Core.Models
 {
     public class NotificationSettings
@@ -17,5 +19,9 @@ namespace Traducir.Core.Models
         public bool NotifySuggestionsReviewed { get; set; }
 
         public bool NotifySuggestionsOverriden { get; set; }
+
+        public NotificationInterval NotificationsInterval { get; set; }
+
+        public int NotificationsIntervalValue { get; set; }
     }
 }

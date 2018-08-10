@@ -29,7 +29,7 @@ namespace Traducir.Core.Services
 
         Task<bool> AddNotificationBrowser(int userId, WebPushSubscription subscription);
 
-        Task<bool> SendNotification(int userId, string text, string topic = null);
+        Task<bool> SendNotification(int userId, Models.Services.PushNotificationMessage message);
     }
 
     public class UserService : IUserService
@@ -148,7 +148,8 @@ And    IsReviewer = 0;", new
                 return await db.QueryFirstOrDefaultAsync<NotificationSettings>(@"
 Select NotifyUrgentStrings, NotifySuggestionsAwaitingApproval, NotifySuggestionsAwaitingReview,
        NotifyStringsPushedToTransifex, NotifySuggestionsApproved, NotifySuggestionsRejected,
-       NotifySuggestionsReviewed, NotifySuggestionsOverriden
+       NotifySuggestionsReviewed, NotifySuggestionsOverriden, NotificationsIntervalId NotificationsInterval,
+       NotificationsIntervalValue
 From   Users
 Where  Id = @userId", new { userId });
             }
@@ -167,7 +168,9 @@ Set    NotifyUrgentStrings = @NotifyUrgentStrings,
        NotifySuggestionsApproved = @NotifySuggestionsApproved,
        NotifySuggestionsRejected = @NotifySuggestionsRejected,
        NotifySuggestionsReviewed = @NotifySuggestionsReviewed,
-       NotifySuggestionsOverriden = @NotifySuggestionsOverriden
+       NotifySuggestionsOverriden = @NotifySuggestionsOverriden,
+       NotificationsIntervalId = @NotificationsInterval,
+       NotificationsIntervalValue = @NotificationsIntervalValue
 Where  Id = @userId", new
                 {
                     newSettings.NotifyUrgentStrings,
@@ -178,6 +181,8 @@ Where  Id = @userId", new
                     newSettings.NotifySuggestionsRejected,
                     newSettings.NotifySuggestionsReviewed,
                     newSettings.NotifySuggestionsOverriden,
+                    newSettings.NotificationsInterval,
+                    newSettings.NotificationsIntervalValue,
                     userId
                 })) == 1;
             }
@@ -201,7 +206,7 @@ Where  Id = @userId", new
             }
         }
 
-        public async Task<bool> SendNotification(int userId, string text, string topic = null)
+        public async Task<bool> SendNotification(int userId, Models.Services.PushNotificationMessage message)
         {
             using (var db = _dbService.GetConnection())
             {
@@ -209,15 +214,12 @@ Where  Id = @userId", new
                 var success = false;
 
                 var currentSubscriptions = await GetCurrentSubscriptions(userId, db);
-                var options = new Dictionary<string, object>
-                {
-                    ["vapidDetails"] = _vapidDetails
-                };
-                if (topic.HasValue())
+                var options = new Dictionary<string, object> { ["vapidDetails"] = _vapidDetails };
+                if (message.Topic.HasValue())
                 {
                     options["headers"] = new Dictionary<string, object>
                     {
-                        ["topic"] = topic
+                        ["topic"] = message.Topic
                     };
                 }
 
@@ -226,7 +228,7 @@ Where  Id = @userId", new
                     var subscription = new PushSubscription(subscriptionData.Endpoint, subscriptionData.P256dh, subscriptionData.Auth);
                     try
                     {
-                        await _webPushClient.SendNotificationAsync(subscription, text, options);
+                        await _webPushClient.SendNotificationAsync(subscription, Jil.JSON.Serialize(message, Jil.Options.CamelCase), options);
                         success = true;
                     }
                     catch (WebPushException exception)
