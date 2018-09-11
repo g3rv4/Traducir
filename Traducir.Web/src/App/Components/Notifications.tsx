@@ -22,16 +22,6 @@ interface INotificationsState {
     supportsPush: boolean;
 }
 
-class Comp : React.Component {
-    function render(){
-        return <li onclick={}></li>
-    }
-
-    function handler(){
-        this.props.toggleState(this.props.nombre)
-    }
-}
-
 export default class Notifications extends React.Component<INotificationsProps, INotificationsState> {
     constructor(props: INotificationsProps) {
         super(props);
@@ -95,7 +85,7 @@ export default class Notifications extends React.Component<INotificationsProps, 
             </div>
             <div className="col">
                 <div className="row">
-                    Notify me about the same type of event every
+                    Notify me about the same type of event at most once every
                     <input type="number" value={this.state.notifications.notificationsIntervalValue} onChange={this.updateNotificationIntervalValue} />
                     <select value={this.state.notifications.notificationsInterval} onChange={this.updateNotificationInterval}>
                         <option value={NotificationInterval.Days}>days</option>

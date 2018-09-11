@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Data.Common;
 using System.Linq;
 using System.Net;
@@ -29,7 +30,9 @@ namespace Traducir.Core.Services
 
         Task<bool> AddNotificationBrowser(int userId, WebPushSubscription subscription);
 
-        Task<bool> SendNotification(int userId, Models.Services.PushNotificationMessage message);
+        Task<bool> SendNotification(int userId, NotificationType type, string url);
+
+        Task SendBatchNotifications(NotificationType type, string url, int? count = null);
     }
 
     public class UserService : IUserService
@@ -146,9 +149,15 @@ And    IsReviewer = 0;", new
             using (var db = _dbService.GetConnection())
             {
                 return await db.QueryFirstOrDefaultAsync<NotificationSettings>(@"
-Select NotifyUrgentStrings, NotifySuggestionsAwaitingApproval, NotifySuggestionsAwaitingReview,
-       NotifyStringsPushedToTransifex, NotifySuggestionsApproved, NotifySuggestionsRejected,
-       NotifySuggestionsReviewed, NotifySuggestionsOverriden, NotificationsIntervalId NotificationsInterval,
+Select Case When NextNotificationUrgentStrings Is Null Then 0 Else 1 End NotifyUrgentStrings,
+       Case When NextNotificationSuggestionsAwaitingApproval Is Null Then 0 Else 1 End NotifySuggestionsAwaitingApproval,
+       Case When NextNotificationSuggestionsAwaitingReview Is Null Then 0 Else 1 End NotifySuggestionsAwaitingReview,
+       Case When NextNotificationStringsPushedToTransifex Is Null Then 0 Else 1 End NotifyStringsPushedToTransifex,
+       Case When NextNotificationSuggestionsApproved Is Null Then 0 Else 1 End NotifySuggestionsApproved,
+       Case When NextNotificationSuggestionsRejected Is Null Then 0 Else 1 End NotifySuggestionsRejected,
+       Case When NextNotificationSuggestionsReviewed Is Null Then 0 Else 1 End NotifySuggestionsReviewed,
+       Case When NextNotificationSuggestionsOverriden Is Null Then 0 Else 1 End NotifySuggestionsOverriden,
+       NotificationsIntervalId NotificationsInterval,
        NotificationsIntervalValue
 From   Users
 Where  Id = @userId", new { userId });
@@ -161,14 +170,14 @@ Where  Id = @userId", new { userId });
             {
                 return (await db.ExecuteAsync(@"
 Update Users
-Set    NotifyUrgentStrings = @NotifyUrgentStrings,
-       NotifySuggestionsAwaitingApproval = @NotifySuggestionsAwaitingApproval,
-       NotifySuggestionsAwaitingReview = @NotifySuggestionsAwaitingReview,
-       NotifyStringsPushedToTransifex = @NotifyStringsPushedToTransifex,
-       NotifySuggestionsApproved = @NotifySuggestionsApproved,
-       NotifySuggestionsRejected = @NotifySuggestionsRejected,
-       NotifySuggestionsReviewed = @NotifySuggestionsReviewed,
-       NotifySuggestionsOverriden = @NotifySuggestionsOverriden,
+Set    NextNotificationUrgentStrings = Case When @NotifyUrgentStrings > 0 Then Coalesce(NextNotificationUrgentStrings, @now) End,
+       NextNotificationSuggestionsAwaitingApproval = Case When @NotifySuggestionsAwaitingApproval > 0 Then Coalesce(NextNotificationSuggestionsAwaitingApproval, @now) End,
+       NextNotificationSuggestionsAwaitingReview = Case When @NotifySuggestionsAwaitingReview > 0 Then Coalesce(NextNotificationSuggestionsAwaitingReview, @now) End,
+       NextNotificationStringsPushedToTransifex = Case When @NotifyStringsPushedToTransifex > 0 Then Coalesce(NextNotificationStringsPushedToTransifex, @now) End,
+       NextNotificationSuggestionsApproved = Case When @NotifySuggestionsApproved > 0 Then Coalesce(NextNotificationSuggestionsApproved, @now) End,
+       NextNotificationSuggestionsRejected = Case When @NotifySuggestionsRejected > 0 Then Coalesce(NextNotificationSuggestionsRejected, @now) End,
+       NextNotificationSuggestionsReviewed = Case When @NotifySuggestionsReviewed > 0 Then Coalesce(NextNotificationSuggestionsReviewed, @now) End,
+       NextNotificationSuggestionsOverriden = Case When @NotifySuggestionsOverriden > 0 Then Coalesce(NextNotificationSuggestionsOverriden, @now) End,
        NotificationsIntervalId = @NotificationsInterval,
        NotificationsIntervalValue = @NotificationsIntervalValue
 Where  Id = @userId", new
@@ -183,6 +192,7 @@ Where  Id = @userId", new
                     newSettings.NotifySuggestionsOverriden,
                     newSettings.NotificationsInterval,
                     newSettings.NotificationsIntervalValue,
+                    now = DateTime.UtcNow,
                     userId
                 })) == 1;
             }
@@ -206,7 +216,103 @@ Where  Id = @userId", new
             }
         }
 
-        public async Task<bool> SendNotification(int userId, Models.Services.PushNotificationMessage message)
+        public async Task<bool> SendNotification(int userId, NotificationType type, string url)
+        {
+            if (type.ShouldBeBatched())
+            {
+                throw new InvalidOperationException($"Notifications of type {type} should be batched");
+            }
+
+            using (var db = _dbService.GetConnection())
+            {
+                var shouldSendIt = await db.QueryFirstOrDefaultAsync<bool>($@"
+Select Top 1 1
+From   Users
+Where  Id = @userId
+And    {type.GetUserColumnName()} < @now", new { userId, now = DateTime.UtcNow });
+
+                if (shouldSendIt)
+                {
+                    var message = new Models.Services.PushNotificationMessage(
+                        type.GetTitle(),
+                        url,
+                        type.GetBody(),
+                        type.ToString(),
+                        true);
+                    var success = await SendNotification(userId, message);
+                    if (success)
+                    {
+                        await db.ExecuteAsync($@"
+Update Users
+Set    {type.GetUserColumnName()} = DateAdd(minute, NotificationsIntervalId * NotificationsIntervalValue, @now)
+Where  Id = @userId", new { userId, now = DateTime.UtcNow });
+                    }
+
+                    return success;
+                }
+            }
+
+            return false;
+        }
+
+        public async Task SendBatchNotifications(NotificationType type, string url, int? count = null)
+        {
+            if (!type.ShouldBeBatched())
+            {
+                throw new InvalidOperationException($"Notifications of type {type} can't be batched");
+            }
+
+            using (var db = _dbService.GetConnection())
+            {
+                var userIds = await db.QueryAsync<int>($@"
+Select Id
+From   Users
+Where  {type.GetUserColumnName()} < @now", new { now = DateTime.UtcNow });
+
+                var message = new Models.Services.PushNotificationMessage(
+                    type.GetTitle(count),
+                    url,
+                    type.GetBody(),
+                    type.ToString(),
+                    true);
+
+                var successfulUserIds = new List<int>();
+                foreach (var userId in userIds)
+                {
+                    if (await SendNotification(userId, message))
+                    {
+                        successfulUserIds.Add(userId);
+                    }
+                }
+
+                await db.ExecuteAsync($@"
+Update Users
+Set    {type.GetUserColumnName()} = DateAdd(minute, NotificationsIntervalId * NotificationsIntervalValue, @now)
+Where  Id In @successfulUserIds", new { successfulUserIds, columnName = type.GetUserColumnName(), now = DateTime.UtcNow });
+            }
+        }
+
+        private static Task<IEnumerable<WebPushSubscription>> GetCurrentSubscriptions(int userId, DbConnection db)
+        {
+            return db.QueryAsync<WebPushSubscription>(@"
+Select      json_value(a.value, '$.Endpoint') Endpoint,
+            json_value(a.value, '$.Auth') Auth,
+            json_value(a.value, '$.P256dh') P256dh
+From        Users u
+Cross Apply OpenJson(u.NotificationDetails, '$') a
+Where       Id = @userId", new { userId });
+        }
+
+        private static Task<int> SetCurrentSubscriptions(int userId, IEnumerable<WebPushSubscription> subscriptions, DbConnection db)
+        {
+            var content = Jil.JSON.Serialize(subscriptions);
+            return db.ExecuteAsync(@"
+Update Users
+Set    NotificationDetails = @content
+Where  Id = @userId", new { userId, content });
+        }
+
+                private async Task<bool> SendNotification(int userId, Models.Services.PushNotificationMessage message)
         {
             using (var db = _dbService.GetConnection())
             {
@@ -247,26 +353,6 @@ Where  Id = @userId", new
 
                 return success;
             }
-        }
-
-        private static Task<IEnumerable<WebPushSubscription>> GetCurrentSubscriptions(int userId, DbConnection db)
-        {
-            return db.QueryAsync<WebPushSubscription>(@"
-Select      json_value(a.value, '$.Endpoint') Endpoint,
-            json_value(a.value, '$.Auth') Auth,
-            json_value(a.value, '$.P256dh') P256dh
-From        Users u
-Cross Apply OpenJson(u.NotificationDetails, '$') a
-Where       Id = @userId", new { userId });
-        }
-
-        private static Task<int> SetCurrentSubscriptions(int userId, IEnumerable<WebPushSubscription> subscriptions, DbConnection db)
-        {
-            var content = Jil.JSON.Serialize(subscriptions);
-            return db.ExecuteAsync(@"
-Update Users
-Set    NotificationDetails = @content
-Where  Id = @userId", new { userId, content });
         }
     }
 }

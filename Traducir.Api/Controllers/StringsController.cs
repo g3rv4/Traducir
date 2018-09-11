@@ -248,7 +248,8 @@ namespace Traducir.Api.Controllers
                 model.SuggestionId.Value,
                 model.Approve.Value,
                 User.GetClaim<int>(ClaimType.Id),
-                User.GetClaim<UserType>(ClaimType.UserType));
+                User.GetClaim<UserType>(ClaimType.UserType),
+                Request.Host.ToString());
             if (success)
             {
                 return new EmptyResult();

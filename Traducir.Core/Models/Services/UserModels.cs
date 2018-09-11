@@ -8,9 +8,9 @@ namespace Traducir.Core.Models.Services
     {
         public PushNotificationMessage(string title, string url, string content, string topic = null, bool requireInteraction = false, ImmutableArray<Action> actions = default(ImmutableArray<Action>))
         {
-            if (!title.HasValue() || !url.HasValue() || !content.HasValue())
+            if (!title.HasValue() || !content.HasValue())
             {
-                throw new ArgumentException("title, url and content need a value");
+                throw new ArgumentException("title and content need a value");
             }
 
             Title = title;
@@ -18,7 +18,7 @@ namespace Traducir.Core.Models.Services
             Topic = topic;
             Content = content;
             RequireInteraction = requireInteraction;
-            Actions = actions;
+            Actions = actions.IsDefault ? ImmutableArray<Action>.Empty : actions;
         }
 
         public string Title { get; }

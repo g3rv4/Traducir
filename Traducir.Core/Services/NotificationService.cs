@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.Extensions.Configuration;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 
@@ -9,21 +10,23 @@ namespace Traducir.Core.Services
 {
     public interface INotificationService
     {
-        Task GenerateNotifications();
-
-        Task SendNotifications();
+        Task SendStateNotifications(string host);
     }
 
     public class NotificationService : INotificationService
     {
         private readonly IDbService _dbService;
+        private readonly IUserService _userService;
+        private IConfiguration _configuration;
 
-        public NotificationService(IDbService dbService)
+        public NotificationService(IDbService dbService, IUserService userService, IConfiguration configuration)
         {
             _dbService = dbService;
+            _userService = userService;
+            _configuration = configuration;
         }
 
-        public async Task GenerateNotifications()
+        public async Task SendStateNotifications(string host)
         {
             const string sql = @"
 Select Count(1)
@@ -37,65 +40,32 @@ Group By StateId";
 
             using (var db = _dbService.GetConnection())
             {
-                Task sendGenericNotification(string notificationField, NotificationType notificationType, int count)
-                {
-                    var data = Jil.JSON.Serialize(count);
-                    return db.ExecuteAsync($@"
-Insert Into Notifications
-            (UserId, Data, NotificationTypeId, CreationDate)
-Select Id, @data, {{=notificationType}}, @now
-From   Users u
-Where  {notificationField} = 1" + GetNotExistsPart(), new
-                    {
-                        now = DateTime.UtcNow,
-                        notificationType,
-                        data,
-                        NotificationInterval.Days,
-                        NotificationInterval.Hours,
-                        NotificationInterval.Minutes
-                    });
-                }
-
                 using (var reader = await db.QueryMultipleAsync(sql))
                 {
-                    var urgentStrings = (await reader.ReadAsync<int>()).First();
+                    var urgentStrings = await reader.ReadFirstAsync<int>();
                     var suggestionCounts = (await reader.ReadAsync<(StringSuggestionState state, int count)>()).ToDictionary(e => e.state, e => e.count);
+                    NotificationType type;
+                    bool useHttps = _configuration.GetValue<bool>("USE_HTTPS");
 
                     if (urgentStrings > 0)
                     {
-                        await sendGenericNotification(nameof(NotificationSettings.NotifyUrgentStrings), NotificationType.UrgentStrings, urgentStrings);
+                        type = NotificationType.UrgentStrings;
+                        await _userService.SendBatchNotifications(type, type.GetUrl(useHttps, host), urgentStrings);
                     }
 
                     if (suggestionCounts.TryGetValue(StringSuggestionState.Created, out var count))
                     {
-                        await sendGenericNotification(nameof(NotificationSettings.NotifySuggestionsAwaitingApproval), NotificationType.SuggestionsAwaitingApproval, count);
+                        type = NotificationType.SuggestionsAwaitingApproval;
+                        await _userService.SendBatchNotifications(type, type.GetUrl(useHttps, host), count);
                     }
 
                     if (suggestionCounts.TryGetValue(StringSuggestionState.ApprovedByTrustedUser, out count))
                     {
-                        await sendGenericNotification(nameof(NotificationSettings.NotifySuggestionsAwaitingReview), NotificationType.SuggestionsAwaitingReview, count);
+                        type = NotificationType.SuggestionsAwaitingReview;
+                        await _userService.SendBatchNotifications(type, type.GetUrl(useHttps, host), count);
                     }
                 }
             }
-        }
-
-        public Task SendNotifications()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        private static string GetNotExistsPart()
-        {
-            return @"
-And    Not Exists (Select 1
-                   From   Notifications n
-                   Where  n.UserId = u.Id
-                   And    n.NotificationTypeId = {=notificationType}
-                   And    n.CreationDate > Case
-                               When u.NotificationsIntervalId = {=Minutes} Then DateAdd(minute, -u.NotificationsIntervalValue, @now)
-                               When u.NotificationsIntervalId = {=Hours} Then DateAdd(hour, -u.NotificationsIntervalValue, @now)
-                               Else DateAdd(day, -u.NotificationsIntervalValue, @now)
-                          End)";
         }
     }
 }

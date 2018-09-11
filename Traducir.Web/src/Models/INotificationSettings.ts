@@ -1,7 +1,7 @@
 export enum NotificationInterval {
     Minutes = 1,
-    Hours = 2,
-    Days = 3
+    Hours = 60,
+    Days = 1440
 }
 
 export interface INotificationSettings {

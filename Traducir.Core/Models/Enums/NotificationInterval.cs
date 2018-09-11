@@ -4,8 +4,8 @@ namespace Traducir.Core.Models.Enums
     {
         Minutes = 1,
 
-        Hours = 2,
+        Hours = 60,
 
-        Days = 3
+        Days = 1440
     }
 }

@@ -153,17 +153,6 @@ namespace Traducir.Api.Controllers
                 return BadRequest();
             }
 
-            /*
-            await _userService.SendNotification(userId, new Core.Models.Services.PushNotificationMessage(
-                "Notification title",
-                "https://traducir.g3rv4.win",
-                $"{DateTime.UtcNow}",
-                "topic",
-                true,
-                ImmutableArray.Create(new Core.Models.Services.PushNotificationMessage.Action("Visit google", "https://google.com"),
-                                      new Core.Models.Services.PushNotificationMessage.Action("Visit SO", "https://stackoverflow.com"))));
-            */
-
             return new EmptyResult();
         }
 

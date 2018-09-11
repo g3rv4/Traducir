@@ -71,14 +71,21 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                             </UncontrolledDropdown>
                             {this.state.user &&
                                 <>
+                                    <UncontrolledDropdown nav inNavbar>
+                                        <DropdownToggle nav caret>
+                                            My account
+                                    </DropdownToggle>
+                                        <DropdownMenu right>
+                                            <DropdownItem>
+                                                <Link to={`/suggestions/${this.state.user.id}`} className="dropdown-item">My Suggestions</Link>
+                                            </DropdownItem>
+                                            <DropdownItem>
+                                                <Link to={`/notifications`} className="dropdown-item">My Notifications</Link>
+                                            </DropdownItem>
+                                        </DropdownMenu>
+                                    </UncontrolledDropdown>
                                     <NavItem>
                                         <Link to="/users" className="nav-link">Users</Link>
-                                    </NavItem>
-                                    <NavItem>
-                                        <Link to={`/suggestions/${this.state.user.id}`} className="nav-link">My Suggestions</Link>
-                                    </NavItem>
-                                    <NavItem>
-                                        <Link to={`/notifications`} className="nav-link">My Notifications</Link>
                                     </NavItem>
                                 </>
                             }
