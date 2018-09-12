@@ -36,6 +36,7 @@ namespace Traducir.Api
             services.AddSingleton(typeof(ISOStringService), typeof(SOStringService));
             services.AddSingleton(typeof(ISEApiService), typeof(SEApiService));
             services.AddSingleton(typeof(IUserService), typeof(UserService));
+            services.AddSingleton(typeof(INotificationService), typeof(NotificationService));
 
             services.AddMiniProfiler(settings =>
             {

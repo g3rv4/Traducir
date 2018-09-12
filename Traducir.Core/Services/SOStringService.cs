@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using CsvHelper;
 using Dapper;
+using Microsoft.Extensions.Configuration;
 using StackExchange.Profiling;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models;
@@ -28,7 +29,7 @@ namespace Traducir.Core.Services
 
         Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
 
-        Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType);
+        Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType, string host);
 
         Task UpdateStringsPushed();
 
@@ -48,10 +49,14 @@ namespace Traducir.Core.Services
     public class SOStringService : ISOStringService
     {
         private readonly IDbService _dbService;
+        private readonly IUserService _userService;
+        private readonly IConfiguration _configuration;
 
-        public SOStringService(IDbService dbService)
+        public SOStringService(IDbService dbService, IUserService userService, IConfiguration configuration)
         {
             _dbService = dbService;
+            _userService = userService;
+            _configuration = configuration;
         }
 
         private ImmutableArray<SOString> Strings { get; set; }
@@ -243,7 +248,7 @@ Select @suggestionId;", new
 
                     if (approve)
                     {
-                        await ReviewSuggestionAsync(suggestionId.Value, true, userId, userType);
+                        await ReviewSuggestionAsync(suggestionId.Value, true, userId, userType, null);
                     }
                 }
                 catch (SqlException e) when (e.Number == 547)
@@ -256,7 +261,7 @@ Select @suggestionId;", new
             }
         }
 
-        public async Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType)
+        public async Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType, string host)
         {
             if (userType != UserType.TrustedUser && userType != UserType.Reviewer)
             {
@@ -266,8 +271,8 @@ Select @suggestionId;", new
             using (var db = _dbService.GetConnection())
             {
                 // is this suggestion eligible for review?
-                int? stringId = await db.QuerySingleOrDefaultAsync<int?>(@"
-Select StringId
+                var suggestionData = await db.QueryFirstOrDefaultAsync<(int stringId, int ownerId)>(@"
+Select StringId, CreatedById
 From   StringSuggestions
 Where  Id = @suggestionId
 And    StateId In @validStates", new
@@ -277,7 +282,7 @@ And    StateId In @validStates", new
                     validStates = userType == UserType.Reviewer ? new[] { StringSuggestionState.Created, StringSuggestionState.ApprovedByTrustedUser } : new[] { StringSuggestionState.Created }
                 });
 
-                if (stringId.HasValue)
+                if (suggestionData.stringId > 0)
                 {
                     StringSuggestionState newState;
                     StringSuggestionHistoryType historyType;
@@ -369,7 +374,16 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                         DismissedByOtherStringState = StringSuggestionState.DismissedByOtherString,
                     });
 
-                    await RefreshCacheAsync(stringId.Value);
+                    await RefreshCacheAsync(suggestionData.stringId);
+
+                    var notificationType = newState.GetNotificationType();
+
+                    if (notificationType.HasValue && userId != suggestionData.ownerId)
+                    {
+                        bool useHttps = _configuration.GetValue<bool>("USE_HTTPS");
+                        await _userService.SendNotification(suggestionData.ownerId, notificationType.Value, useHttps, host);
+                    }
+
                     return true;
                 }
 

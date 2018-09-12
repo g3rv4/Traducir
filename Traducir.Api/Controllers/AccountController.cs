@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -125,6 +126,34 @@ namespace Traducir.Api.Controllers
                 CanManageUsers = canManageUsers,
                 Id = User.GetClaim<int>(ClaimType.Id)
             });
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("app/api/me/notification-settings")]
+        public async Task<IActionResult> NotificationSettings()
+        {
+            var userId = User.GetClaim<int>(ClaimType.Id);
+            return Json(await _userService.GetNotificationSettings(userId));
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("app/api/me/notification-settings")]
+        public async Task<IActionResult> UpdateNotificationSettings([FromBody] UpdateNotificationSettingsViewModel model)
+        {
+            var userId = User.GetClaim<int>(ClaimType.Id);
+            if (!await _userService.UpdateNotificationSettings(userId, model.Notifications))
+            {
+                return BadRequest();
+            }
+
+            if (!await _userService.AddNotificationBrowser(userId, model.Subscription.ToWebPushSubscription()))
+            {
+                return BadRequest();
+            }
+
+            return new EmptyResult();
         }
 
         [Authorize]

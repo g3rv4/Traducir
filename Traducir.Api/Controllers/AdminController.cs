@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using SimpleMigrations;
 using SimpleMigrations.DatabaseProvider;
 using StackExchange.Exceptional;
+using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
 
 namespace Traducir.Api.Controllers
@@ -14,12 +15,20 @@ namespace Traducir.Api.Controllers
     {
         private readonly ITransifexService _transifexService;
         private readonly ISOStringService _soStringService;
+        private readonly INotificationService _notificationService;
+        private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
 
-        public AdminController(ITransifexService transifexService, ISOStringService soStringService, IConfiguration configuration)
+        public AdminController(ITransifexService transifexService,
+                               ISOStringService soStringService,
+                               INotificationService notificationService,
+                               IUserService userService,
+                               IConfiguration configuration)
         {
             _transifexService = transifexService;
             _soStringService = soStringService;
+            _notificationService = notificationService;
+            _userService = userService;
             _configuration = configuration;
         }
 
@@ -57,9 +66,22 @@ namespace Traducir.Api.Controllers
             var stringsToPush = await _soStringService.GetStringsAsync(s => s.HasTranslation);
             if (stringsToPush.Length > 0)
             {
+                var sendNotifications = (await _soStringService.GetStringsAsync(s => s.NeedsPush)).Length > 0;
                 await _transifexService.PushStringsToTransifexAsync(stringsToPush);
+
+                if (sendNotifications)
+                {
+                    await _userService.SendBatchNotifications(NotificationType.StringsPushedToTransifex, false, null);
+                }
             }
 
+            return new EmptyResult();
+        }
+
+        [Route("app/api/admin/generate-notifications")]
+        public async Task<IActionResult> GenerateNotifications()
+        {
+            await _notificationService.SendStateNotifications(Request.Host.ToString());
             return new EmptyResult();
         }
 
