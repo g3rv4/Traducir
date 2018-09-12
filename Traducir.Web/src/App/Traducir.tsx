@@ -61,10 +61,10 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                                     Database
                                 </DropdownToggle>
                                 <DropdownMenu right>
-                                    <DropdownItem>
+                                    <DropdownItem href="https://db.traducir.win">
                                         <a href="https://db.traducir.win" className="dropdown-item" target="_blank">Access the Database</a>
                                     </DropdownItem>
-                                    <DropdownItem>
+                                    <DropdownItem href="https://github.com/g3rv4/Traducir/blob/master/docs/USING_REDASH.md">
                                         <a href="https://github.com/g3rv4/Traducir/blob/master/docs/USING_REDASH.md" className="dropdown-item" target="_blank">Instructions</a>
                                     </DropdownItem>
                                 </DropdownMenu>
@@ -76,10 +76,10 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                                             My account
                                     </DropdownToggle>
                                         <DropdownMenu right>
-                                            <DropdownItem>
+                                            <DropdownItem href={`/suggestions/${this.state.user.id}`}>
                                                 <Link to={`/suggestions/${this.state.user.id}`} className="dropdown-item">My Suggestions</Link>
                                             </DropdownItem>
-                                            <DropdownItem>
+                                            <DropdownItem href="/notifications">
                                                 <Link to={`/notifications`} className="dropdown-item">My Notifications</Link>
                                             </DropdownItem>
                                         </DropdownMenu>
