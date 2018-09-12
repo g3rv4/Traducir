@@ -55,7 +55,7 @@ End
 
 If dbo.fnColumnExists('Users', 'NotificationsIntervalId') = 0
 Begin
-    Alter Table Users Add NotificationsIntervalId TinyInt Not Null Default(1440); -- days
+    Alter Table Users Add NotificationsIntervalId SmallInt Not Null Default(1440); -- days
 End
 
 If dbo.fnColumnExists('Users', 'NotificationsIntervalValue') = 0
