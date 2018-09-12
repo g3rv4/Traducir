@@ -106,7 +106,7 @@ namespace Traducir.Core.Models.Enums
             }
         }
 
-        public static string GetUrl(this NotificationType type, bool useHttps, string host)
+        public static string GetUrl(this NotificationType type, bool useHttps, string host, int userId)
         {
             var basePath = $"{(useHttps ? "https" : "http")}://{host}";
             switch (type)
@@ -123,7 +123,7 @@ namespace Traducir.Core.Models.Enums
                 case NotificationType.SuggestionsRejected:
                 case NotificationType.SuggestionsReviewed:
                 case NotificationType.SuggestionsOverriden:
-                    return $"{basePath}/suggestions";
+                    return $"{basePath}/suggestions/{userId}";
                 default:
                     throw new ArgumentException($"Missing url info for notification {type}");
             }

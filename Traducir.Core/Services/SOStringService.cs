@@ -378,11 +378,10 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
 
                     var notificationType = newState.GetNotificationType();
 
-                    // && userId != suggestionData.ownerId)
-                    if (notificationType.HasValue)
+                    if (notificationType.HasValue && userId != suggestionData.ownerId)
                     {
                         bool useHttps = _configuration.GetValue<bool>("USE_HTTPS");
-                        await _userService.SendNotification(suggestionData.ownerId, notificationType.Value, notificationType.Value.GetUrl(useHttps, host));
+                        await _userService.SendNotification(suggestionData.ownerId, notificationType.Value, useHttps, host);
                     }
 
                     return true;

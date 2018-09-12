@@ -30,9 +30,9 @@ namespace Traducir.Core.Services
 
         Task<bool> AddNotificationBrowser(int userId, WebPushSubscription subscription);
 
-        Task<bool> SendNotification(int userId, NotificationType type, string url);
+        Task<bool> SendNotification(int userId, NotificationType type, bool useHttps, string host);
 
-        Task SendBatchNotifications(NotificationType type, string url, int? count = null);
+        Task SendBatchNotifications(NotificationType type, bool useHttps, string host, int? count = null);
     }
 
     public class UserService : IUserService
@@ -216,7 +216,7 @@ Where  Id = @userId", new
             }
         }
 
-        public async Task<bool> SendNotification(int userId, NotificationType type, string url)
+        public async Task<bool> SendNotification(int userId, NotificationType type, bool useHttps, string host)
         {
             if (type.ShouldBeBatched())
             {
@@ -235,7 +235,7 @@ And    {type.GetUserColumnName()} < @now", new { userId, now = DateTime.UtcNow }
                 {
                     var message = new Models.Services.PushNotificationMessage(
                         type.GetTitle(),
-                        url,
+                        type.GetUrl(useHttps, host, userId),
                         type.GetBody(),
                         type.ToString(),
                         true);
@@ -255,7 +255,7 @@ Where  Id = @userId", new { userId, now = DateTime.UtcNow });
             return false;
         }
 
-        public async Task SendBatchNotifications(NotificationType type, string url, int? count = null)
+        public async Task SendBatchNotifications(NotificationType type, bool useHttps, string host, int? count = null)
         {
             if (!type.ShouldBeBatched())
             {
@@ -269,16 +269,15 @@ Select Id
 From   Users
 Where  {type.GetUserColumnName()} < @now", new { now = DateTime.UtcNow });
 
-                var message = new Models.Services.PushNotificationMessage(
-                    type.GetTitle(count),
-                    url,
-                    type.GetBody(),
-                    type.ToString(),
-                    true);
-
                 var successfulUserIds = new List<int>();
                 foreach (var userId in userIds)
                 {
+                    var message = new Models.Services.PushNotificationMessage(
+                        type.GetTitle(count),
+                        type.GetUrl(useHttps, host, userId),
+                        type.GetBody(),
+                        type.ToString(),
+                        true);
                     if (await SendNotification(userId, message))
                     {
                         successfulUserIds.Add(userId);
@@ -312,7 +311,7 @@ Set    NotificationDetails = @content
 Where  Id = @userId", new { userId, content });
         }
 
-                private async Task<bool> SendNotification(int userId, Models.Services.PushNotificationMessage message)
+        private async Task<bool> SendNotification(int userId, Models.Services.PushNotificationMessage message)
         {
             using (var db = _dbService.GetConnection())
             {

@@ -50,19 +50,19 @@ Group By StateId";
                     if (urgentStrings > 0)
                     {
                         type = NotificationType.UrgentStrings;
-                        await _userService.SendBatchNotifications(type, type.GetUrl(useHttps, host), urgentStrings);
+                        await _userService.SendBatchNotifications(type, useHttps, host, urgentStrings);
                     }
 
                     if (suggestionCounts.TryGetValue(StringSuggestionState.Created, out var count))
                     {
                         type = NotificationType.SuggestionsAwaitingApproval;
-                        await _userService.SendBatchNotifications(type, type.GetUrl(useHttps, host), count);
+                        await _userService.SendBatchNotifications(type, useHttps, host, count);
                     }
 
                     if (suggestionCounts.TryGetValue(StringSuggestionState.ApprovedByTrustedUser, out count))
                     {
                         type = NotificationType.SuggestionsAwaitingReview;
-                        await _userService.SendBatchNotifications(type, type.GetUrl(useHttps, host), count);
+                        await _userService.SendBatchNotifications(type, useHttps, host, count);
                     }
                 }
             }
