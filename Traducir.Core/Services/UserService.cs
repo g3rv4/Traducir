@@ -170,14 +170,14 @@ Where  Id = @userId", new { userId });
             {
                 return (await db.ExecuteAsync(@"
 Update Users
-Set    NextNotificationUrgentStrings = Case When @NotifyUrgentStrings > 0 Then Coalesce(NextNotificationUrgentStrings, @now) End,
-       NextNotificationSuggestionsAwaitingApproval = Case When @NotifySuggestionsAwaitingApproval > 0 Then Coalesce(NextNotificationSuggestionsAwaitingApproval, @now) End,
-       NextNotificationSuggestionsAwaitingReview = Case When @NotifySuggestionsAwaitingReview > 0 Then Coalesce(NextNotificationSuggestionsAwaitingReview, @now) End,
-       NextNotificationStringsPushedToTransifex = Case When @NotifyStringsPushedToTransifex > 0 Then Coalesce(NextNotificationStringsPushedToTransifex, @now) End,
-       NextNotificationSuggestionsApproved = Case When @NotifySuggestionsApproved > 0 Then Coalesce(NextNotificationSuggestionsApproved, @now) End,
-       NextNotificationSuggestionsRejected = Case When @NotifySuggestionsRejected > 0 Then Coalesce(NextNotificationSuggestionsRejected, @now) End,
-       NextNotificationSuggestionsReviewed = Case When @NotifySuggestionsReviewed > 0 Then Coalesce(NextNotificationSuggestionsReviewed, @now) End,
-       NextNotificationSuggestionsOverriden = Case When @NotifySuggestionsOverriden > 0 Then Coalesce(NextNotificationSuggestionsOverriden, @now) End,
+Set    NextNotificationUrgentStrings = Case When @NotifyUrgentStrings > 0 Then @now End,
+       NextNotificationSuggestionsAwaitingApproval = Case When @NotifySuggestionsAwaitingApproval > 0 Then @now End,
+       NextNotificationSuggestionsAwaitingReview = Case When @NotifySuggestionsAwaitingReview > 0 Then @now End,
+       NextNotificationStringsPushedToTransifex = Case When @NotifyStringsPushedToTransifex > 0 Then @now End,
+       NextNotificationSuggestionsApproved = Case When @NotifySuggestionsApproved > 0 Then @now End,
+       NextNotificationSuggestionsRejected = Case When @NotifySuggestionsRejected > 0 Then @now End,
+       NextNotificationSuggestionsReviewed = Case When @NotifySuggestionsReviewed > 0 Then @now End,
+       NextNotificationSuggestionsOverriden = Case When @NotifySuggestionsOverriden > 0 Then @now End,
        NotificationsIntervalId = @NotificationsInterval,
        NotificationsIntervalValue = @NotificationsIntervalValue
 Where  Id = @userId", new
