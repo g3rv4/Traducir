@@ -69,14 +69,19 @@ namespace Traducir.Api.Controllers
                 return Content($"You need at least {minRep} to log in");
             }
 
-            await _userService.UpsertUserAsync(new User
+            // For development, only execute this if UPSERT_USER: true
+            if (_configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") != "Development" ||
+                _configuration.GetValue<bool>("UPSERT_USER"))
             {
-                Id = currentUser.UserId,
-                DisplayName = currentUser.DisplayName,
-                IsModerator = currentUser.UserType == "moderator",
-                CreationDate = DateTime.UtcNow,
-                LastSeenDate = DateTime.UtcNow
-            });
+                await _userService.UpsertUserAsync(new User
+                {
+                    Id = currentUser.UserId,
+                    DisplayName = currentUser.DisplayName,
+                    IsModerator = currentUser.UserType == "moderator",
+                    CreationDate = DateTime.UtcNow,
+                    LastSeenDate = DateTime.UtcNow
+                });
+            }
 
             var user = await _userService.GetUserAsync(currentUser.UserId);
 
