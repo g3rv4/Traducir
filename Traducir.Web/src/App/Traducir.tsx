@@ -31,7 +31,10 @@ export interface ITraducirState {
     isOpen: boolean;
     isLoading: boolean;
     stats?: IStats;
+    alertMessage?: string;
 }
+
+const sessionExpiredMessage = "Your session has expired... you will be redirected to the log in page";
 
 class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> {
     constructor(props: RouteComponentProps<{}>) {
@@ -126,6 +129,15 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
                                 showErrorMessage={this.showErrorMessage}
                             />}
                     </ModalBody>
+                </Modal>
+                <Modal isOpen={this.isAlertOpen()} className="alert-modal">
+                    <ModalHeader>Alert</ModalHeader>
+                    <ModalBody>
+                        {this.state.alertMessage}
+                    </ModalBody>
+                    <ModalFooter>
+                        <button onClick={this.closeAlertModal} className="btn btn-primary">Close</button>
+                    </ModalFooter>
                 </Modal>
             </div>
         </>;
@@ -279,15 +291,36 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
         });
     }
 
+    @autobind()
+    public isAlertOpen(): boolean {
+        return this.state.alertMessage ? true : false;
+    }
+
+    @autobind()
+    public closeAlertModal(): void {
+        if (this.state.alertMessage === sessionExpiredMessage) {
+            window.location.href = `/app/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`;
+        }
+        this.setState({
+            alertMessage: undefined
+        });
+    }
+
+    @autobind()
     public showErrorMessage(messageOrCode: string | number): void {
         if (typeof (messageOrCode) === "string") {
-            alert(messageOrCode);
+            this.setState({
+                alertMessage: messageOrCode
+            });
         } else {
             if (messageOrCode === 401) {
-                alert("Your session has expired... you will be redirected to the log in page");
-                window.location.href = `/app/login?returnUrl=${encodeURIComponent(location.pathname + location.search)}`;
+                this.setState({
+                    alertMessage: sessionExpiredMessage
+                });
             } else {
-                alert(`Unknown error. Code: ${messageOrCode}`);
+                this.setState({
+                    alertMessage: `Unknown error. Code: ${messageOrCode}`
+                });
             }
         }
     }
