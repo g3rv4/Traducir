@@ -40,10 +40,12 @@ namespace Traducir.Core.Services
         private readonly IDbService _dbService;
         private readonly VapidDetails _vapidDetails;
         private readonly WebPushClient _webPushClient;
+        private readonly IConfiguration _configuration;
 
         public UserService(IDbService dbService, IConfiguration configuration)
         {
             _dbService = dbService;
+            _configuration = configuration;
 
             var subject = configuration.GetValue<string>("VAPID_SUBJECT");
             var publicKey = configuration.GetValue<string>("VAPID_PUBLIC");
@@ -55,9 +57,12 @@ namespace Traducir.Core.Services
 
         public async Task UpsertUserAsync(User user)
         {
+            // Get this config variable to avoid updating moderator flag, usefull in develop
+            bool updateMod = !_configuration.GetValue<bool>("DO_NOT_UPDATE_ISMODERATOR");
+
             using (var db = _dbService.GetConnection())
             {
-                await db.ExecuteAsync(@"
+                await db.ExecuteAsync($@"
 Declare @wasReviewer Bit, @wasTrusted Bit;
 Select @wasReviewer = IsReviewer, @wasTrusted = IsTrusted From Users Where Id = @Id;
 
@@ -69,7 +74,7 @@ Else
   -- It's an update
   Update Users
   Set    DisplayName = @DisplayName,
-         IsModerator = @IsModerator,
+         {(updateMod ? "IsModerator = @IsModerator," : string.Empty)}
          IsReviewer = Case When @wasReviewer = 1 Then 1 Else @IsModerator End, -- if the user was a reviewer, keep them
                                                                                -- if they're now a mod, make them a reviewer
          IsTrusted = Case When @wasTrusted = 1 Then 1 Else @IsModerator End,
