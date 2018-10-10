@@ -43,21 +43,21 @@ namespace Traducir.Api.Controllers
         {
             var strings = await _transifexService.GetStringsFromTransifexAsync();
             await _soStringService.StoreNewStringsAsync(strings);
-            return new EmptyResult();
+            return NoContent();
         }
 
         [Route("app/api/admin/pull-so-dump")]
         public async Task<IActionResult> PullSODump(string dumpUrl)
         {
             await _soStringService.PullSODump(dumpUrl);
-            return new EmptyResult();
+            return NoContent();
         }
 
         [Route("app/api/admin/update-translations-fron-so-dump")]
         public async Task<IActionResult> UpdateTranslationsFromSODump()
         {
             await _soStringService.UpdateTranslationsFromSODump();
-            return new EmptyResult();
+            return NoContent();
         }
 
         [Route("app/api/admin/push")]
@@ -75,14 +75,14 @@ namespace Traducir.Api.Controllers
                 }
             }
 
-            return new EmptyResult();
+            return NoContent();
         }
 
         [Route("app/api/admin/generate-notifications")]
         public async Task<IActionResult> GenerateNotifications()
         {
             await _notificationService.SendStateNotifications(Request.Host.ToString());
-            return new EmptyResult();
+            return NoContent();
         }
 
         [Route("app/api/admin/migrate")]
@@ -98,7 +98,7 @@ namespace Traducir.Api.Controllers
                 migrator.MigrateToLatest();
             }
 
-            return new EmptyResult();
+            return NoContent();
         }
 
         [Route("app/admin/errors/{path?}/{subPath?}")]

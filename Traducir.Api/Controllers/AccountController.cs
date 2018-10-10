@@ -153,7 +153,7 @@ namespace Traducir.Api.Controllers
                 return BadRequest();
             }
 
-            return new EmptyResult();
+            return NoContent();
         }
 
         [Authorize]
@@ -183,7 +183,7 @@ namespace Traducir.Api.Controllers
                 return BadRequest();
             }
 
-            return new EmptyResult();
+            return NoContent();
         }
 
         private string GetOauthReturnUrl()
