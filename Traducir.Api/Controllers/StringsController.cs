@@ -228,7 +228,7 @@ namespace Traducir.Api.Controllers
                 model.Approve);
             if (suggestionResult)
             {
-                return new EmptyResult();
+                return NoContent();
             }
 
             return BadRequest(SuggestionCreationResult.DatabaseError);
@@ -252,7 +252,7 @@ namespace Traducir.Api.Controllers
                 Request.Host.ToString());
             if (success)
             {
-                return new EmptyResult();
+                return NoContent();
             }
 
             return BadRequest();
@@ -269,7 +269,7 @@ namespace Traducir.Api.Controllers
                 User.GetClaim<int>(ClaimType.Id));
             if (success)
             {
-                return new EmptyResult();
+                return NoContent();
             }
 
             return BadRequest();
@@ -287,7 +287,7 @@ namespace Traducir.Api.Controllers
                 User.GetClaim<UserType>(ClaimType.UserType));
             if (success)
             {
-                return new EmptyResult();
+                return NoContent();
             }
 
             return BadRequest();
@@ -301,7 +301,7 @@ namespace Traducir.Api.Controllers
             var success = await _soStringService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id));
             if (success)
             {
-                return new EmptyResult();
+                return NoContent();
             }
 
             return BadRequest();
