@@ -82,7 +82,7 @@ namespace Traducir.Core.Services
                         table.Rows.Add(s.NormalizedKey, s.Key, s.Variant, s.Source, s.Translation);
                     }
 
-                    var copyDb = (SqlConnection)db.InnerConnection;
+                    var copyDb = (SqlConnection)db.WrappedConnection;
                     using (var copy = new SqlBulkCopy(copyDb))
                     {
                         copy.DestinationTableName = "dbo.ImportTable";
@@ -442,7 +442,7 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                             s.TranslationOverride == "NULL" ? null : s.TranslationOverride);
                     }
 
-                    var copyDb = (SqlConnection)db.InnerConnection;
+                    var copyDb = (SqlConnection)db.WrappedConnection;
                     using (var copy = new SqlBulkCopy(copyDb))
                     {
                         copy.DestinationTableName = "dbo.SODumpTable";

@@ -5,7 +5,7 @@ pipeline:
       - mkdir -p app/backend
 
       - cd Traducir.Api
-      - dotnet publish -c Release -f netcoreapp2.0 -o ../app/backend
+      - dotnet publish -c Release -f netcoreapp2.1 -o ../app/backend
   frontend:
     image: g3rv4/traducir-builder
     commands:
