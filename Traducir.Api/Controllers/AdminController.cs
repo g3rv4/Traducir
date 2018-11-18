@@ -54,9 +54,9 @@ namespace Traducir.Api.Controllers
         }
 
         [Route("app/api/admin/update-translations-fron-so-dump")]
-        public async Task<IActionResult> UpdateTranslationsFromSODump()
+        public async Task<IActionResult> UpdateTranslationsFromSODump(string overrideExisting)
         {
-            await _soStringService.UpdateTranslationsFromSODump();
+            await _soStringService.UpdateTranslationsFromSODump(overrideExisting != null);
             return NoContent();
         }
 
