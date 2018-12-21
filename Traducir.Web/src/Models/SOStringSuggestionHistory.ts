@@ -14,7 +14,8 @@ export enum SuggestionHistoryType {
     RejectedByTrusted = 4,
     RejectedByReviewer = 5,
     DeletedByOwner = 6,
-    DismissedByOtherString = 7
+    DismissedByOtherString = 7,
+    ReplacedByUser = 8
 }
 
 export function suggestionHistoryTypeToString(historyType: SuggestionHistoryType): string {
@@ -33,6 +34,8 @@ export function suggestionHistoryTypeToString(historyType: SuggestionHistoryType
             return "Deleted by owner";
         case SuggestionHistoryType.DismissedByOtherString:
             return "Dismissed by other string";
+        case SuggestionHistoryType.ReplacedByUser:
+            return "Replaced by owner";
     }
     return "Unknown";
 }
