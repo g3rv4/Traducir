@@ -103,12 +103,13 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
             isButtonDisabled: true
         });
         try {
-            await axios.post("/app/api/suggestions/replace",
+            await axios.put("/app/api/suggestions/replace",
             {
                 NewSuggestion: this.props.stringToReplace,
                 SuggestionId: this.props.sug.id
             });
             this.props.refreshString(this.props.sug.stringId);
+            history.push("/filters");
         } catch (e) {
             if (e.response.status === 400) {
                 this.props.showErrorMessage("Error replacing the suggestion. Do you have enough rights?");
