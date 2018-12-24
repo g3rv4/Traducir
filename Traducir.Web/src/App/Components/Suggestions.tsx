@@ -72,6 +72,7 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
                 suggestions={this.props.str.suggestions}
                 refreshString={this.props.refreshString}
                 showErrorMessage={this.props.showErrorMessage}
+                stringToReplace={this.state.suggested}
             />
 
             <SuggestionNew
@@ -81,8 +82,14 @@ export default class Suggestions extends React.Component<ISuggestionsProps, ISug
                 refreshString={this.props.refreshString}
                 showErrorMessage={this.props.showErrorMessage}
                 suggestion={this.state.suggested}
+                hasNewSuggestion={this.hasNewSuggestion}
             />
         </>;
+    }
+
+    @autobind
+    public hasNewSuggestion(NewSuggestion: string): void {
+        this.setState({suggested: NewSuggestion});
     }
 
     public renderUrgency(): React.ReactNode {

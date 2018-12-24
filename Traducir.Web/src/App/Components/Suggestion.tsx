@@ -14,6 +14,7 @@ interface ISuggestionProps {
     user?: IUserInfo;
     refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (messageOrCode: string | number) => void;
+    stringToReplace: string;
 }
 
 interface ISuggestionState {
@@ -53,8 +54,18 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
                 </a>
             </td>
             <td>{this.renderDeleteButton()}</td>
+            <td>{this.renderReplaceButton()}</td>
             <td>{this.renderSuggestionActions()}</td>
         </tr>;
+    }
+
+    public renderReplaceButton(): React.ReactNode {
+        if (this.props.user && this.props.sug.createdById === this.props.user.id) {
+            return <button type="button" className="btn btn-sm btn-danger" onClick={this.replaceReview} disabled={this.state.isButtonDisabled || this.props.stringToReplace.length === 0}>
+                REPLACE
+        </button>;
+        }
+
     }
 
     public renderDeleteButton(): React.ReactNode {
@@ -84,6 +95,32 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
                 <i className="fas fa-thumbs-down" />
             </button>
         </div>;
+    }
+
+    @autobind()
+    public async replaceReview(): Promise<void> {
+        this.setState({
+            isButtonDisabled: true
+        });
+        try {
+            await axios.put("/app/api/suggestions/replace",
+            {
+                NewSuggestion: this.props.stringToReplace,
+                SuggestionId: this.props.sug.id
+            });
+            this.props.refreshString(this.props.sug.stringId);
+            history.push("/filters");
+        } catch (e) {
+            if (e.response.status === 400) {
+                this.props.showErrorMessage("Error replacing the suggestion. Do you have enough rights?");
+            } else {
+                this.props.showErrorMessage(e.response.status);
+            }
+        } finally {
+            this.setState({
+                isButtonDisabled: false
+            });
+        }
     }
 
     @autobind()
@@ -141,4 +178,5 @@ export default class Suggestion extends React.Component<ISuggestionProps, ISugge
             });
         }
     }
+
 }

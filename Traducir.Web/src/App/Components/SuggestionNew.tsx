@@ -15,6 +15,7 @@ export interface ISuggestionNewProps {
     refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (messageOrCode: string | number) => void;
     suggestion: string;
+    hasNewSuggestion: (newSuggestion: string) => void;
 }
 
 interface ISuggestionNewState {
@@ -91,6 +92,7 @@ export default class SuggestionNew extends React.Component<ISuggestionNewProps, 
     @autobind()
     public updateSuggestion(e: React.ChangeEvent<HTMLTextAreaElement>): void {
         this.setState({ suggestion: e.target.value });
+        this.props.hasNewSuggestion(e.target.value);
     }
 
     @autobind()

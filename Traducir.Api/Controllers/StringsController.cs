@@ -307,6 +307,23 @@ namespace Traducir.Api.Controllers
             return BadRequest();
         }
 
+        [HttpPut]
+        [Authorize(Policy = TraducirPolicy.CanSuggest)]
+        [Route("app/api/suggestions/replace")]
+        public async Task<IActionResult> ReplaceSuggestion([FromBody] ReplaceSuggestionViewModel replaceSuggestionViewModel)
+        {
+            var success = await _soStringService.ReplaceSuggestionAsync(
+                replaceSuggestionViewModel.SuggestionId,
+                replaceSuggestionViewModel.NewSuggestion,
+                User.GetClaim<int>(ClaimType.Id));
+            if (success)
+            {
+                return NoContent();
+            }
+
+            return BadRequest();
+        }
+
         private static string FixWhitespaces(string suggestion, string original)
         {
             var match = WhitespacesRegex.Match(original);

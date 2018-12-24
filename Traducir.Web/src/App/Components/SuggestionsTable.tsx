@@ -13,6 +13,7 @@ export interface ISuggestionsTableProps {
     user?: IUserInfo;
     refreshString: (stringIdToUpdate: number) => void;
     showErrorMessage: (messageOrCode: string | number) => void;
+    stringToReplace: string;
 }
 
 export default class SuggestionsTable extends React.Component<ISuggestionsTableProps> {
@@ -39,6 +40,7 @@ export default class SuggestionsTable extends React.Component<ISuggestionsTableP
                     user={this.props.user}
                     refreshString={this.props.refreshString}
                     showErrorMessage={this.props.showErrorMessage}
+                    stringToReplace={this.props.stringToReplace}
                 />)}
             </tbody>
         </table>;

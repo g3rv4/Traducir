@@ -8,6 +8,7 @@ namespace Traducir.Core.Models.Enums
         RejectedByTrusted = 4,
         RejectedByReviewer = 5,
         DeletedByOwner = 6,
-        DismissedByOtherString = 7
+        DismissedByOtherString = 7,
+        ReplacedByOwner = 8
     }
 }

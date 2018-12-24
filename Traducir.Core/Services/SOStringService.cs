@@ -44,6 +44,8 @@ namespace Traducir.Core.Services
         Task<bool> DeleteSuggestionAsync(int suggestionId, int userId);
 
         Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId, StringSuggestionState? state);
+
+        Task<bool> ReplaceSuggestionAsync(int suggestionId, string suggestion, int userId);
     }
 
     public class SOStringService : ISOStringService
@@ -663,6 +665,53 @@ Join   Users u On u.Id = h.UserId;
                 }
 
                 return suggestions.ToImmutableArray();
+            }
+        }
+
+        public async Task<bool> ReplaceSuggestionAsync(int suggestionId, string suggestion, int userId)
+        {
+            using (var db = _dbService.GetConnection())
+            {
+                var idString = await db.QuerySingleOrDefaultAsync<int>(@"
+Declare @idString int = 0;
+Declare @OriginalString nvarchar(max);
+
+Select @OriginalString = 'Original Suggestion: ' + Suggestion,
+@idString = StringId
+From StringSuggestions
+Where id = @suggestionId
+And   CreatedById = @userId;
+
+Update StringSuggestions
+Set Suggestion = @suggestion
+Where Id = @suggestionId
+And   CreatedById = @userId;
+
+Insert into StringSuggestionHistory
+            (StringSuggestionId, HistoryTypeId, Comment, UserId, CreationDate)
+Select Id, {=ReplacedByOwner}, @OriginalString, CreatedById, @now
+from StringSuggestions
+Where Id = @suggestionId
+And   CreatedById = @userId;
+
+Select @idString", new
+                {
+                    suggestion,
+                    suggestionId,
+                    StringSuggestionHistoryType.ReplacedByOwner,
+                    userId,
+                    now = DateTime.UtcNow
+                });
+
+                // If the Id returned is zero, then no data was updated, because there is no suggestion
+                // or the user is not the one who created it.
+                if (idString > 0)
+                {
+                    await RefreshCacheAsync(idString);
+                    return true;
+                }
+
+                return false;
             }
         }
 
