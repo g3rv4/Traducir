@@ -36,12 +36,12 @@ namespace Traducir.Api.Controllers
         {
             return Json(new
             {
-                TotalStrings = (await _soStringService.GetStringsAsync(s => !s.IsIgnored)).Length,
-                WithoutTranslation = (await _soStringService.GetStringsAsync(s => !s.HasTranslation && !s.IsIgnored)).Length,
-                WithPendingSuggestions = (await _soStringService.GetStringsAsync(s => s.HasSuggestions && !s.IsIgnored)).Length,
-                WaitingApproval = (await _soStringService.GetStringsAsync(s => s.HasSuggestionsWaitingApproval && !s.IsIgnored)).Length,
-                WaitingReview = (await _soStringService.GetStringsAsync(s => s.HasApprovedSuggestionsWaitingReview && !s.IsIgnored)).Length,
-                UrgentStrings = (await _soStringService.GetStringsAsync(s => s.IsUrgent && !s.IsIgnored)).Length,
+                TotalStrings = await _soStringService.CountStringsAsync(s => !s.IsIgnored),
+                WithoutTranslation = await _soStringService.CountStringsAsync(s => !s.HasTranslation && !s.IsIgnored),
+                WithPendingSuggestions = await _soStringService.CountStringsAsync(s => s.HasSuggestions && !s.IsIgnored),
+                WaitingApproval = await _soStringService.CountStringsAsync(s => s.HasSuggestionsWaitingApproval && !s.IsIgnored),
+                WaitingReview = await _soStringService.CountStringsAsync(s => s.HasApprovedSuggestionsWaitingReview && !s.IsIgnored),
+                UrgentStrings = await _soStringService.CountStringsAsync(s => s.IsUrgent && !s.IsIgnored),
             });
         }
 

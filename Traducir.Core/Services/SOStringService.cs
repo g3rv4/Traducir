@@ -27,6 +27,8 @@ namespace Traducir.Core.Services
 
         Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate = null);
 
+        Task<int> CountStringsAsync(Func<SOString, bool> predicate = null);
+
         Task<bool> CreateSuggestionAsync(int stringId, string suggestion, int userId, UserType userType, bool approve);
 
         Task<bool> ReviewSuggestionAsync(int suggestionId, bool approve, int userId, UserType userType, string host);
@@ -195,10 +197,28 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
             ImmutableArray<SOString> result;
             using (MiniProfiler.Current.Step("Filtering the strings"))
             {
-                result = Strings.Where(predicate).ToImmutableArray();
+                result = Strings.Where(predicate).Take(200).ToImmutableArray();
             }
 
             return result;
+        }
+
+        public async Task<int> CountStringsAsync(Func<SOString, bool> predicate = null)
+        {
+            if (Strings == null || Strings.Length == 0)
+            {
+                await RefreshCacheAsync();
+            }
+
+            if (predicate == null)
+            {
+                return Strings.Length;
+            }
+
+            using (MiniProfiler.Current.Step("Filtering the strings"))
+            {
+                return Strings.Count(predicate);
+            }
         }
 
         public async Task<SOString> GetStringByIdAsync(int stringId)
