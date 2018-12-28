@@ -148,7 +148,12 @@ class Traducir extends React.Component<RouteComponentProps<{}>, ITraducirState> 
             .then(response => this.setState({ user: response.data }))
             .catch(error => this.setState({ user: undefined }));
         axios.get<IConfig>("/app/api/config")
-            .then(response => this.setState({ config: response.data }))
+            .then(response => {
+                this.setState({ config: response.data });
+                if (window.document.title.indexOf("-") === -1) {
+                    window.document.title += ` - ${response.data.friendlyName}`;
+                }
+            })
             .catch(error => this.showErrorMessage(error.response.status));
         axios.get<IStats>("/app/api/strings/stats")
             .then(response => this.setState({ stats: response.data }))
