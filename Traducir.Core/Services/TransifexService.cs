@@ -75,6 +75,7 @@ namespace Traducir.Core.Services
                     var client = GetHttpClient();
                     var response = await client.PutAsync(_resourcePath, byteContent);
                     success = response.IsSuccessStatusCode;
+                    var r = await response.Content.ReadAsStringAsync();
                 }
 
                 if (success)

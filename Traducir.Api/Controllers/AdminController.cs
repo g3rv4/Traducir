@@ -63,10 +63,10 @@ namespace Traducir.Api.Controllers
         [Route("app/api/admin/push")]
         public async Task<IActionResult> PushStrings()
         {
-            var stringsToPush = await _soStringService.GetStringsAsync(s => s.HasTranslation);
+            var stringsToPush = await _soStringService.GetStringsAsync(s => s.HasTranslation, includeEverything: true);
             if (stringsToPush.Length > 0)
             {
-                var sendNotifications = (await _soStringService.GetStringsAsync(s => s.NeedsPush)).Length > 0;
+                var sendNotifications = (await _soStringService.CountStringsAsync(s => s.NeedsPush)) > 0;
                 await _transifexService.PushStringsToTransifexAsync(stringsToPush);
 
                 if (sendNotifications)

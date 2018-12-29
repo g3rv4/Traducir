@@ -25,7 +25,7 @@ namespace Traducir.Core.Services
 
         Task<SOString> GetStringByIdAsync(int stringId);
 
-        Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate = null);
+        Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate = null, bool includeEverything = false);
 
         Task<int> CountStringsAsync(Func<SOString, bool> predicate = null);
 
@@ -182,7 +182,7 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
             ExpireCache();
         }
 
-        public async Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate = null)
+        public async Task<ImmutableArray<SOString>> GetStringsAsync(Func<SOString, bool> predicate = null, bool includeEverything = false)
         {
             if (Strings == null || Strings.Length == 0)
             {
@@ -194,13 +194,16 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
                 return Strings;
             }
 
-            ImmutableArray<SOString> result;
             using (MiniProfiler.Current.Step("Filtering the strings"))
             {
-                result = Strings.Where(predicate).Take(200).ToImmutableArray();
-            }
+                var matching = Strings.Where(predicate);
+                if (!includeEverything)
+                {
+                    matching = matching.Take(200);
+                }
 
-            return result;
+                return matching.ToImmutableArray();
+            }
         }
 
         public async Task<int> CountStringsAsync(Func<SOString, bool> predicate = null)
@@ -444,7 +447,7 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                     table.Columns.Add("Hash", typeof(string));
                     table.Columns.Add("NormalizedHash", typeof(string));
                     table.Columns.Add("CreationDate", typeof(DateTime));
-                    table.Columns.Add("ModifiedDate", typeof(DateTime));
+                    table.Columns.Add("ModifiedDate", typeof(DateTime?));
                     table.Columns.Add("LastSeenDate", typeof(DateTime));
                     table.Columns.Add("Translation", typeof(string));
                     table.Columns.Add("TranslationOverride", typeof(string));

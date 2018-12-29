@@ -154,7 +154,7 @@ namespace Traducir.Api.Controllers
             }
 
             var result = await _soStringService.GetStringsAsync(predicate);
-            return Json(result.Take(2000));
+            return Json(result);
         }
 
         [HttpGet]
