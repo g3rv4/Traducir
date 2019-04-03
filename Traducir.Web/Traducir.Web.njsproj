@@ -1,0 +1,134 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <Name>Traducir.Web</Name>
+    <RootNamespace>Traducir.Web</RootNamespace>
+    <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>bf303b5e-3289-45fd-a285-5081b4ccbdb2</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>
+    </StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
+    <NodejsPort>1337</NodejsPort>
+    <StartWebBrowser>True</StartWebBrowser>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="lib\bootstrap.min.css" />
+    <Content Include="lib\miniprofiler-includes.4.0.138.gcc91adf599.css" />
+    <Content Include="lib\unicorn.png" />
+    <Content Include="package-lock.json" />
+    <Content Include="package.json" />
+    <Content Include="src\index.ejs" />
+    <Content Include="tsconfig.json" />
+    <Content Include="tslint.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="lib\fontawesome.js" />
+    <Compile Include="lib\miniprofiler.js" />
+    <Compile Include="lib\service-worker.js" />
+    <Compile Include="src\rules\nonUndefinedReactNodeOnRenderRule.js" />
+    <Compile Include="webpack.common.js" />
+    <Compile Include="webpack.dev-hot.js" />
+    <Compile Include="webpack.prod.js" />
+    <Compile Include="webpack.test.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="lib\" />
+    <Folder Include="src\" />
+    <Folder Include="src\App\" />
+    <Folder Include="src\App\Components\" />
+    <Folder Include="src\Models\" />
+    <Folder Include="src\rules\" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="src\App\Components\Filters.tsx" />
+    <TypeScriptCompile Include="src\App\Components\Notifications.tsx" />
+    <TypeScriptCompile Include="src\App\Components\Result.tsx" />
+    <TypeScriptCompile Include="src\App\Components\Results.tsx" />
+    <TypeScriptCompile Include="src\App\Components\StatsWithLinks.tsx" />
+    <TypeScriptCompile Include="src\App\Components\Suggestion.tsx" />
+    <TypeScriptCompile Include="src\App\Components\SuggestionHistoryFilters.tsx" />
+    <TypeScriptCompile Include="src\App\Components\SuggestionNew.tsx" />
+    <TypeScriptCompile Include="src\App\Components\Suggestions.tsx" />
+    <TypeScriptCompile Include="src\App\Components\SuggestionsHistory.tsx" />
+    <TypeScriptCompile Include="src\App\Components\SuggestionsHistoryTable.tsx" />
+    <TypeScriptCompile Include="src\App\Components\SuggestionsTable.tsx" />
+    <TypeScriptCompile Include="src\App\Components\User.tsx" />
+    <TypeScriptCompile Include="src\App\Components\Users.tsx" />
+    <TypeScriptCompile Include="src\App\NonUndefinedReactNode.d.ts" />
+    <TypeScriptCompile Include="src\App\Traducir.tsx" />
+    <TypeScriptCompile Include="src\history.ts" />
+    <TypeScriptCompile Include="src\index-hot.tsx" />
+    <TypeScriptCompile Include="src\index.tsx" />
+    <TypeScriptCompile Include="src\Models\Config.ts" />
+    <TypeScriptCompile Include="src\Models\INotificationSettings.ts" />
+    <TypeScriptCompile Include="src\Models\SOString.ts" />
+    <TypeScriptCompile Include="src\Models\SOStringSuggestion.ts" />
+    <TypeScriptCompile Include="src\Models\SOStringSuggestionHistory.ts" />
+    <TypeScriptCompile Include="src\Models\Stats.ts" />
+    <TypeScriptCompile Include="src\Models\User.ts" />
+    <TypeScriptCompile Include="src\Models\UserInfo.ts" />
+    <TypeScriptCompile Include="src\Models\UserType.ts" />
+    <TypeScriptCompile Include="src\nameofFactory.ts" />
+    <TypeScriptCompile Include="src\rules\nonUndefinedReactNodeOnRenderRule.ts" />
+    <TypeScriptCompile Include="src\urlBase64ToUint8Array.ts" />
+  </ItemGroup>
+  <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsTools.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:48022/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://localhost:1337</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <SilverlightDebugging>False</SilverlightDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>False</EnableENC>
+          <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
