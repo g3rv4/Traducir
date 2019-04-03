@@ -63,7 +63,7 @@ Now... if you run it, it should work. Visit `http://localhost:5000/app/api/admin
 
 ### Set up the backend on Visual Studio 2017
 
-Open the folder Traducir. Once there, double click Traducir.sln. This will open the backend solution. Before we can continue, we have to configure the enviroment variables. This variables are stored on traducir.api property pages. There are two ways to configure this variables.
+Open the folder Traducir. Once there, double click Traducir.sln. This will open the solution. Before we can continue, we have to configure the enviroment variables for the backend project. This variables are stored on the property pages for `Traducir.Api`. There are two ways to configure this variables.
 
 The hard way, is setting them up manually one by one on the property page of the project. Rigth Click on the project name (Traducir.Api) and click on properties. Go to debug tab, and select the profile IIS Express (should be selected by default). Once there, you can set up this variables on the grid that said environment variables
 
