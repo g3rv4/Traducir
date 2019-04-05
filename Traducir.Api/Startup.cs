@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using StackExchange.Profiling;
 using Traducir.Core.Helpers;
 using Traducir.Core.Services;
@@ -17,26 +18,40 @@ namespace Traducir.Api
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+        public Startup(IConfiguration configuration, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             Configuration = configuration;
             HostingEnvironment = env;
+            LoggerFactory = loggerFactory;
         }
 
         public IConfiguration Configuration { get; }
 
         public IHostingEnvironment HostingEnvironment { get; }
 
+        public ILoggerFactory LoggerFactory { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
 
             services.AddSingleton(typeof(IDbService), typeof(DbService));
-            services.AddSingleton(typeof(ITransifexService), typeof(TransifexService));
             services.AddSingleton(typeof(ISOStringService), typeof(SOStringService));
             services.AddSingleton(typeof(ISEApiService), typeof(SEApiService));
             services.AddSingleton(typeof(IUserService), typeof(UserService));
             services.AddSingleton(typeof(INotificationService), typeof(NotificationService));
+
+            if (HostingEnvironment.IsDevelopment() && !Configuration.GetValue<bool>("PUSH_TO_TRANSIFEX_ON_DEV"))
+            {
+                LoggerFactory.AddConsole(LogLevel.Information);
+                services.AddSingleton(typeof(ILoggerFactory), LoggerFactory);
+                services.AddSingleton(typeof(TransifexService), typeof(TransifexService));
+                services.AddSingleton(typeof(ITransifexService), typeof(ReadonlyTransifexService));
+            }
+            else
+            {
+                services.AddSingleton(typeof(ITransifexService), typeof(TransifexService));
+            }
 
             services.AddMiniProfiler(settings =>
             {
