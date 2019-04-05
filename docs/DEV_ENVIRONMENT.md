@@ -39,10 +39,10 @@ Open the project and go to Debug => Start Debugging. The first time it should as
 
 Stop it now... we need to configure the environment variables. Everything is set up using environment variables so that it's easy to keep track of them and to make it easy to set up when running the project inside a docker container (that's exactly how I'm running it on prod... and how I'll run it when we have tests. Yes, we will have tests some day).
 
-Open the `.vscode/launch.json` and replace the existing `env` key with the following (changing whatever is between `<>` with the appropriate values for you):
+Open the `.vscode/launch.json` and replace the existing `environmentVariables` key with the following (changing whatever is between `<>` with the appropriate values for you):
 
 ```
-"env": {
+"environmentVariables": {
     "ASPNETCORE_ENVIRONMENT": "Development",
     "FRIENDLY_NAME": "SOes",
     "CONNECTION_STRING": "Server=<SQL SERVER ADDRESS>;Database=Traducir;User Id=<SQL SERVER USER>;Password=<SQL SERVER PASSWORD>;Min Pool Size=5;",
@@ -55,7 +55,8 @@ Open the `.vscode/launch.json` and replace the existing `env` key with the follo
 
     "TRANSIFEX_APIKEY": "<YOUR TRANSIFEX API KEY>",
     "TRANSIFEX_RESOURCE_PATH": "api/2/project/stack-overflow-es/resource/english/translation/es/strings/",
-    "TRANSIFEX_LINK_PATH": "stack-exchange/stack-overflow-es/translate/#es/english"
+    "TRANSIFEX_LINK_PATH": "stack-exchange/stack-overflow-es/translate/#es/english",
+    "PUSH_TO_TRANSIFEX_ON_DEV": "False"
 },
 ```
 
