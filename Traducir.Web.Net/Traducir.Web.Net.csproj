@@ -21,6 +21,7 @@
     <Compile Include="..\Traducir.Api\Controllers\StringsController.cs" Link="Controllers\StringsController.cs" />
     <Compile Include="..\Traducir.Api\Models\Enums\SuggestionCreationResult.cs" Link="Models\Enums\SuggestionCreationResult.cs" />
     <Compile Include="..\Traducir.Api\ReadonlyTransifexService.cs" Link="Traducir.Api\ReadonlyTransifexService.cs" />
+    <Compile Include="..\Traducir.Api\Services\StringsService.cs" Link="Services\StringsService.cs" />
     <Compile Include="..\Traducir.Api\Startup.cs" Link="Traducir.Api\Startup.cs" />
     <Compile Include="..\Traducir.Api\ViewModels\Account\ChangeUserTypeViewModel.cs" Link="ViewModels\Account\ChangeUserTypeViewModel.cs" />
     <Compile Include="..\Traducir.Api\ViewModels\Account\SubscriptionViewModel.cs" Link="ViewModels\Account\SubscriptionViewModel.cs" />
@@ -33,6 +34,7 @@
     <Compile Include="..\Traducir.Api\ViewModels\Strings\QueryViewModel.cs" Link="ViewModels\Strings\QueryViewModel.cs" />
     <Compile Include="..\Traducir.Api\ViewModels\Strings\ReplaceSuggestionViewModel.cs" Link="ViewModels\Strings\ReplaceSuggestionViewModel.cs" />
     <Compile Include="..\Traducir.Api\ViewModels\Strings\ReviewViewModel.cs" Link="ViewModels\Strings\ReviewViewModel.cs" />
+    <Compile Include="..\Traducir.Api\ViewModels\Strings\StringCountsViewModel.cs" Link="ViewModels\Strings\StringCountsViewModel.cs" />
     <Compile Include="..\Traducir.Api\ViewModels\UpdateNotificationSettingsViewModel.cs" Link="ViewModels\UpdateNotificationSettingsViewModel.cs" />
   </ItemGroup>
 
@@ -53,6 +55,7 @@
 
   <ItemGroup>
     <Folder Include="Models\Enums\" />
+    <Folder Include="Services\" />
     <Folder Include="Traducir.Api\" />
     <Folder Include="ViewModels\Account\" />
     <Folder Include="ViewModels\Config\" />

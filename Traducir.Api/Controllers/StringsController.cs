@@ -1,14 +1,13 @@
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Traducir.Api.Models.Enums;
+using Traducir.Api.Services;
 using Traducir.Api.ViewModels.Strings;
 using Traducir.Core.Helpers;
-using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
 
@@ -21,28 +20,23 @@ namespace Traducir.Api.Controllers
 
         private readonly ISOStringService _soStringService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IStringsService _stringsService;
 
         public StringsController(
             ISOStringService soStringService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            IStringsService stringsService)
         {
             _soStringService = soStringService;
             _authorizationService = authorizationService;
+            _stringsService = stringsService;
         }
 
         [HttpGet]
         [Route("app/api/strings/stats")]
         public async Task<IActionResult> GetStringStats()
         {
-            return Json(new
-            {
-                TotalStrings = await _soStringService.CountStringsAsync(s => !s.IsIgnored),
-                WithoutTranslation = await _soStringService.CountStringsAsync(s => !s.HasTranslation && !s.IsIgnored),
-                WithPendingSuggestions = await _soStringService.CountStringsAsync(s => s.HasSuggestions && !s.IsIgnored),
-                WaitingApproval = await _soStringService.CountStringsAsync(s => s.HasSuggestionsWaitingApproval && !s.IsIgnored),
-                WaitingReview = await _soStringService.CountStringsAsync(s => s.HasApprovedSuggestionsWaitingReview && !s.IsIgnored),
-                UrgentStrings = await _soStringService.CountStringsAsync(s => s.IsUrgent && !s.IsIgnored),
-            });
+            return Json(await _stringsService.GetStringCounts());
         }
 
         [HttpGet]
@@ -63,98 +57,15 @@ namespace Traducir.Api.Controllers
         [Route("app/api/strings/query")]
         public async Task<IActionResult> Query([FromBody] QueryViewModel model)
         {
-            Func<SOString, bool> predicate = null;
-
-            void ComposePredicate(Func<SOString, bool> newPredicate)
+            try
             {
-                if (predicate == null)
-                {
-                    predicate = newPredicate;
-                    return;
-                }
-
-                var oldPredicate = predicate;
-                predicate = s => oldPredicate(s) && newPredicate(s);
+                var result = await _stringsService.Query(model);
+                return Json(result);
             }
-
-            if (model.TranslationStatus != TranslationStatus.AnyStatus)
+            catch (InvalidOperationException ex)
             {
-                ComposePredicate(s => s.HasTranslation == (model.TranslationStatus == TranslationStatus.WithTranslation));
+                return BadRequest(ex.Message);
             }
-
-            if (model.PushStatus != PushStatus.AnyStatus)
-            {
-                ComposePredicate(s => s.NeedsPush == (model.PushStatus == PushStatus.NeedsPush));
-            }
-
-            if (model.UrgencyStatus != UrgencyStatus.AnyStatus)
-            {
-                ComposePredicate(s => s.IsUrgent == (model.UrgencyStatus == UrgencyStatus.IsUrgent));
-            }
-
-            if (model.IgnoredStatus != IgnoredStatus.IncludeIgnored)
-            {
-                ComposePredicate(s => s.IsIgnored == (model.IgnoredStatus == IgnoredStatus.OnlyIgnored));
-            }
-
-            if (model.SuggestionsStatus != SuggestionApprovalStatus.AnyStatus)
-            {
-                switch (model.SuggestionsStatus)
-                {
-                    case SuggestionApprovalStatus.DoesNotHaveSuggestions:
-                        ComposePredicate(s => !s.HasSuggestions);
-                        break;
-                    case SuggestionApprovalStatus.HasSuggestionsNeedingReview:
-                        ComposePredicate(s =>
-                            s.Suggestions != null &&
-                            s.Suggestions.Any(sug => sug.State == StringSuggestionState.Created || sug.State == StringSuggestionState.ApprovedByTrustedUser));
-                        break;
-                    case SuggestionApprovalStatus.HasSuggestionsNeedingApproval:
-                        ComposePredicate(s => s.HasSuggestionsWaitingApproval);
-                        break;
-                    case SuggestionApprovalStatus.HasSuggestionsNeedingReviewApprovedByTrustedUser:
-                        ComposePredicate(s => s.HasApprovedSuggestionsWaitingReview);
-                        break;
-                }
-            }
-
-            if (model.Key.HasValue())
-            {
-                ComposePredicate(s => s.Key.StartsWith(model.Key, true, CultureInfo.InvariantCulture));
-            }
-
-            if (model.SourceRegex.HasValue())
-            {
-                Regex regex;
-                try
-                {
-                    regex = new Regex(model.SourceRegex, RegexOptions.Compiled);
-                }
-                catch (ArgumentException)
-                {
-                    return BadRequest();
-                }
-
-                ComposePredicate(s => regex.IsMatch(s.OriginalString));
-            }
-
-            if (model.TranslationRegex.HasValue())
-            {
-                Regex regex;
-                try
-                {
-                    regex = new Regex(model.TranslationRegex, RegexOptions.Compiled);
-                }
-                catch (ArgumentException)
-                {
-                    return BadRequest();
-                }
-
-                ComposePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
-            }
-
-            var result = await _soStringService.GetStringsAsync(predicate);
-            return Json(result);
         }
 
         [HttpGet]

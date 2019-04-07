@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Traducir.Api.Services;
 using Traducir.Core.Services;
 using Traducir.Web.Net.Models;
 using Traducir.Web.Net.ViewModels.Home;
@@ -9,25 +11,27 @@ namespace Traducir.Web.Net.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ISOStringService soStringService;
+        private readonly IStringsService stringsService;
 
-        public HomeController(ISOStringService soStringService)
+        public HomeController(IStringsService stringsService)
         {
-            this.soStringService = soStringService;
+            this.stringsService = stringsService;
         }
 
         public async Task<IActionResult> Index()
         {
+            return await Filters();
+        }
+
+        [Route("/filters")]
+        public async Task<IActionResult> Filters()
+        {
             var viewModel = new IndexViewModel
             {
-                TotalStringsCount = await soStringService.CountStringsAsync(s => !s.IsIgnored),
-                UrgentStringsCount = await soStringService.CountStringsAsync(s => s.IsUrgent && !s.IsIgnored),
-                UntranslatedStringsCount = await soStringService.CountStringsAsync(s => !s.HasTranslation && !s.IsIgnored),
-                SugestionsAwaitingApprovalCount = await soStringService.CountStringsAsync(s => s.HasSuggestionsWaitingApproval && !s.IsIgnored),
-                ApprovedSugestionsAwaitingReviewCount = await soStringService.CountStringsAsync(s => s.HasApprovedSuggestionsWaitingReview && !s.IsIgnored)
+                StringCounts = await stringsService.GetStringCounts()
             };
 
-            return View(viewModel);
+            return View("~/Views/Home/Index.cshtml", viewModel);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

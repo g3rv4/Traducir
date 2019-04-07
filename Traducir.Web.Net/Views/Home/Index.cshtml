@@ -69,14 +69,14 @@
     <div class="row text-center">
         <div class="col d-none d-lg-block">
             <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-outline-secondary" disabled="">@Model.TotalStringsCount total strings</button>
-                @if (Model.UrgentStringsCount > 0)
+                <button type="button" class="btn btn-outline-secondary" disabled="">@Model.StringCounts.TotalStrings total strings</button>
+                @if (Model.StringCounts.UrgentStrings > 0)
                 {
-                    <a class="btn btn-danger" href="/filters?urgencyStatus=1">@Model.UrgentStringsCount marked as urgent</a>
+                    <a class="btn btn-danger" href="/filters?urgencyStatus=1">@Model.StringCounts.UrgentStrings marked as urgent</a>
                 }
-                <a class="btn btn-outline-danger" href="/filters?translationStatus=2">@Model.UntranslatedStringsCount without translation</a>
-                <a class="btn btn-outline-primary" href="/filters?suggestionsStatus=3">@Model.SugestionsAwaitingApprovalCount suggestions awaiting approval</a>
-                <a class="btn btn-outline-success" href="/filters?suggestionsStatus=4">@Model.ApprovedSugestionsAwaitingReviewCount approved suggestions awaiting review</a>
+                <a class="btn btn-outline-danger" href="/filters?translationStatus=2">@Model.StringCounts.WithoutTranslation without translation</a>
+                <a class="btn btn-outline-primary" href="/filters?suggestionsStatus=3">@Model.StringCounts.WaitingApproval suggestions awaiting approval</a>
+                <a class="btn btn-outline-success" href="/filters?suggestionsStatus=4">@Model.StringCounts.WaitingReview approved suggestions awaiting review</a>
             </div>
         </div>
     </div>
