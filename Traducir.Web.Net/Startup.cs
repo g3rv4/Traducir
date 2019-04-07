@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Traducir.Web.Net.ViewModels;
 
 namespace Traducir.Web.Net
 {
@@ -12,11 +14,14 @@ namespace Traducir.Web.Net
         //TODO: incorporate the relevant code from this class and remove this field (and the linked class file) when the Api project is deleted
         private readonly Api.Startup apiStartup;
 
-        public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment)
+        public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
         {
             Configuration = configuration;
             HostingEnvironment = hostingEnvironment;
-            apiStartup = new Api.Startup(Configuration, HostingEnvironment);
+            apiStartup = new Api.Startup(Configuration, HostingEnvironment, loggerFactory)
+            {
+                CookiePath = "/"
+            };
         }
 
         public IConfiguration Configuration { get; }
@@ -28,6 +33,8 @@ namespace Traducir.Web.Net
         {
             apiStartup.ConfigureServices(services);
 
+            services.AddTransient(typeof(LayoutViewModel), typeof(LayoutViewModel));
+
             services.Configure<CookiePolicyOptions>(options =>
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
@@ -36,6 +43,7 @@ namespace Traducir.Web.Net
             });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddHttpContextAccessor();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

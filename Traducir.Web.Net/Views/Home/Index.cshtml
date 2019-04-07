@@ -1,8 +1,83 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+@model Traducir.Web.Net.ViewModels.Home.IndexViewModel
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <div class="m-2 text-center">
+        <h2>Filters</h2>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label for="sourceRegex">Source Regex</label>
+                <input type="text" class="form-control" id="sourceRegex" placeholder="^question" value="">
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="translationRegex">Translation Regex</label>
+                <input type="text" class="form-control" id="translationRegex" placeholder="(?i)pregunta$" value="">
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label for="withoutTranslation">Strings without translation</label>
+                <select class="form-control" id="withoutTranslation">
+                    <option value="0">Any string</option>
+                    <option value="2">Only strings without translation</option>
+                    <option value="1">Only strings with translation</option>
+                </select>
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="suggestionsStatus">Strings with pending suggestions</label>
+                <select class="form-control" id="suggestionsStatus">
+                    <option value="0">Any string</option>
+                    <option value="1">Strings without suggestions</option>
+                    <option value="3">Strings with suggestions awaiting approval</option>
+                    <option value="2">Strings with suggestions awaiting review</option>
+                    <option value="4">Strings with approved suggestions awaiting review</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label for="key">Key</label>
+                <input type="text" class="form-control" id="key" value="">
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label for="suggestionsStatus">Strings with urgency status</label>
+                <select class="form-control" id="urgencyStatus">
+                    <option value="0">Any string</option>
+                    <option value="1">Is urgent</option>
+                    <option value="2">Is not urgent</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row text-center mb-5">
+        <div class="col">
+            <a class="btn btn-secondary" href="/">Reset</a>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <div class="col d-none d-lg-block">
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <button type="button" class="btn btn-outline-secondary" disabled="">@Model.TotalStringsCount total strings</button>
+                @if (Model.UrgentStringsCount > 0)
+                {
+                    <a class="btn btn-danger" href="/filters?urgencyStatus=1">@Model.UrgentStringsCount marked as urgent</a>
+                }
+                <a class="btn btn-outline-danger" href="/filters?translationStatus=2">@Model.UntranslatedStringsCount without translation</a>
+                <a class="btn btn-outline-primary" href="/filters?suggestionsStatus=3">@Model.SugestionsAwaitingApprovalCount suggestions awaiting approval</a>
+                <a class="btn btn-outline-success" href="/filters?suggestionsStatus=4">@Model.ApprovedSugestionsAwaitingReviewCount approved suggestions awaiting review</a>
+            </div>
+        </div>
+    </div>
 </div>

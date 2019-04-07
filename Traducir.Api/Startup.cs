@@ -31,6 +31,8 @@ namespace Traducir.Api
 
         public ILoggerFactory LoggerFactory { get; }
 
+        public string CookiePath { get; set; } = "/app";
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
@@ -43,7 +45,10 @@ namespace Traducir.Api
 
             if (HostingEnvironment.IsDevelopment() && !Configuration.GetValue<bool>("PUSH_TO_TRANSIFEX_ON_DEV"))
             {
-                LoggerFactory.AddConsole(LogLevel.Information);
+                services.AddLogging(loggingBuilder =>
+                {
+                    loggingBuilder.AddConsole();
+                });
                 services.AddSingleton(typeof(ILoggerFactory), LoggerFactory);
                 services.AddSingleton(typeof(TransifexService), typeof(TransifexService));
                 services.AddSingleton(typeof(ITransifexService), typeof(ReadonlyTransifexService));
@@ -60,7 +65,7 @@ namespace Traducir.Api
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
             {
-                o.Cookie.Path = "/app";
+                o.Cookie.Path = CookiePath;
                 o.Events.OnRedirectToLogin = context =>
                 {
                     context.Response.StatusCode = 401;

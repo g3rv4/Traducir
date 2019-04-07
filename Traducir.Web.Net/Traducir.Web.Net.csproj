@@ -5,6 +5,11 @@
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Properties\launchSettings.jsonx" />
   </ItemGroup>
@@ -15,6 +20,7 @@
     <Compile Include="..\Traducir.Api\Controllers\ConfigController.cs" Link="Controllers\ConfigController.cs" />
     <Compile Include="..\Traducir.Api\Controllers\StringsController.cs" Link="Controllers\StringsController.cs" />
     <Compile Include="..\Traducir.Api\Models\Enums\SuggestionCreationResult.cs" Link="Models\Enums\SuggestionCreationResult.cs" />
+    <Compile Include="..\Traducir.Api\ReadonlyTransifexService.cs" Link="Traducir.Api\ReadonlyTransifexService.cs" />
     <Compile Include="..\Traducir.Api\Startup.cs" Link="Traducir.Api\Startup.cs" />
     <Compile Include="..\Traducir.Api\ViewModels\Account\ChangeUserTypeViewModel.cs" Link="ViewModels\Account\ChangeUserTypeViewModel.cs" />
     <Compile Include="..\Traducir.Api\ViewModels\Account\SubscriptionViewModel.cs" Link="ViewModels\Account\SubscriptionViewModel.cs" />
@@ -32,6 +38,7 @@
 
   <ItemGroup>
     <Content Include="..\Traducir.Api\Properties\launchSettings.json" Link="Properties\launchSettings.json" />
+    <Content Include="..\Traducir.Web\lib\unicorn.png" Link="wwwroot\unicorn.png" />
   </ItemGroup>
 
 
