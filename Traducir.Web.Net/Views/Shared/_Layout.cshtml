@@ -31,7 +31,7 @@
     <div id="root">
         <nav class="fixed-top navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand d-none d-lg-block" href="/">@(viewModel.ConfigName) Translations 🦄 @(viewModel.IsLoggedIn ? $"{viewModel.UserName} ({viewModel.UserTypeForDisplay})" : null)</a>
+                <a class="navbar-brand d-none d-lg-block" href="/">@viewModel.ConfigName Translations 🦄 @viewModel.UserInfo</a>
                 <button type="button" class="navbar-toggler">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -77,6 +77,9 @@
                                 <a href="/app/login?returnUrl=@returnUrl" class="nav-link">Log in!</a>
                             }
                         </li>
+                        <environment include="Development">
+                            <partial name="DevelopmentMenu" model="viewModel" />
+                        </environment>
                     </ul>
                 </div>
             </div>

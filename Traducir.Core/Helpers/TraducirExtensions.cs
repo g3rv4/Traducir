@@ -25,6 +25,11 @@ namespace Traducir.Core.Helpers
             return !str.IsNullOrEmpty();
         }
 
+        public static string NullIfEmpty(this string str)
+        {
+            return string.IsNullOrWhiteSpace(str) ? null : str;
+        }
+
         #pragma warning disable CA5351
         public static string CalculateMd5(this string str)
         {

@@ -1,0 +1,17 @@
+@{
+    var returnUrl = Model.CurrentPathAndQuery;
+}
+
+<li class="nav-item dropdown">
+    <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Development
+    </a>
+    <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
+        <a class="dropdown-item" href="app/login?asUserType=User&returnUrl=@returnUrl">Login as User</a>
+        <a class="dropdown-item" href="app/login?asUserType=TrustedUser&returnUrl=@returnUrl">Login as Trusted User</a>
+        <a class="dropdown-item" href="app/login?asUserType=Reviewer&returnUrl=@returnUrl">Login as Reviewer</a>
+        <a class="dropdown-item" href="app/login?asUserType=User&asModerator=true&returnUrl=@returnUrl">Login as User + Moderator</a>
+        <a class="dropdown-item" href="app/login?asUserType=TrustedUser&asModerator=true&returnUrl=@returnUrl">Login as Trusted User + Moderator</a>
+        <a class="dropdown-item" href="app/login?asUserType=Reviewer&asModerator=true&returnUrl=@returnUrl">Login as Reviewer + Moderator</a>
+    </div>
+</li>
