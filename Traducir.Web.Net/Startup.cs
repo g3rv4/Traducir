@@ -42,7 +42,11 @@ namespace Traducir.Web.Net
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services
+                .AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                .AddViewOptions(options => options.HtmlHelperOptions.ClientValidationEnabled = false);
+
             services.AddHttpContextAccessor();
         }
 

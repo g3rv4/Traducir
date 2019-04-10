@@ -9,6 +9,9 @@
 
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/spinner.css" asp-append-version="true" />
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -16,73 +19,80 @@
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
               crossorigin="anonymous"
               integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"/>
+
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
-    <link rel="stylesheet" href="~/css/site.css" />
 
     <script async="async" id="mini-profiler" src="~/lib/miniprofiler.js?v=4.0.138+gcc91adf599" data-version="4.0.138+gcc91adf599" data-path="/app/mini-profiler-resources/" data-ids="" data-position="BottomRight" data-authorized="true" data-max-traces="5" data-toggle-shortcut="Alt+P" data-trivial-milliseconds="2.0" data-ignored-duplicate-execute-types="Open,OpenAsync,Close,CloseAsync"></script>
     <script defer src="~/lib/fontawesome.js"></script>
 </head>
 <body>
+    <div class="loading" id="spinner" style='display:none'>Loading...</div>
     <div id="root">
-    <nav class="fixed-top navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand d-none d-lg-block" href="/">@(viewModel.ConfigName) Translations 🦄 @(viewModel.IsLoggedIn ? $"{viewModel.UserName} ({viewModel.UserTypeForDisplay})" : null)</a>
-            <button type="button" class="navbar-toggler">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse">
-                <ul class="ml-auto navbar-nav">
-                    <li class="nav-item">
-                        <a href="https://github.com/g3rv4/Traducir" target="_blank" class="nav-link">Source Code</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Database
-                        </a>
-                        <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href="https://db.traducir.win">Access the Database</a>
-                            <a class="dropdown-item" href="https://github.com/g3rv4/Traducir/blob/master/docs/USING_REDASH.md">Instructions</a>
-                        </div>
-                    </li>
-                    @if (viewModel.IsLoggedIn)
-                    {
+        <nav class="fixed-top navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand d-none d-lg-block" href="/">@(viewModel.ConfigName) Translations 🦄 @(viewModel.IsLoggedIn ? $"{viewModel.UserName} ({viewModel.UserTypeForDisplay})" : null)</a>
+                <button type="button" class="navbar-toggler">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse">
+                    <ul class="ml-auto navbar-nav">
+                        <li class="nav-item">
+                            <a href="https://github.com/g3rv4/Traducir" target="_blank" class="nav-link">Source Code</a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                My account
+                                Database
                             </a>
                             <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
-                                <a class="dropdown-item" href="suggestions/@(viewModel.UserId)">My Suggestions</a>
-                                <a class="dropdown-item" href="notifications">My Notifications</a>
+                                <a class="dropdown-item" href="https://db.traducir.win">Access the Database</a>
+                                <a class="dropdown-item" href="https://github.com/g3rv4/Traducir/blob/master/docs/USING_REDASH.md">Instructions</a>
                             </div>
                         </li>
-                        <li class="nav-item">
-                            <a href="users" target="_blank" class="nav-link">Users</a>
-                        </li>
-                    }
-                    <li class="nav-item">
-                        @{
-                            var returnUrl = System.Net.WebUtility.UrlEncode(viewModel.CurrentPathAndQuery);
-                        }
                         @if (viewModel.IsLoggedIn)
                         {
-                            <a href="/app/logout?returnUrl=@returnUrl" class="nav-link">Log out</a>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    My account
+                                </a>
+                                <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="suggestions/@(viewModel.UserId)">My Suggestions</a>
+                                    <a class="dropdown-item" href="notifications">My Notifications</a>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a href="users" target="_blank" class="nav-link">Users</a>
+                            </li>
                         }
-                        else
-                        {
-                            <a href="/app/login?returnUrl=@returnUrl" class="nav-link">Log in!</a>
-                        }
-                    </li>
-                </ul>
+                        <li class="nav-item">
+                            @{
+                                var returnUrl = System.Net.WebUtility.UrlEncode(viewModel.CurrentPathAndQuery);
+                            }
+                            @if (viewModel.IsLoggedIn)
+                            {
+                                <a href="/app/logout?returnUrl=@returnUrl" class="nav-link">Log out</a>
+                            }
+                            else
+                            {
+                                <a href="/app/login?returnUrl=@returnUrl" class="nav-link">Log in!</a>
+                            }
+                        </li>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
-    </div>
+        </nav>
 
-    @RenderBody()
+        @RenderBody()
+    </div>
 
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+
+        <script src="~/js/ajax.js" asp-append-version="true"></script>
+        <script src="~/js/string-search.js" asp-append-version="true"></script>
+        <script src="~/js/utils.js" asp-append-version="true"></script>
+        <script src="~/js/main.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
@@ -97,8 +107,9 @@
                 crossorigin="anonymous"
                 integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o">
         </script>
+
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
-    <script src="~/js/site.js" asp-append-version="true"></script>
 
     @RenderSection("Scripts", required: false)
 </body>

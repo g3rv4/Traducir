@@ -1,4 +1,16 @@
+@using Traducir.Api.ViewModels.Strings
 @model Traducir.Web.Net.ViewModels.Home.IndexViewModel
+
+<script>
+    var stringQueryFilters = {
+        key: @Json.Serialize(Model.StringsQuery.Key),
+        sourceRegex: @Json.Serialize(Model.StringsQuery.SourceRegex),
+        translationRegex: @Json.Serialize(Model.StringsQuery.TranslationRegex),
+        suggestionsStatus: @((int)Model.StringsQuery.SuggestionsStatus),
+        translationStatus: @((int)Model.StringsQuery.TranslationStatus),
+        urgencyStatus: @((int)Model.StringsQuery.UrgencyStatus)
+    };
+</script>
 
 <div class="container">
     <div class="m-2 text-center">
@@ -8,13 +20,13 @@
         <div class="col">
             <div class="form-group">
                 <label for="sourceRegex">Source Regex</label>
-                <input type="text" class="form-control" id="sourceRegex" placeholder="^question" value="">
+                <input type="text" class="js-string-query-filter form-control" data-string-query-key="sourceRegex" id="sourceRegex" placeholder="^question" value="@Model.StringsQuery.SourceRegex">
             </div>
         </div>
         <div class="col">
             <div class="form-group">
                 <label for="translationRegex">Translation Regex</label>
-                <input type="text" class="form-control" id="translationRegex" placeholder="(?i)pregunta$" value="">
+                <input type="text" class="js-string-query-filter form-control" data-string-query-key="translationRegex" id="translationRegex" placeholder="(?i)pregunta$" value="@Model.StringsQuery.TranslationRegex">
             </div>
         </div>
     </div>
@@ -22,23 +34,21 @@
         <div class="col">
             <div class="form-group">
                 <label for="withoutTranslation">Strings without translation</label>
-                <select class="form-control" id="withoutTranslation">
-                    <option value="0">Any string</option>
-                    <option value="2">Only strings without translation</option>
-                    <option value="1">Only strings with translation</option>
-                </select>
+                @Html.DropDownListFor(
+                    model => model.StringsQuery.TranslationRegex,
+                    Html.GetEnumSelectList(typeof(TranslationStatus)),
+                    null,
+                    new { @class="js-string-query-filter form-control", id="withoutTranslation", data_string_query_key="translationStatus" })
             </div>
         </div>
         <div class="col">
             <div class="form-group">
                 <label for="suggestionsStatus">Strings with pending suggestions</label>
-                <select class="form-control" id="suggestionsStatus">
-                    <option value="0">Any string</option>
-                    <option value="1">Strings without suggestions</option>
-                    <option value="3">Strings with suggestions awaiting approval</option>
-                    <option value="2">Strings with suggestions awaiting review</option>
-                    <option value="4">Strings with approved suggestions awaiting review</option>
-                </select>
+                @Html.DropDownListFor(
+                    model => model.StringsQuery.SuggestionsStatus,
+                    Html.GetEnumSelectList(typeof(SuggestionApprovalStatus)),
+                    null,
+                    new { @class="js-string-query-filter form-control", id="suggestionsStatus", data_string_query_key="suggestionsStatus" })
             </div>
         </div>
     </div>
@@ -46,17 +56,17 @@
         <div class="col">
             <div class="form-group">
                 <label for="key">Key</label>
-                <input type="text" class="form-control" id="key" value="">
+                <input type="text" class="js-string-query-filter form-control" data-string-query-key="key" id="key" value="@Model.StringsQuery.Key">
             </div>
         </div>
         <div class="col">
             <div class="form-group">
                 <label for="suggestionsStatus">Strings with urgency status</label>
-                <select class="form-control" id="urgencyStatus">
-                    <option value="0">Any string</option>
-                    <option value="1">Is urgent</option>
-                    <option value="2">Is not urgent</option>
-                </select>
+                @Html.DropDownListFor(
+                    model => model.StringsQuery.UrgencyStatus,
+                    Html.GetEnumSelectList(typeof(UrgencyStatus)),
+                    null,
+                    new { @class="js-string-query-filter form-control", id="urgencyStatus", data_string_query_key="urgencyStatus" })
             </div>
         </div>
     </div>
@@ -66,18 +76,27 @@
         </div>
     </div>
 
-    <div class="row text-center">
-        <div class="col d-none d-lg-block">
-            <div class="btn-group" role="group" aria-label="Basic example">
-                <button type="button" class="btn btn-outline-secondary" disabled="">@Model.StringCounts.TotalStrings total strings</button>
-                @if (Model.StringCounts.UrgentStrings > 0)
-                {
-                    <a class="btn btn-danger" href="/filters?urgencyStatus=1">@Model.StringCounts.UrgentStrings marked as urgent</a>
-                }
-                <a class="btn btn-outline-danger" href="/filters?translationStatus=2">@Model.StringCounts.WithoutTranslation without translation</a>
-                <a class="btn btn-outline-primary" href="/filters?suggestionsStatus=3">@Model.StringCounts.WaitingApproval suggestions awaiting approval</a>
-                <a class="btn btn-outline-success" href="/filters?suggestionsStatus=4">@Model.StringCounts.WaitingReview approved suggestions awaiting review</a>
+    <div id="strings_list">
+        @if (Model.FilterResults == null)
+        {
+            <div class="row text-center">
+                <div class="col d-none d-lg-block">
+                    <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button" class="btn btn-outline-secondary" disabled="">@Model.StringCounts.TotalStrings total strings</button>
+                        @if (Model.StringCounts.UrgentStrings > 0)
+                        {
+                            <a class="btn btn-danger" href="/filters?urgencyStatus=1">@Model.StringCounts.UrgentStrings marked as urgent</a>
+                        }
+                        <a class="js-string-query-filter btn btn-outline-danger" data-string-query-key="translationStatus" data-string-query-value="2" href="#">@Model.StringCounts.WithoutTranslation without translation</a>
+                        <a class="js-string-query-filter btn btn-outline-primary" data-string-query-key="suggestionsStatus" data-string-query-value="3" href="#">@Model.StringCounts.WaitingApproval suggestions awaiting approval</a>
+                        <a class="js-string-query-filter btn btn-outline-success" data-string-query-key="suggestionsStatus" data-string-query-value="4" href="#">@Model.StringCounts.WaitingReview approved suggestions awaiting review</a>
+                    </div>
+                </div>
             </div>
-        </div>
+        }
+        else
+        {
+            <partial name="FilterResults" model="Model.FilterResults"/>
+        }
     </div>
 </div>
