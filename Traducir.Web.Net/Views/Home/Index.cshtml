@@ -35,7 +35,7 @@
             <div class="form-group">
                 <label for="withoutTranslation">Strings without translation</label>
                 @Html.DropDownListFor(
-                    model => model.StringsQuery.TranslationRegex,
+                    model => model.StringsQuery.TranslationStatus,
                     Html.GetEnumSelectList(typeof(TranslationStatus)),
                     null,
                     new { @class="js-string-query-filter form-control", id="withoutTranslation", data_string_query_key="translationStatus" })

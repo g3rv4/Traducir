@@ -7,7 +7,6 @@ function initializeStringSearch () {
     window.onload = function () {
         initialQueryFilters = clone(stringQueryFilters);
 
-        setInputsFromCurrentFilters();
         hookDropdowns();
         hookTextboxes();
         hookQuickLinks();
