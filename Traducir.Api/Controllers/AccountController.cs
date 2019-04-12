@@ -101,17 +101,19 @@ namespace Traducir.Api.Controllers
             });
 
             var user = await _userService.GetUserAsync(currentUser.UserId);
+            var userTypeString = asUserType == null ? user.UserType.ToString() : Enum.Parse(typeof(UserType), asUserType).ToString();
+            var userType = (UserType)Enum.Parse(typeof(UserType), userTypeString);
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimType.Id, user.Id.ToString(CultureInfo.InvariantCulture)),
                 new Claim(ClaimType.Name, user.DisplayName),
-                new Claim(ClaimType.UserType, asUserType == null ? user.UserType.ToString() : Enum.Parse(typeof(UserType), asUserType).ToString())
+                new Claim(ClaimType.UserType, userTypeString),
             };
-            if (user.UserType >= UserType.User)
+            if (userType >= UserType.User)
             {
                 claims.Add(new Claim(ClaimType.CanSuggest, "1"));
-                if (user.UserType >= UserType.TrustedUser)
+                if (userType >= UserType.TrustedUser)
                 {
                     claims.Add(new Claim(ClaimType.CanReview, "1"));
                 }

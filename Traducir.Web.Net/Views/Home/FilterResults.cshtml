@@ -5,7 +5,7 @@
         Results @(Model.Count > 0 ? $"({Model.Count})" : null)
     </h2>
 </div>
-<table class="table">
+<table class="table string-list">
     <thead class="thead-light">
         <tr>
             <th>String</th>
@@ -22,45 +22,9 @@
         }
         else
         {
-            foreach (var str in Model.Strings)
+            foreach (var str in Model.StringSummaries)
             {
-                var approvedCount = Model.ApprovedSuggestionsCountFor(str);
-                var pendingCount = Model.PendingSuggestionsCountFor(str);
-
-                <tr>
-                    <td>@str.OriginalString</td>
-                    <td>
-                        @if(str.Translation != null)
-                        {
-                            <text>@str.Translation</text>
-                        }
-                        else if(Model.UserCanManageIgnoring)
-                        {
-                            if (str.IsIgnored)
-                            {
-                                <button type="button" class="btn btn-warning btn-sm">Stop ignoring</button>
-                            }
-                            else
-                            {
-                                <button type="button" class="btn btn-warning btn-sm">Ignore!</button>
-                            }
-                        }
-                    </td>
-                    <td>
-                        @if (approvedCount > 0)
-                        {
-                            <span class="text-success">@approvedCount</span>
-                        }
-                        @if (approvedCount > 0 && pendingCount > 0)
-                        {
-                            <span> - </span>
-                        }
-                        @if(pendingCount > 0)
-                        {
-                            <span class="text-danger">@pendingCount</span>
-                        }
-                    </td>
-                </tr>
+                <partial name="StringSummary" model="str"/>
             }
         }
     </tbody>

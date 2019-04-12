@@ -8,7 +8,9 @@
         translationRegex: @Json.Serialize(Model.StringsQuery.TranslationRegex),
         suggestionsStatus: @((int)Model.StringsQuery.SuggestionsStatus),
         translationStatus: @((int)Model.StringsQuery.TranslationStatus),
-        urgencyStatus: @((int)Model.StringsQuery.UrgencyStatus)
+        urgencyStatus: @((int)Model.StringsQuery.UrgencyStatus),
+        ignoredStatus: @((int)Model.StringsQuery.IgnoredStatus),
+        pushStatus:  @((int)Model.StringsQuery.PushStatus)
     };
 </script>
 
@@ -70,6 +72,31 @@
             </div>
         </div>
     </div>
+    @if(Model.UserCanSeeIgnoredAndPushStatus)
+    {
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label for="ignoredStatus">Ignored strings</label>
+                    @Html.DropDownListFor(
+                        model => model.StringsQuery.IgnoredStatus,
+                        Html.GetEnumSelectList(typeof(IgnoredStatus)),
+                        null,
+                        new { @class="js-string-query-filter form-control", id="ignoredStatus", data_string_query_key="ignoredStatus" })
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label for="suggestionsStatus">Strings that need push</label>
+                    @Html.DropDownListFor(
+                        model => model.StringsQuery.PushStatus,
+                        Html.GetEnumSelectList(typeof(PushStatus)),
+                        null,
+                        new { @class="js-string-query-filter form-control", id="pushStatus", data_string_query_key="pushStatus" })
+                </div>
+            </div>
+        </div>
+    }
     <div class="row text-center mb-5">
         <div class="col">
             <a class="btn btn-secondary" href="/">Reset</a>

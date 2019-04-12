@@ -11,16 +11,29 @@ using Traducir.Core.Models.Enums;
 using System;
 using Traducir.Core.Models;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
+using Traducir.Core.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace Traducir.Web.Net.Controllers
 {
     public class HomeController : Controller
     {
         private readonly IStringsService stringsService;
+        private readonly IAuthorizationService authorizationService;
+        private readonly ISOStringService soStringsService;
+        private readonly IConfiguration configuration;
 
-        public HomeController(IStringsService stringsService)
+        public HomeController(
+            IStringsService stringsService,
+            IAuthorizationService authorizationService,
+            ISOStringService soStringsService,
+            IConfiguration configuration)
         {
             this.stringsService = stringsService;
+            this.authorizationService = authorizationService;
+            this.soStringsService = soStringsService;
+            this.configuration = configuration;
         }
 
         public Task<IActionResult> Index()
@@ -44,18 +57,19 @@ namespace Traducir.Web.Net.Controllers
             }
             else
             {
-                filterResults = new FilterResultsViewModel
+                filterResults = await GetFilterResultsViewModelFor(query);
+                if(filterResults == null)
                 {
-                    UserType = User.GetClaim<UserType>(ClaimType.UserType),
-                    Strings = await stringsService.Query(query)
-                };
+                    return BadRequest();
+                }
             }
 
             var viewModel = new IndexViewModel
             {
                 StringCounts = await stringsService.GetStringCounts(),
                 StringsQuery = query,
-                FilterResults = filterResults
+                FilterResults = filterResults,
+                UserCanSeeIgnoredAndPushStatus = User.GetClaim<UserType>(ClaimType.UserType) >= UserType.TrustedUser
             };
 
             return View("~/Views/Home/Index.cshtml", viewModel);
@@ -64,24 +78,54 @@ namespace Traducir.Web.Net.Controllers
         [Route("/strings_list")]
         public async Task<IActionResult> StringsList(QueryViewModel query)
         {
+            var viewModel = await GetFilterResultsViewModelFor(query);
+
+            return viewModel == null ? (IActionResult)BadRequest() : PartialView("FilterResults", viewModel);
+        }
+
+        private async Task<FilterResultsViewModel> GetFilterResultsViewModelFor(QueryViewModel query)
+        {
+            if(User.GetClaim<UserType>(ClaimType.UserType) < UserType.TrustedUser)
+            {
+                query.IgnoredStatus = IgnoredStatus.AvoidIgnored;
+                query.PushStatus = PushStatus.AnyStatus;
+            }
+
             IEnumerable<SOString> strings;
 
             try
             {
                 strings = await stringsService.Query(query);
             }
-            catch (InvalidOperationException ex)
+            catch (InvalidOperationException)
             {
-                return BadRequest(ex.Message);
+                return null;
             }
 
-            var filterResults = new FilterResultsViewModel
-            {
-                UserType = User.GetClaim<UserType>(ClaimType.UserType),
-                Strings = strings
-            };
+            return new FilterResultsViewModel(
+                strings,
+                userCanManageIgnoring: (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded);
+        }
 
-            return PartialView("FilterResults", filterResults);
+        [HttpPut]
+        [Authorize(Policy = TraducirPolicy.CanReview)]
+        [Route("/manage-ignore")]
+        public async Task<IActionResult> ManageIgnore([FromBody] ManageIgnoreViewModel model)
+        {
+            var success = await soStringsService.ManageIgnoreAsync(
+                model.StringId,
+                model.Ignored,
+                User.GetClaim<int>(ClaimType.Id),
+                User.GetClaim<UserType>(ClaimType.UserType));
+
+            if (!success)
+            {
+                return BadRequest();
+            }
+
+            var str = await soStringsService.GetStringByIdAsync(model.StringId);
+            var summaryViewModel = new StringSummaryViewModel { String = str, RenderAsChanged = true, UserCanManageIgnoring = true };
+            return PartialView("StringSummary", summaryViewModel);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

@@ -11,6 +11,7 @@ function initializeStringSearch () {
         hookTextboxes();
         hookQuickLinks();
         hookHistoryPopState();
+        hookFilterResultsForEdit();
     };
 
     function setInputsFromCurrentFilters() {
@@ -87,7 +88,10 @@ function initializeStringSearch () {
             '/strings_list',
             'text',
             queryString,
-            html => { document.getElementById("strings_list").innerHTML = html; }
+            html => {
+                document.getElementById("strings_list").innerHTML = html;
+                hookFilterResultsForEdit();
+            }
         );
     }
 }

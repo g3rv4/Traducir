@@ -15,3 +15,7 @@ body {
 .modal-dialog:not(.alert-modal) .modal-content {
     overflow: scroll;
 }
+
+.string-list tr td:first-of-type {
+    cursor: pointer
+}

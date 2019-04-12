@@ -189,14 +189,9 @@ Join   Strings s On s.NormalizedKey = i.NormalizedKey;", new { now = DateTime.Ut
                 await RefreshCacheAsync();
             }
 
-            if (predicate == null)
-            {
-                return Strings;
-            }
-
             using (MiniProfiler.Current.Step("Filtering the strings"))
             {
-                var matching = Strings.Where(predicate);
+                var matching = predicate == null ? Strings : Strings.Where(predicate);
                 if (!includeEverything)
                 {
                     matching = matching.Take(200);

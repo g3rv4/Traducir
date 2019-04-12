@@ -35,10 +35,13 @@ namespace Traducir.Api.ViewModels.Strings
 
     public enum PushStatus
     {
+        [Display(Name = "Any status", Order = 0)]
         AnyStatus = 0,
 
+        [Display(Name = "Need push", Order = 1)]
         NeedsPush = 1,
 
+        [Display(Name = "Don't need push", Order = 2)]
         DoesNotNeedPush = 2
     }
 
@@ -56,10 +59,13 @@ namespace Traducir.Api.ViewModels.Strings
 
     public enum IgnoredStatus
     {
+        [Display(Name = "Hide ignored", Order = 0)]
         AvoidIgnored = 0,
 
+        [Display(Name = "Ignored only", Order = 1)]
         OnlyIgnored = 1,
 
+        [Display(Name = "Ignored an not ignored", Order = 2)]
         IncludeIgnored = 2
     }
 #pragma warning restore CA1717

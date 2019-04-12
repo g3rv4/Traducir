@@ -2,16 +2,29 @@ function ajaxGet(url, responseType, queryString, onSuccess, onErrorResponse, onF
     ajax("GET", url, responseType, queryString, null, onSuccess, onErrorResponse, onFailure);
 }
 
+function ajaxPut(url, responseType, body, onSuccess, onErrorResponse, onFailure) {
+    ajax("PUT", url, responseType, null, body, onSuccess, onErrorResponse, onFailure);
+}
+
 function ajax(method, url, responseType, queryString, body, onSuccess, onErrorResponse, onFailure) {
     spinner(true);
 
-    fetch(url + queryString, { method: method, body: body })
+    if (body) body = JSON.stringify(body);
+    headers = body ? { 'Content-Type': 'application/json' } : {};
+
+    fetch(url + (queryString || ''), { method: method, body: body, headers: headers })
         .then(response => {
             if (response.ok) {
                 response[responseType]()
                     .then(value => {
-                        if (onSuccess) onSuccess(value);
-                        spinner(false);
+                        if (onSuccess) {
+                            try {
+                                onSuccess(value);
+                            }
+                            finally {
+                                spinner(false);
+                            }
+                        }
                     });
             }
             else {
