@@ -128,6 +128,30 @@ namespace Traducir.Web.Net.Controllers
             return PartialView("StringSummary", summaryViewModel);
         }
 
+        [Route("/string_edit_ui")]
+        public async Task<IActionResult> GetStringEditUi(int stringId)
+        {
+            var str = await soStringsService.GetStringByIdAsync(stringId);
+            if (str == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new EditStringViewModel
+            {
+                SiteDomain = configuration.GetValue<string>("STACKAPP_SITEDOMAIN"),
+                TransifexPath = configuration.GetValue<string>("TRANSIFEX_LINK_PATH"),
+                String = str,
+                UserIsLoggedIn = User.GetClaim<string>(ClaimType.Name) != null,
+                UserId = User.GetClaim<int>(ClaimType.Id),
+                UserCanReview = (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded,
+                UserCanSuggest = (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanSuggest)).Succeeded,
+                UserTypeIsTrustedUser = User.GetClaim<UserType>(ClaimType.UserType) == UserType.TrustedUser
+            };
+
+            return PartialView("EditString", viewModel);
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

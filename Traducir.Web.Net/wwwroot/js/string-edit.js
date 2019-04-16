@@ -12,7 +12,15 @@ function hookFilterResultsForEdit() {
 
     function loadStringEditorFor(searchResultsRow) {
         const stringId = searchResultsRow.getAttribute("data-string-id");
-        alert(stringId);
+        ajaxGet(
+            "/string_edit_ui",
+            "text",
+            queryStringFromObject({ stringId: stringId }),
+            html => {
+                modal.show('Suggestions', html);
+                //TODO: Bind controls
+            }
+        );
     }
 
     function doStringAction(button) {

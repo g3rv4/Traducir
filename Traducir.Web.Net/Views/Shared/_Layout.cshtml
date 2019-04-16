@@ -8,7 +8,7 @@
     <title>traducir.win</title>
 
     <environment include="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true"/>
 
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/css/spinner.css" asp-append-version="true" />
@@ -27,6 +27,13 @@
     <script defer src="~/lib/fontawesome.js"></script>
 </head>
 <body>
+    <div id="modal-container" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog w-95 mw-100" role="document">
+        <div class="modal-content">
+          <!-- the .setContent() method will update this element's HTML -->
+        </div>
+      </div>
+    </div>
     <div class="loading" id="spinner" style='display:none'>Loading...</div>
     <div id="root">
         <nav class="fixed-top navbar navbar-expand-lg navbar-dark bg-dark">
@@ -89,27 +96,20 @@
     </div>
 
     <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.js"></script>
+        <script src="~/lib/bootstrap-native/js/bootstrap-native-v4.min.js"></script>
 
         <script src="~/js/ajax.js" asp-append-version="true"></script>
+        <script src="~/js/modal.js" asp-append-version="true"></script>
         <script src="~/js/string-search.js" asp-append-version="true"></script>
         <script src="~/js/string-edit.js" asp-append-version="true"></script>
         <script src="~/js/utils.js" asp-append-version="true"></script>
         <script src="~/js/main.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
-                asp-fallback-test="window.jQuery"
-                crossorigin="anonymous"
-                integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
-        </script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"
-                asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"
-                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
-                crossorigin="anonymous"
-                integrity="sha384-xrRywqdh3PHs8keKZN+8zzc5TX0GRTLCcmivcbNJWm2rs5C8PRhcEn3czEjhAO9o">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap.native/2.0.26/bootstrap-native-v4.min.js"
+                asp-fallback-src="~/lib/bootstrap-native/js/bootstrap-native-v4.min.js"
+                asp-fallback-test="typeof(Modal)==='function'"
+                crossorigin="anonymous">
         </script>
 
         <script src="~/js/site.min.js" asp-append-version="true"></script>

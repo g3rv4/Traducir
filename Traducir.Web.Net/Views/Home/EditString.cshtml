@@ -1,0 +1,170 @@
+@using Traducir.Core.Models.Enums
+@model Traducir.Web.Net.ViewModels.Home.EditStringViewModel
+
+<div>
+    <span class="font-weight-bold">Key: </span>
+    <a href="https://www.transifex.com/@Model.TransifexPath/$?q=key%3A@(Model.String.Key)-" target="_blank">@Model.String.Key</a>
+</div>
+<div>
+    <span class="font-weight-bold">This string needs a new translation ASAP: </span>
+    @if (!Model.UserCanSuggest)
+    {
+        <span>@(Model.String.IsUrgent ? "Yes" : "No")</span>
+    }
+    else if (Model.String.IsUrgent)
+    {
+        <span>Yes <a href="#" class="btn btn-sm btn-warning">Mark as non urgent</a></span>
+    }
+    else
+    {
+        <span>No <a href="#" class="btn btn-sm btn-danger">Mark as urgent</a></span>
+    }
+</div>
+@if (Model.UserCanReview)
+{
+    <div>
+        <span class="font-weight-bold">Raw string?: </span> <input type="checkbox" />
+    </div>
+}
+<div>
+    <span class="font-weight-bold">Original String: </span> <pre class="d-inline">@Model.String.OriginalString</pre>
+</div>
+@if (Model.UserIsLoggedIn)
+{
+    <div>
+        <button type="button" class="btn btn-sm btn-primary">
+            Copy as suggestion
+        </button>
+    </div>
+}
+@if (Model.String.Variant != null)
+{
+    <div>
+        <span class="font-weight-bold">Variant: </span>@Model.String.Variant.Replace("VARIANT: ", "")
+    </div>
+}
+<div>
+    <span class="font-weight-bold">Current Translation:</span>
+    @if (Model.String.Translation == null)
+    {
+        <i>Missing translation</i>
+    }
+    else
+    {
+        <pre class="d-inline">@Model.String.Translation</pre>
+    }
+</div>
+@if (Model.UserIsLoggedIn && Model.String.Translation != null)
+{
+    <div>
+        <button type="button" class="btn btn-sm btn-primary">
+            Copy as suggestion
+        </button>
+    </div>
+}
+
+@if (Model.String.Suggestions?.Count() > 0)
+{
+<table class="table mt-2">
+    <thead>
+        <tr>
+            <th>Suggestion</th>
+            <th>Approved By</th>
+            <th>Created by</th>
+            <th />
+            <th />
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var suggestion in Model.String.Suggestions)
+        {
+        <tr class="@(suggestion.State == StringSuggestionState.ApprovedByTrustedUser ? "table-success" : null)">
+            <td><pre>@suggestion.Suggestion</pre></td>
+            <td>
+                @if (suggestion.LastStateUpdatedByName != null)
+                {
+                    <a
+                        href="https://@Model.SiteDomain/users/@suggestion.LastStateUpdatedById"
+                        target="_blank"
+                    >
+                        @suggestion.LastStateUpdatedByName
+                    </a>
+                }
+            </td>
+            <td>
+                <a
+                    href="https://@Model.SiteDomain/users/@suggestion.CreatedById"
+                    target="_blank"
+                >
+                    @suggestion.CreatedByName
+                </a>
+            </td>
+            <td>
+                @if(Model.CurrentUserSuggested(suggestion))
+                {
+                    <button type="button" class="btn btn-sm btn-danger">
+                        DELETE
+                    </button>
+                }
+            </td>
+            <td>
+                @if(Model.CurrentUserSuggested(suggestion))
+                {
+                    <button type="button" class="btn btn-sm btn-danger">
+                        REPLACE
+                    </button>
+                }
+            </td>
+
+            <td>
+                @if(Model.MustRenderSuggestionActionsFor(suggestion))
+                {
+                    <button type="button" class="btn btn-sm btn-success">
+                        <i class="fas fa-thumbs-up"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger">
+                        <i class="fas fa-thumbs-down"></i>
+                    </button>
+                }
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+}
+
+@if(Model.UserCanSuggest)
+{
+    <form>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label htmlFor="suggestion" class="font-weight-bold">New Suggestion</label>
+                    <textarea class="form-control" id="suggestion"></textarea>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="mt-1">
+                <div class="btn-group" role="group">
+                    <button
+                        type="button"
+                        class="btn btn-primary float-left"
+                    >
+                        Send new suggestion
+                    </button>
+                    @if(Model.UserCanReview)
+                    {
+                        <button
+                            type="button"
+                            class="btn btn-warning float-left"
+                            onClick={this.postApprovedSuggestion}
+                        >
+                            Send final translation
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </form>
+}

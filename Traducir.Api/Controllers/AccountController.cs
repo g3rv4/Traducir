@@ -41,6 +41,22 @@ namespace Traducir.Api.Controllers
             isDevelopmentEnvironment = hostingEnvironment.IsDevelopment();
         }
 
+        [Route("app/impersonate")]
+        public async Task<IActionResult> Impersonate(string returnUrl, int userId)
+        {
+            if (!isDevelopmentEnvironment)
+            {
+                return NotFound();
+            }
+
+            await _userService.CreateFakeUsers();
+
+            var user = await _userService.GetUserAsync(userId);
+            await LoginUser(user.Id, null, false);
+
+            return Redirect(returnUrl ?? "/");
+        }
+
         [Route("app/login")]
         public IActionResult LogIn(string returnUrl, string asUserType = null, bool asModerator = false)
         {
@@ -100,7 +116,14 @@ namespace Traducir.Api.Controllers
                 LastSeenDate = DateTime.UtcNow
             });
 
-            var user = await _userService.GetUserAsync(currentUser.UserId);
+            await LoginUser(currentUser.UserId, asUserType, asModerator);
+
+            return Redirect(returnUrl ?? "/");
+        }
+
+        private async Task LoginUser(int userId, string asUserType, bool asModerator)
+        {
+            var user = await _userService.GetUserAsync(userId);
             var userTypeString = asUserType == null ? user.UserType.ToString() : Enum.Parse(typeof(UserType), asUserType).ToString();
             var userType = (UserType)Enum.Parse(typeof(UserType), userTypeString);
 
@@ -129,8 +152,6 @@ namespace Traducir.Api.Controllers
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(identity));
-
-            return Redirect(returnUrl ?? "/");
         }
 
         [Authorize]

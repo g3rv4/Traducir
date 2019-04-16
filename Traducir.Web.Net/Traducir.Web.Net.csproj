@@ -11,11 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ViewModels\Home\EditStringViewModel.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="Views\Home\EditString.cshtml" />
     <Content Remove="Views\Shared\_ValidationScriptsPartial.cshtml" />
     <Content Remove="wwwroot\css\site.min.css" />
     <Content Remove="wwwroot\js\site.min.js" />
