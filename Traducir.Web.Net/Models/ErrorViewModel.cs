@@ -1,4 +1,3 @@
-using System;
 
 namespace Traducir.Web.Net.Models
 {

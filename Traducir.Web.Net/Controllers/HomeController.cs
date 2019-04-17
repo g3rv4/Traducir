@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Traducir.Api.Services;
 using Traducir.Core.Helpers;
 using Traducir.Web.Net.Models;
@@ -20,10 +19,10 @@ namespace Traducir.Web.Net.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IStringsService stringsService;
-        private readonly IAuthorizationService authorizationService;
-        private readonly ISOStringService soStringsService;
-        private readonly IConfiguration configuration;
+        private readonly IStringsService _stringsService;
+        private readonly IAuthorizationService _authorizationService;
+        private readonly ISOStringService _soStringsService;
+        private readonly IConfiguration _configuration;
 
         public HomeController(
             IStringsService stringsService,
@@ -31,27 +30,24 @@ namespace Traducir.Web.Net.Controllers
             ISOStringService soStringsService,
             IConfiguration configuration)
         {
-            this.stringsService = stringsService;
-            this.authorizationService = authorizationService;
-            this.soStringsService = soStringsService;
-            this.configuration = configuration;
+            _stringsService = stringsService;
+            _authorizationService = authorizationService;
+            _soStringsService = soStringsService;
+            _configuration = configuration;
         }
 
-        public Task<IActionResult> Index()
-        {
-            return Filters(null);
-        }
+        public Task<IActionResult> Index() => Filters(null);
 
         [Route("/filters")]
         public async Task<IActionResult> Filters(QueryViewModel query)
         {
             FilterResultsViewModel filterResults = null;
 
-            if(query == null)
+            if (query == null)
             {
                 query = new QueryViewModel();
             }
-            else if(query.IsEmpty)
+            else if (query.IsEmpty)
             {
                 //let's redirect to root if we get just '/filters'
                 return RedirectToAction(nameof(Index));
@@ -59,7 +55,7 @@ namespace Traducir.Web.Net.Controllers
             else
             {
                 filterResults = await GetFilterResultsViewModelFor(query);
-                if(filterResults == null)
+                if (filterResults == null)
                 {
                     return BadRequest();
                 }
@@ -67,7 +63,7 @@ namespace Traducir.Web.Net.Controllers
 
             var viewModel = new IndexViewModel
             {
-                StringCounts = await stringsService.GetStringCounts(),
+                StringCounts = await _stringsService.GetStringCounts(),
                 StringsQuery = query,
                 FilterResults = filterResults,
                 UserCanSeeIgnoredAndPushStatus = User.GetClaim<UserType>(ClaimType.UserType) >= UserType.TrustedUser
@@ -86,7 +82,7 @@ namespace Traducir.Web.Net.Controllers
 
         private async Task<FilterResultsViewModel> GetFilterResultsViewModelFor(QueryViewModel query)
         {
-            if(User.GetClaim<UserType>(ClaimType.UserType) < UserType.TrustedUser)
+            if (User.GetClaim<UserType>(ClaimType.UserType) < UserType.TrustedUser)
             {
                 query.IgnoredStatus = IgnoredStatus.AvoidIgnored;
                 query.PushStatus = PushStatus.AnyStatus;
@@ -96,7 +92,7 @@ namespace Traducir.Web.Net.Controllers
 
             try
             {
-                strings = await stringsService.Query(query);
+                strings = await _stringsService.Query(query);
             }
             catch (InvalidOperationException)
             {
@@ -105,7 +101,7 @@ namespace Traducir.Web.Net.Controllers
 
             return new FilterResultsViewModel(
                 strings,
-                userCanManageIgnoring: (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded);
+                userCanManageIgnoring: (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded);
         }
 
         [HttpPost]
@@ -113,7 +109,7 @@ namespace Traducir.Web.Net.Controllers
         [Route("/manage-ignore")]
         public async Task<IActionResult> ManageIgnore([FromBody] ManageIgnoreViewModel model)
         {
-            var success = await soStringsService.ManageIgnoreAsync(
+            var success = await _soStringsService.ManageIgnoreAsync(
                 model.StringId,
                 model.Ignored,
                 User.GetClaim<int>(ClaimType.Id),
@@ -132,7 +128,7 @@ namespace Traducir.Web.Net.Controllers
         [Route("/manage-urgency")]
         public async Task<IActionResult> ManageUrgency([FromBody] ManageUrgencyViewModel model)
         {
-            var success = await soStringsService.ManageUrgencyAsync(
+            var success = await _soStringsService.ManageUrgencyAsync(
                 model.StringId,
                 model.IsUrgent,
                 User.GetClaim<int>(ClaimType.Id));
@@ -150,7 +146,7 @@ namespace Traducir.Web.Net.Controllers
         [Route("/replace-suggestion")]
         public async Task<IActionResult> ReplaceSuggestion([FromBody] ReplaceSuggestionViewModel model)
         {
-            var success = await soStringsService.ReplaceSuggestionAsync(
+            var success = await _soStringsService.ReplaceSuggestionAsync(
                 model.SuggestionId,
                 model.NewSuggestion,
                 User.GetClaim<int>(ClaimType.Id));
@@ -160,7 +156,7 @@ namespace Traducir.Web.Net.Controllers
                 return BadRequest();
             }
 
-            var stringId = await soStringsService.GetStringIdBySuggestionId(model.SuggestionId);
+            var stringId = await _soStringsService.GetStringIdBySuggestionId(model.SuggestionId);
             return await GetStringSummaryViewModelFor(stringId);
         }
 
@@ -169,13 +165,13 @@ namespace Traducir.Web.Net.Controllers
         [Route("/delete-suggestion")]
         public async Task<IActionResult> DeleteSuggestion([FromBody] int suggestionId)
         {
-            var success = await soStringsService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id));
+            var success = await _soStringsService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id));
             if (!success)
             {
                 return BadRequest();
             }
 
-            var stringId = await soStringsService.GetStringIdBySuggestionId(suggestionId);
+            var stringId = await _soStringsService.GetStringIdBySuggestionId(suggestionId);
             return await GetStringSummaryViewModelFor(stringId);
         }
 
@@ -189,7 +185,7 @@ namespace Traducir.Web.Net.Controllers
                 return BadRequest();
             }
 
-            var success = await soStringsService.ReviewSuggestionAsync(
+            var success = await _soStringsService.ReviewSuggestionAsync(
                 model.SuggestionId.Value,
                 model.Approve.Value,
                 User.GetClaim<int>(ClaimType.Id),
@@ -200,7 +196,7 @@ namespace Traducir.Web.Net.Controllers
                 return BadRequest();
             }
 
-            var stringId = await soStringsService.GetStringIdBySuggestionId(model.SuggestionId.Value);
+            var stringId = await _soStringsService.GetStringIdBySuggestionId(model.SuggestionId.Value);
             return await GetStringSummaryViewModelFor(stringId);
         }
 
@@ -209,7 +205,7 @@ namespace Traducir.Web.Net.Controllers
         [Route("/create-suggestion")]
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
-            var result = await stringsService.CreateSuggestion(model);
+            var result = await _stringsService.CreateSuggestion(model);
             if (result != SuggestionCreationResult.CreationOk)
             {
                 return BadRequest(result);
@@ -219,8 +215,8 @@ namespace Traducir.Web.Net.Controllers
         }
         private async Task<PartialViewResult> GetStringSummaryViewModelFor(int stringId, bool asChanged = true)
         {
-            var str = await soStringsService.GetStringByIdAsync(stringId);
-            var userCanManageIgnoring = (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded;
+            var str = await _soStringsService.GetStringByIdAsync(stringId);
+            var userCanManageIgnoring = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded;
             var summaryViewModel = new StringSummaryViewModel { String = str, RenderAsChanged = asChanged, UserCanManageIgnoring = userCanManageIgnoring };
             return PartialView("StringSummary", summaryViewModel);
         }
@@ -228,7 +224,7 @@ namespace Traducir.Web.Net.Controllers
         [Route("/string_edit_ui")]
         public async Task<IActionResult> GetStringEditUi(int stringId)
         {
-            var str = await soStringsService.GetStringByIdAsync(stringId);
+            var str = await _soStringsService.GetStringByIdAsync(stringId);
             if (str == null)
             {
                 return NotFound();
@@ -236,13 +232,13 @@ namespace Traducir.Web.Net.Controllers
 
             var viewModel = new EditStringViewModel
             {
-                SiteDomain = configuration.GetValue<string>("STACKAPP_SITEDOMAIN"),
-                TransifexPath = configuration.GetValue<string>("TRANSIFEX_LINK_PATH"),
+                SiteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN"),
+                TransifexPath = _configuration.GetValue<string>("TRANSIFEX_LINK_PATH"),
                 String = str,
                 UserIsLoggedIn = User.GetClaim<string>(ClaimType.Name) != null,
                 UserId = User.GetClaim<int>(ClaimType.Id),
-                UserCanReview = (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded,
-                UserCanSuggest = (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanSuggest)).Succeeded,
+                UserCanReview = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded,
+                UserCanSuggest = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanSuggest)).Succeeded,
                 UserType = User.GetClaim<UserType>(ClaimType.UserType)
             };
 

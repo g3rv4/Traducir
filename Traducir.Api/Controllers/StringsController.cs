@@ -63,10 +63,8 @@ namespace Traducir.Api.Controllers
         [HttpGet]
         [Authorize]
         [Route("app/api/suggestions-by-user/{userId:INT}")]
-        public async Task<IActionResult> GetSuggestionsByUser(int userId, StringSuggestionState? state)
-        {
-            return Json(await _soStringService.GetSuggestionsByUser(userId, state));
-        }
+        public async Task<IActionResult> GetSuggestionsByUser(int userId, StringSuggestionState? state) =>
+            Json(await _soStringService.GetSuggestionsByUser(userId, state));
 
         [HttpPut]
         [Authorize(Policy = TraducirPolicy.CanSuggest)]
@@ -74,14 +72,12 @@ namespace Traducir.Api.Controllers
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
             var result = await _stringsService.CreateSuggestion(model);
-            if(result == SuggestionCreationResult.CreationOk)
+            if (result == SuggestionCreationResult.CreationOk)
             {
                 return NoContent();
             }
-            else
-            {
-                return BadRequest(result);
-            }
+
+            return BadRequest(result);
         }
 
         [HttpPut]

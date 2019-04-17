@@ -8,9 +8,9 @@ namespace Traducir.Web.Net.ViewModels.Home
     {
         public SOString String { get; set; }
 
-        public int ApprovedSuggestionsCount => this.String.Suggestions?.Count(s => s.State == StringSuggestionState.ApprovedByTrustedUser) ?? 0;
+        public int ApprovedSuggestionsCount => String.Suggestions?.Count(s => s.State == StringSuggestionState.ApprovedByTrustedUser) ?? 0;
 
-        public int PendingSuggestionsCount => this.String.Suggestions?.Count(s => s.State == StringSuggestionState.Created) ?? 0;
+        public int PendingSuggestionsCount => String.Suggestions?.Count(s => s.State == StringSuggestionState.Created) ?? 0;
 
         public bool UserCanManageIgnoring { get; set; }
 

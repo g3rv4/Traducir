@@ -26,9 +26,9 @@ namespace Traducir.Api.Services
 
     public class StringsService : IStringsService
     {
-        private readonly ISOStringService soStringService;
-        private readonly IAuthorizationService authorizationService;
-        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly ISOStringService _soStringService;
+        private readonly IAuthorizationService _authorizationService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         private static readonly Regex VariablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
         private static readonly Regex WhitespacesRegex = new Regex(@"^(?<start>\s*).*?(?<end>\s*)$", RegexOptions.Singleline | RegexOptions.Compiled);
@@ -38,9 +38,9 @@ namespace Traducir.Api.Services
             IAuthorizationService authorizationService,
             IHttpContextAccessor httpContextAccessor)
         {
-            this.soStringService = soStringService;
-            this.authorizationService = authorizationService;
-            this.httpContextAccessor = httpContextAccessor;
+            _soStringService = soStringService;
+            _authorizationService = authorizationService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<ImmutableArray<SOString>> Query(QueryViewModel model)
@@ -135,28 +135,28 @@ namespace Traducir.Api.Services
                 ComposePredicate(s => s.HasTranslation && regex.IsMatch(s.Translation));
             }
 
-            return await soStringService.GetStringsAsync(predicate);
+            return await _soStringService.GetStringsAsync(predicate);
         }
 
         public async Task<StringCountsViewModel> GetStringCounts()
         {
             return new StringCountsViewModel
             {
-                TotalStrings = await soStringService.CountStringsAsync(s => !s.IsIgnored),
-                WithoutTranslation = await soStringService.CountStringsAsync(s => !s.HasTranslation && !s.IsIgnored),
-                WithPendingSuggestions = await soStringService.CountStringsAsync(s => s.HasSuggestions && !s.IsIgnored),
-                WaitingApproval = await soStringService.CountStringsAsync(s => s.HasSuggestionsWaitingApproval && !s.IsIgnored),
-                WaitingReview = await soStringService.CountStringsAsync(s => s.HasApprovedSuggestionsWaitingReview && !s.IsIgnored),
-                UrgentStrings = await soStringService.CountStringsAsync(s => s.IsUrgent && !s.IsIgnored),
+                TotalStrings = await _soStringService.CountStringsAsync(s => !s.IsIgnored),
+                WithoutTranslation = await _soStringService.CountStringsAsync(s => !s.HasTranslation && !s.IsIgnored),
+                WithPendingSuggestions = await _soStringService.CountStringsAsync(s => s.HasSuggestions && !s.IsIgnored),
+                WaitingApproval = await _soStringService.CountStringsAsync(s => s.HasSuggestionsWaitingApproval && !s.IsIgnored),
+                WaitingReview = await _soStringService.CountStringsAsync(s => s.HasApprovedSuggestionsWaitingReview && !s.IsIgnored),
+                UrgentStrings = await _soStringService.CountStringsAsync(s => s.IsUrgent && !s.IsIgnored),
             };
         }
 
         public async Task<SuggestionCreationResult> CreateSuggestion(CreateSuggestionViewModel model)
         {
-            var user = httpContextAccessor.HttpContext.User;
+            var user = _httpContextAccessor.HttpContext.User;
 
             // Verify that everything is valid before calling the service
-            var str = await soStringService.GetStringByIdAsync(model.StringId);
+            var str = await _soStringService.GetStringByIdAsync(model.StringId);
 
             // if the string id is invalid
             if (str == null)
@@ -171,7 +171,7 @@ namespace Traducir.Api.Services
             }
 
             var usingRawString = model.RawString &&
-                (await authorizationService.AuthorizeAsync(user, TraducirPolicy.CanReview)).Succeeded;
+                (await _authorizationService.AuthorizeAsync(user, TraducirPolicy.CanReview)).Succeeded;
 
             // fix whitespaces unless user is reviewer and selected raw string
             if (!usingRawString)
@@ -205,18 +205,14 @@ namespace Traducir.Api.Services
                 return SuggestionCreationResult.TooManyVariables;
             }
 
-            var suggestionResult = await soStringService.CreateSuggestionAsync(
+            var suggestionResult = await _soStringService.CreateSuggestionAsync(
                 model.StringId,
                 model.Suggestion,
                 user.GetClaim<int>(ClaimType.Id),
                 user.GetClaim<UserType>(ClaimType.UserType),
                 model.Approve);
-            if (suggestionResult)
-            {
-                return SuggestionCreationResult.CreationOk;
-            }
 
-            return SuggestionCreationResult.DatabaseError;
+            return suggestionResult ? SuggestionCreationResult.CreationOk : SuggestionCreationResult.DatabaseError;
         }
 
         private static string FixWhitespaces(string suggestion, string original)
