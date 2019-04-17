@@ -5,7 +5,7 @@
     var pendingCount = Model.PendingSuggestionsCount;
 }
 
-<tr data-string-id="@Model.String.Id" class="@(Model.String.IsUrgent ? "table-danger" : Model.RenderAsChanged ? "table-success" : null)">
+<tr data-string-id="@Model.String.Id" class="js-string-summary @(Model.String.IsUrgent ? "table-danger" : Model.RenderAsChanged ? "table-success" : null)">
     <td>@Model.String.OriginalString</td>
     <td>
         @if(Model.String.Translation != null)
@@ -16,11 +16,11 @@
         {
             if (Model.String.IsIgnored)
             {
-                <button type="button" class="btn btn-warning btn-sm" data-string-action="stop-ignoring">Stop ignoring</button>
+                <button type="button" class="btn btn-warning btn-sm" data-string-action="manage-ignore" data-string-action-argument="stop-ignoring">Stop ignoring</button>
             }
             else
             {
-                <button type="button" class="btn btn-warning btn-sm" data-string-action="ignore">Ignore!</button>
+                <button type="button" class="btn btn-warning btn-sm" data-string-action="manage-ignore" data-string-action-argument="ignore">Ignore!</button>
             }
         }
     </td>

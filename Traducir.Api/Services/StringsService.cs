@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Traducir.Api.Models.Enums;
 using Traducir.Api.ViewModels.Strings;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models;
@@ -17,15 +20,27 @@ namespace Traducir.Api.Services
         Task<ImmutableArray<SOString>> Query(QueryViewModel model);
 
         Task<StringCountsViewModel> GetStringCounts();
+
+        Task<SuggestionCreationResult> CreateSuggestion(CreateSuggestionViewModel model);
     }
 
     public class StringsService : IStringsService
     {
         private readonly ISOStringService soStringService;
+        private readonly IAuthorizationService authorizationService;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
-        public StringsService(ISOStringService soStringService)
+        private static readonly Regex VariablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
+        private static readonly Regex WhitespacesRegex = new Regex(@"^(?<start>\s*).*?(?<end>\s*)$", RegexOptions.Singleline | RegexOptions.Compiled);
+
+        public StringsService(
+            ISOStringService soStringService,
+            IAuthorizationService authorizationService,
+            IHttpContextAccessor httpContextAccessor)
         {
             this.soStringService = soStringService;
+            this.authorizationService = authorizationService;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<ImmutableArray<SOString>> Query(QueryViewModel model)
@@ -134,6 +149,80 @@ namespace Traducir.Api.Services
                 WaitingReview = await soStringService.CountStringsAsync(s => s.HasApprovedSuggestionsWaitingReview && !s.IsIgnored),
                 UrgentStrings = await soStringService.CountStringsAsync(s => s.IsUrgent && !s.IsIgnored),
             };
+        }
+
+        public async Task<SuggestionCreationResult> CreateSuggestion(CreateSuggestionViewModel model)
+        {
+            var user = httpContextAccessor.HttpContext.User;
+
+            // Verify that everything is valid before calling the service
+            var str = await soStringService.GetStringByIdAsync(model.StringId);
+
+            // if the string id is invalid
+            if (str == null)
+            {
+                return SuggestionCreationResult.InvalidStringId;
+            }
+
+            // empty suggestion
+            if (model.Suggestion.IsNullOrEmpty())
+            {
+                return SuggestionCreationResult.EmptySuggestion;
+            }
+
+            var usingRawString = model.RawString &&
+                (await authorizationService.AuthorizeAsync(user, TraducirPolicy.CanReview)).Succeeded;
+
+            // fix whitespaces unless user is reviewer and selected raw string
+            if (!usingRawString)
+            {
+                model.Suggestion = FixWhitespaces(model.Suggestion, str.OriginalString);
+            }
+
+            // if the suggestion is the same as the current translation
+            if (str.Translation == model.Suggestion)
+            {
+                return SuggestionCreationResult.SuggestionEqualsOriginal;
+            }
+
+            // if there's another suggestion with the same value
+            if (str.Suggestions != null && str.Suggestions.Any(sug => sug.Suggestion == model.Suggestion))
+            {
+                return SuggestionCreationResult.SuggestionAlreadyThere;
+            }
+
+            // if there are missing or extra values
+            var variablesInOriginal = VariablesRegex.Matches(str.OriginalString).Select(m => m.Value).ToArray();
+            var variablesInSuggestion = VariablesRegex.Matches(model.Suggestion).Select(m => m.Value).ToArray();
+
+            if (!usingRawString && variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)))
+            {
+                return SuggestionCreationResult.TooFewVariables;
+            }
+
+            if (variablesInSuggestion.Any(v => !variablesInOriginal.Contains(v)))
+            {
+                return SuggestionCreationResult.TooManyVariables;
+            }
+
+            var suggestionResult = await soStringService.CreateSuggestionAsync(
+                model.StringId,
+                model.Suggestion,
+                user.GetClaim<int>(ClaimType.Id),
+                user.GetClaim<UserType>(ClaimType.UserType),
+                model.Approve);
+            if (suggestionResult)
+            {
+                return SuggestionCreationResult.CreationOk;
+            }
+
+            return SuggestionCreationResult.DatabaseError;
+        }
+
+        private static string FixWhitespaces(string suggestion, string original)
+        {
+            var match = WhitespacesRegex.Match(original);
+            return match.Groups["start"] + suggestion.Trim() + match.Groups["end"];
         }
     }
 }

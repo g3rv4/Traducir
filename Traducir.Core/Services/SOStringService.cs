@@ -48,6 +48,8 @@ namespace Traducir.Core.Services
         Task<ImmutableArray<SOStringSuggestion>> GetSuggestionsByUser(int userId, StringSuggestionState? state);
 
         Task<bool> ReplaceSuggestionAsync(int suggestionId, string suggestion, int userId);
+
+        Task<int> GetStringIdBySuggestionId(int suggestionId);
     }
 
     public class SOStringService : ISOStringService
@@ -730,6 +732,16 @@ Select @idString", new
                 }
 
                 return false;
+            }
+        }
+
+        public async Task<int> GetStringIdBySuggestionId(int suggestionId)
+        {
+            using (var db = _dbService.GetConnection())
+            {
+                return await db.QuerySingleAsync<int>(
+                    "select StringId from StringSuggestions where Id=@suggestionId",
+                    new { suggestionId } );
             }
         }
 

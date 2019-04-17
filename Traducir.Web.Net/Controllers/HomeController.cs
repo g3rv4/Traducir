@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Traducir.Core.Services;
 using Microsoft.Extensions.Configuration;
+using Traducir.Api.Models.Enums;
 
 namespace Traducir.Web.Net.Controllers
 {
@@ -107,7 +108,7 @@ namespace Traducir.Web.Net.Controllers
                 userCanManageIgnoring: (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded);
         }
 
-        [HttpPut]
+        [HttpPost]
         [Authorize(Policy = TraducirPolicy.CanReview)]
         [Route("/manage-ignore")]
         public async Task<IActionResult> ManageIgnore([FromBody] ManageIgnoreViewModel model)
@@ -123,8 +124,104 @@ namespace Traducir.Web.Net.Controllers
                 return BadRequest();
             }
 
-            var str = await soStringsService.GetStringByIdAsync(model.StringId);
-            var summaryViewModel = new StringSummaryViewModel { String = str, RenderAsChanged = true, UserCanManageIgnoring = true };
+            return await GetStringSummaryViewModelFor(model.StringId);
+        }
+
+        [HttpPost]
+        [Authorize(Policy = TraducirPolicy.CanSuggest)]
+        [Route("/manage-urgency")]
+        public async Task<IActionResult> ManageUrgency([FromBody] ManageUrgencyViewModel model)
+        {
+            var success = await soStringsService.ManageUrgencyAsync(
+                model.StringId,
+                model.IsUrgent,
+                User.GetClaim<int>(ClaimType.Id));
+
+            if (!success)
+            {
+                return BadRequest();
+            }
+
+            return await GetStringSummaryViewModelFor(model.StringId);
+        }
+
+        [HttpPost]
+        [Authorize(Policy = TraducirPolicy.CanSuggest)]
+        [Route("/replace-suggestion")]
+        public async Task<IActionResult> ReplaceSuggestion([FromBody] ReplaceSuggestionViewModel model)
+        {
+            var success = await soStringsService.ReplaceSuggestionAsync(
+                model.SuggestionId,
+                model.NewSuggestion,
+                User.GetClaim<int>(ClaimType.Id));
+
+            if (!success)
+            {
+                return BadRequest();
+            }
+
+            var stringId = await soStringsService.GetStringIdBySuggestionId(model.SuggestionId);
+            return await GetStringSummaryViewModelFor(stringId);
+        }
+
+        [HttpPost]
+        [Authorize(Policy = TraducirPolicy.CanSuggest)]
+        [Route("/delete-suggestion")]
+        public async Task<IActionResult> DeleteSuggestion([FromBody] int suggestionId)
+        {
+            var success = await soStringsService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id));
+            if (!success)
+            {
+                return BadRequest();
+            }
+
+            var stringId = await soStringsService.GetStringIdBySuggestionId(suggestionId);
+            return await GetStringSummaryViewModelFor(stringId);
+        }
+
+        [HttpPost]
+        [Authorize(Policy = TraducirPolicy.CanReview)]
+        [Route("/review-suggestion")]
+        public async Task<IActionResult> Review([FromBody] ReviewViewModel model)
+        {
+            if (!model.SuggestionId.HasValue || !model.Approve.HasValue)
+            {
+                return BadRequest();
+            }
+
+            var success = await soStringsService.ReviewSuggestionAsync(
+                model.SuggestionId.Value,
+                model.Approve.Value,
+                User.GetClaim<int>(ClaimType.Id),
+                User.GetClaim<UserType>(ClaimType.UserType),
+                Request.Host.ToString());
+            if (!success)
+            {
+                return BadRequest();
+            }
+
+            var stringId = await soStringsService.GetStringIdBySuggestionId(model.SuggestionId.Value);
+            return await GetStringSummaryViewModelFor(stringId);
+        }
+
+        [HttpPost]
+        [Authorize(Policy = TraducirPolicy.CanSuggest)]
+        [Route("/create-suggestion")]
+        public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
+        {
+            var result = await stringsService.CreateSuggestion(model);
+            if (result != SuggestionCreationResult.CreationOk)
+            {
+                return BadRequest(result);
+            }
+
+            return await GetStringSummaryViewModelFor(model.StringId);
+        }
+        private async Task<PartialViewResult> GetStringSummaryViewModelFor(int stringId, bool asChanged = true)
+        {
+            var str = await soStringsService.GetStringByIdAsync(stringId);
+            var userCanManageIgnoring = (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded;
+            var summaryViewModel = new StringSummaryViewModel { String = str, RenderAsChanged = asChanged, UserCanManageIgnoring = userCanManageIgnoring };
             return PartialView("StringSummary", summaryViewModel);
         }
 
@@ -146,7 +243,7 @@ namespace Traducir.Web.Net.Controllers
                 UserId = User.GetClaim<int>(ClaimType.Id),
                 UserCanReview = (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded,
                 UserCanSuggest = (await authorizationService.AuthorizeAsync(User, TraducirPolicy.CanSuggest)).Succeeded,
-                UserTypeIsTrustedUser = User.GetClaim<UserType>(ClaimType.UserType) == UserType.TrustedUser
+                UserType = User.GetClaim<UserType>(ClaimType.UserType)
             };
 
             return PartialView("EditString", viewModel);

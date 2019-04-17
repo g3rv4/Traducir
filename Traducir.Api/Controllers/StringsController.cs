@@ -1,6 +1,4 @@
 using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,20 +13,14 @@ namespace Traducir.Api.Controllers
 {
     public class StringsController : Controller
     {
-        private static readonly Regex VariablesRegex = new Regex(@"\$[^ \$]+\$", RegexOptions.Compiled);
-        private static readonly Regex WhitespacesRegex = new Regex(@"^(?<start>\s*).*?(?<end>\s*)$", RegexOptions.Singleline | RegexOptions.Compiled);
-
         private readonly ISOStringService _soStringService;
-        private readonly IAuthorizationService _authorizationService;
         private readonly IStringsService _stringsService;
 
         public StringsController(
             ISOStringService soStringService,
-            IAuthorizationService authorizationService,
             IStringsService stringsService)
         {
             _soStringService = soStringService;
-            _authorizationService = authorizationService;
             _stringsService = stringsService;
         }
 
@@ -81,68 +73,15 @@ namespace Traducir.Api.Controllers
         [Route("app/api/suggestions")]
         public async Task<IActionResult> CreateSuggestion([FromBody] CreateSuggestionViewModel model)
         {
-            // Verify that everything is valid before calling the service
-            var str = await _soStringService.GetStringByIdAsync(model.StringId);
-
-            // if the string id is invalid
-            if (str == null)
-            {
-                return BadRequest(SuggestionCreationResult.InvalidStringId);
-            }
-
-            // empty suggestion
-            if (model.Suggestion.IsNullOrEmpty())
-            {
-                return BadRequest(SuggestionCreationResult.EmptySuggestion);
-            }
-
-            var usingRawString = model.RawString &&
-                (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanReview)).Succeeded;
-
-            // fix whitespaces unless user is reviewer and selected raw string
-            if (!usingRawString)
-            {
-                model.Suggestion = FixWhitespaces(model.Suggestion, str.OriginalString);
-            }
-
-            // if the suggestion is the same as the current translation
-            if (str.Translation == model.Suggestion)
-            {
-                return BadRequest(SuggestionCreationResult.SuggestionEqualsOriginal);
-            }
-
-            // if there's another suggestion with the same value
-            if (str.Suggestions != null && str.Suggestions.Any(sug => sug.Suggestion == model.Suggestion))
-            {
-                return BadRequest(SuggestionCreationResult.SuggestionAlreadyThere);
-            }
-
-            // if there are missing or extra values
-            var variablesInOriginal = VariablesRegex.Matches(str.OriginalString).Select(m => m.Value).ToArray();
-            var variablesInSuggestion = VariablesRegex.Matches(model.Suggestion).Select(m => m.Value).ToArray();
-
-            if (!usingRawString && variablesInOriginal.Any(v => !variablesInSuggestion.Contains(v)))
-            {
-                return BadRequest(SuggestionCreationResult.TooFewVariables);
-            }
-
-            if (variablesInSuggestion.Any(v => !variablesInOriginal.Contains(v)))
-            {
-                return BadRequest(SuggestionCreationResult.TooManyVariables);
-            }
-
-            var suggestionResult = await _soStringService.CreateSuggestionAsync(
-                model.StringId,
-                model.Suggestion,
-                User.GetClaim<int>(ClaimType.Id),
-                User.GetClaim<UserType>(ClaimType.UserType),
-                model.Approve);
-            if (suggestionResult)
+            var result = await _stringsService.CreateSuggestion(model);
+            if(result == SuggestionCreationResult.CreationOk)
             {
                 return NoContent();
             }
-
-            return BadRequest(SuggestionCreationResult.DatabaseError);
+            else
+            {
+                return BadRequest(result);
+            }
         }
 
         [HttpPut]
@@ -233,12 +172,6 @@ namespace Traducir.Api.Controllers
             }
 
             return BadRequest();
-        }
-
-        private static string FixWhitespaces(string suggestion, string original)
-        {
-            var match = WhitespacesRegex.Match(original);
-            return match.Groups["start"] + suggestion.Trim() + match.Groups["end"];
         }
     }
 }

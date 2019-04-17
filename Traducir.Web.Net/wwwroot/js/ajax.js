@@ -2,8 +2,8 @@ function ajaxGet(url, responseType, queryString, onSuccess, onErrorResponse, onF
     ajax("GET", url, responseType, queryString, null, onSuccess, onErrorResponse, onFailure);
 }
 
-function ajaxPut(url, responseType, body, onSuccess, onErrorResponse, onFailure) {
-    ajax("PUT", url, responseType, null, body, onSuccess, onErrorResponse, onFailure);
+function ajaxPost(url, responseType, body, onSuccess, onErrorResponse, onFailure) {
+    ajax("POST", url, responseType, null, body, onSuccess, onErrorResponse, onFailure);
 }
 
 function ajax(method, url, responseType, queryString, body, onSuccess, onErrorResponse, onFailure) {

@@ -13,7 +13,7 @@ namespace Traducir.Web.Net.ViewModels.Home
 
         public int UserId { get; set; }
 
-        public bool UserTypeIsTrustedUser { get; set; }
+        public UserType UserType { get; set; }
 
         public bool UserCanSuggest { get; set; }
 
@@ -32,7 +32,9 @@ namespace Traducir.Web.Net.ViewModels.Home
             }
 
             // a trusted user can't act on a suggestion approved by a trusted user
-            return !(suggestion.State == StringSuggestionState.ApprovedByTrustedUser && UserTypeIsTrustedUser);
+            return !(suggestion.State == StringSuggestionState.ApprovedByTrustedUser && UserType == UserType.TrustedUser);
         }
+
+        public bool CanSendFinalTranslation => UserType == UserType.Reviewer;
     }
 }
