@@ -1,5 +1,9 @@
+(function () {
+    Array.prototype.isArray = true;
+})();
+
 function clone(object) {
-    return JSON.parse(JSON.stringify(stringQueryFilters));
+    return JSON.parse(JSON.stringify(object));
 }
 
 function spinner(show) {

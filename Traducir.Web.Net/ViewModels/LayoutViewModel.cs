@@ -22,7 +22,7 @@ namespace Traducir.Web.Net.ViewModels
                 UserId = user.GetClaim<int>(ClaimType.Id);
                 var userType = user.GetClaim<UserType>(ClaimType.UserType);
                 var userIsModerator = user.GetClaim<string>(ClaimType.IsModerator) == "1";
-                var userTypeForDisplay = userType == UserType.TrustedUser ? "Trusted User" : userType.ToString();
+                var userTypeForDisplay = userType.ToDisplayString();
                 UserInfo = $"{userName} ({userTypeForDisplay}) {(userIsModerator ? "♦" : null)}";
             }
             else

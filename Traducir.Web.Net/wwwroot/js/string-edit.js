@@ -1,3 +1,5 @@
+initializeStringEdit();
+
 function initializeStringEdit() {
     let i;
 

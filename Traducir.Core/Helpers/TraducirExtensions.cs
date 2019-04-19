@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using Traducir.Core.Models.Enums;
 
 namespace Traducir.Core.Helpers
 {
@@ -75,5 +76,8 @@ namespace Traducir.Core.Helpers
 
             return $"{parts[0]}|{string.Join(",", variables)}";
         }
+
+        public static string ToDisplayString(this UserType userType) =>
+            userType == UserType.TrustedUser ? "Trusted User" : userType.ToString();
     }
 }

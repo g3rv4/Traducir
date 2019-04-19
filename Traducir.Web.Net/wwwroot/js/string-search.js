@@ -1,4 +1,6 @@
-function initializeStringSearch () {
+initializeStringSearch();
+
+function initializeStringSearch() {
     const queryDropdowns = document.querySelectorAll("select.js-string-query-filter");
     const queryTextInputs = document.querySelectorAll("input[type=text].js-string-query-filter");
     const queryLinks = document.querySelectorAll("a.js-string-query-filter");

@@ -1,0 +1,22 @@
+@model  Traducir.Web.Net.ViewModels.Users.UsersListViewModel
+
+<div class="container">
+    <div class="m-2 text-center">
+        <h2>Users</h2>
+    </div>
+    <table class="table">
+        <thead class="thead-light">
+            <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var user in Model.Users)
+            {
+                <partial name="UserSummary" model="user" />
+            }
+        </tbody>
+    </table>
+</div>
