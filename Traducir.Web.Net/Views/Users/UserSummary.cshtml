@@ -4,7 +4,7 @@
 @{
     var user = Model.User;
 }
-<tr>
+<tr data-user-id="@user.Id">
     <td>
         <a href="@Model.UserProfileLink" target="_blank">
             @user.DisplayName @(user.IsModerator ? "♦" : null)
@@ -17,25 +17,25 @@
                 <a href="/suggestions/@user.Id" class="btn btn-sm btn-primary">view suggestions</a>
                 @if(user.UserType == UserType.User)
                 {
-                    <button type="button" class="btn btn-sm btn-warning">
+                    <button type="button" class="btn btn-sm btn-warning" data-change-to-user-type="@((int)UserType.TrustedUser)">
                         Make trusted user
                     </button>
                 }
                 @if(user.UserType == UserType.Banned)
                 { 
-                    <button type="button" class="btn btn-sm btn-warning">
+                    <button type="button" class="btn btn-sm btn-warning" data-change-to-user-type="@((int)UserType.User)">
                         Lift Ban
                     </button>
                 }
                 @if(user.UserType == UserType.TrustedUser)
                 { 
-                    <button type="button" class="btn btn-sm btn-danger">
+                    <button type="button" class="btn btn-sm btn-danger" data-change-to-user-type="@((int)UserType.User)">
                         Make regular user
                     </button>
                 }
                 @if(Model.UserCanBeBanned)
                 {
-                    <button type="button" class="btn btn-sm btn-danger">
+                    <button type="button" class="btn btn-sm btn-danger" data-change-to-user-type="@((int)UserType.Banned)">
                         Ban User
                     </button>
                 }

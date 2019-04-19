@@ -6,9 +6,31 @@
     ]
   },
   {
-    "outputFileName": "wwwroot/js/site.min.js",
+    "outputFileName": "wwwroot/js/shared.min.js",
     "inputFiles": [
-      "wwwroot/js/*.js"
+      "wwwroot/js/shared/*.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/strings.min.js",
+    "inputFiles": [
+      "wwwroot/js/strings/*.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/users.min.js",
+    "inputFiles": [
+      "wwwroot/js/users/*.js"
     ],
     "minify": {
       "enabled": true,

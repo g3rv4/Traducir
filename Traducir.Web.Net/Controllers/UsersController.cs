@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Traducir.Api.ViewModels.Account;
 using Traducir.Core.Helpers;
+using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
 using Traducir.Web.Net.ViewModels.Users;
 
@@ -37,6 +39,29 @@ namespace Traducir.Web.Net.Controllers
 
             var model = new UsersListViewModel(users, siteDomain, currentUserCanManageUsers);
             return View(model);
+        }
+
+        [HttpPost]
+        [Authorize(Policy = TraducirPolicy.CanManageUsers)]
+        [Route("/change-user-type")]
+        public async Task<IActionResult> ChangeUserType([FromBody] ChangeUserTypeViewModel model)
+        {
+            // explicitly whitelist accepted types
+            if (model.UserType != UserType.Banned && model.UserType != UserType.User && model.UserType != UserType.TrustedUser)
+            {
+                return BadRequest();
+            }
+
+            var success = await _userService.ChangeUserTypeAsync(model.UserId, model.UserType, User.GetClaim<int>(ClaimType.Id));
+            if (!success)
+            {
+                return BadRequest();
+            }
+
+            var user = await _userService.GetUserAsync(model.UserId);
+            var siteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN");
+            var currentUserCanManageUsers = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanManageUsers)).Succeeded;
+            return View("UserSummary", new UserSummaryViewModel(user, siteDomain, currentUserCanManageUsers));
         }
     }
 }
