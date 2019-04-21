@@ -1,14 +1,28 @@
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
 
 namespace Traducir.Core.Models.Enums
 {
     public enum StringSuggestionState
     {
+        [Display(Name = "Created")]
         Created = 1,
+
+        [Display(Name = "Approved by trusted user")]
         ApprovedByTrustedUser = 2,
+
+        [Display(Name = "Approved by reviewer")]
         ApprovedByReviewer = 3,
+
+        [Display(Name = "Rejected")]
         Rejected = 4,
+
+        [Display(Name = "Deleted by owner")]
         DeletedByOwner = 5,
+
+        [Display(Name = "Dismissed by other string")]
         DismissedByOtherString = 6
     }
 
@@ -32,6 +46,20 @@ namespace Traducir.Core.Models.Enums
                 default:
                     throw new ArgumentException($"Missing NotificationType for {state}");
             }
+        }
+
+        public static string DisplayName(this StringSuggestionState state)
+        {
+            if (!Enum.IsDefined(typeof(StringSuggestionState), state))
+            {
+                return "Unknown";
+            }
+
+            return typeof(StringSuggestionState)
+                .GetMember(state.ToString())
+                .First()
+                .GetCustomAttribute<DisplayAttribute>()
+                .Name;
         }
     }
 }

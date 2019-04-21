@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -79,5 +80,8 @@ namespace Traducir.Core.Helpers
 
         public static string ToDisplayString(this UserType userType) =>
             userType == UserType.TrustedUser ? "Trusted User" : userType.ToString();
+
+        public static string ToIsoFormat(this DateTime date) =>
+            date.ToString("yyyy-MM-dd HH\\:mm\\:ss", CultureInfo.InvariantCulture);
     }
 }

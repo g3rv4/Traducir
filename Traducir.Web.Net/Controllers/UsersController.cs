@@ -16,15 +16,18 @@ namespace Traducir.Web.Net.Controllers
         private readonly IUserService _userService;
         private readonly IAuthorizationService _authorizationService;
         private readonly IConfiguration _configuration;
+        private readonly ISOStringService _soStringService;
 
         public UsersController(
             IUserService userService,
             IAuthorizationService authorizationService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            ISOStringService soStringService)
         {
             this._userService = userService;
             this._authorizationService = authorizationService;
             this._configuration = configuration;
+            this._soStringService = soStringService;
         }
 
         [Route("/users")]
@@ -62,6 +65,17 @@ namespace Traducir.Web.Net.Controllers
             var siteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN");
             var currentUserCanManageUsers = (await _authorizationService.AuthorizeAsync(User, TraducirPolicy.CanManageUsers)).Succeeded;
             return View("UserSummary", new UserSummaryViewModel(user, siteDomain, currentUserCanManageUsers));
+        }
+
+        [Authorize]
+        [Route("/suggestions/{userId:INT}")]
+        public async Task<IActionResult> SuggestionsByUser(int userId, StringSuggestionState? state)
+        {
+            var suggestions = await _soStringService.GetSuggestionsByUser(userId, state);
+            var siteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN");
+            var model = new SuggestionsByUserViewModel { CurrentState = state, SiteDomain = siteDomain, UserId = userId, Suggestions = suggestions };
+
+            return View(model);
         }
     }
 }
