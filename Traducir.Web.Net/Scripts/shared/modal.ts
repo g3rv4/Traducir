@@ -1,11 +1,13 @@
-const modal = (function () {
+declare var Modal: any;
+
+const modal = (() => {
     let currentModal = null;
 
     function modalContainer() {
         return document.getElementById("modal-container");
     }
 
-    const showModal = function (title, contents) {
+    const showModal = (title, contents) => {
         hideModal();
 
         const modalHtml =
@@ -21,18 +23,18 @@ const modal = (function () {
 
         currentModal = new Modal(modalContainer(), { content: modalHtml });
 
-        modalContainer().addEventListener('hidden.bs.modal', function (event) {
+        modalContainer().addEventListener("hidden.bs.modal", event => {
             currentModal = null;
         }, false);
 
         currentModal.show();
     };
 
-    const modalContents = function () {
+    const modalContents = () => {
         modalContainer().querySelector(".modal-body");
     };
 
-    const hideModal = function () {
+    const hideModal = () => {
         if (currentModal) {
             currentModal.hide();
         }

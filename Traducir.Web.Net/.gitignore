@@ -1,1 +1,5 @@
 wwwroot/**/*.min.*
+node_modules/
+.tscache/
+dist/
+wwwroot/js/

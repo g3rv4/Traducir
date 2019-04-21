@@ -1,8 +1,7 @@
-initializeStringEdit();
+import { ajaxGet, ajaxPost, queryStringFromObject, defaultAjaxOnErrorResponse } from "../shared/ajax";
+import { dynamicEventHook, toCamelCase } from "../shared/utils";
 
-function initializeStringEdit() {
-    let i;
-
+export default function initializeStringEdit() {
     const suggestionCreationErrors = {
         2: "We couldn't find the id you send, did you need to refresh your page?",
         3: "The suggestion you are sending is the same as the actual translation",
@@ -22,9 +21,9 @@ function initializeStringEdit() {
         ajaxGet(
             "/string_edit_ui",
             "text",
-            queryStringFromObject({ stringId: stringId }),
+            queryStringFromObject({ stringId }),
             html => {
-                modal.show('Suggestions', html);
+                modal.show("Suggestions", html);
             }
         );
     }
@@ -33,7 +32,7 @@ function initializeStringEdit() {
         executeStringActionFor(e.target);
     });
 
-    //TODO: Find a better way to hook the thumb up/down icon clicks
+    // TODO: Find a better way to hook the thumb up/down icon clicks
     dynamicEventHook("click", "button[data-string-action] *", e => {
         executeStringActionFor(e.target.closest("[data-string-action]"));
     });
@@ -50,20 +49,20 @@ function initializeStringEdit() {
     }
 
     const stringActions = {
-        copyAsSuggestion: function (stringId, button) {
+        copyAsSuggestion: (stringId, button) => {
             const buttonTargetId = button.getAttribute("data-string-action-target");
             const text = document.getElementById(buttonTargetId).innerText;
-            const suggestionBox = document.getElementById("suggestion");
+            const suggestionBox = document.getElementById("suggestion") as HTMLTextAreaElement;
             suggestionBox.value = text;
         },
 
-        manageIgnore: function (stringId, button) {
+        manageIgnore: (stringId, button) => {
             const doIgnore = button.getAttribute("data-string-action-argument") === "ignore";
 
             ajaxPost(
                 "/manage-ignore",
                 "text",
-                { stringId: stringId, ignored: doIgnore },
+                { stringId, ignored: doIgnore },
                 text => {
                     const stringContainer = button.closest("[data-string-id]");
                     stringContainer.outerHTML = text;
@@ -71,35 +70,35 @@ function initializeStringEdit() {
             );
         },
 
-        manageUrgency: function (stringId, button) {
+        manageUrgency: (stringId, button) => {
             const mustBeUrgent = button.getAttribute("data-string-action-argument") === "make-urgent";
 
             ajaxForStringAction(
                 stringId,
                 "/manage-urgency",
-                { stringId: stringId, isUrgent: mustBeUrgent }
+                { stringId, isUrgent: mustBeUrgent }
             );
         },
 
-        handleSuggestionTextChanged: function (stringId, textarea) {
-            const replaceButtons = document.querySelectorAll(".js-replace-suggestion");
+        handleSuggestionTextChanged: (stringId, textarea) => {
+            const replaceButtons = document.querySelectorAll(".js-replace-suggestion") as NodeListOf<HTMLButtonElement>;
             replaceButtons.forEach(button => {
                 button.disabled = !textarea.value.trim();
             });
         },
 
-        replaceSuggestion: function (stringId, button) {
+        replaceSuggestion: (stringId, button) => {
             const suggestionId = button.closest("[data-suggestion-id]").getAttribute("data-suggestion-id");
-            const newSuggestion = document.getElementById("suggestion").value.trim();
+            const newSuggestion = (document.getElementById("suggestion") as HTMLTextAreaElement).value.trim();
 
             ajaxForStringAction(
                 stringId,
                 "/replace-suggestion",
-                { suggestionId: suggestionId, newSuggestion: newSuggestion }
+                { suggestionId, newSuggestion }
             );
         },
 
-        deleteSuggestion: function (stringId, button) {
+        deleteSuggestion: (stringId, button) => {
             const suggestionId = button.closest("[data-suggestion-id]").getAttribute("data-suggestion-id");
 
             ajaxForStringAction(
@@ -109,22 +108,23 @@ function initializeStringEdit() {
             );
         },
 
-        reviewSuggestion: function (stringId, button) {
+        reviewSuggestion: (stringId, button) => {
             const suggestionId = button.closest("[data-suggestion-id]").getAttribute("data-suggestion-id");
             const approve = button.getAttribute("data-review-action") === "approve";
 
             ajaxForStringAction(
                 stringId,
                 "/review-suggestion",
-                { suggestionId: suggestionId, approve: approve }
+                { suggestionId, approve }
             );
         },
 
-        createSuggestion: function (stringId, button) {
-            const rawStringCheckbox = document.getElementById("is-raw-string");
+        createSuggestion: (stringId, button) => {
+            const rawStringCheckbox = document.getElementById("is-raw-string") as HTMLInputElement;
+            const suggestionElement = document.getElementById("suggestion") as HTMLTextAreaElement;
             const body = {
-                stringId: stringId,
-                suggestion: document.getElementById("suggestion").value.trim(),
+                stringId,
+                suggestion: suggestionElement.value.trim(),
                 approve: button.getAttribute("data-create-approved-suggestion") === "yes",
                 rawString: rawStringCheckbox ? !!rawStringCheckbox.checked : false
             };
@@ -148,7 +148,7 @@ function initializeStringEdit() {
         }
     };
 
-    function ajaxForStringAction(stringId, url, body, onErrorResponse) {
+    function ajaxForStringAction(stringId, url, body, onErrorResponse?) {
         ajaxPost(
             url,
             "text",

@@ -1,3 +1,6 @@
+import { ajaxPost } from "../shared/ajax";
+import { dynamicEventHook } from "../shared/utils";
+
 initializeUserEdit();
 
 function initializeUserEdit() {
@@ -13,7 +16,7 @@ function initializeUserEdit() {
         ajaxPost(
             "/change-user-type",
             "text",
-            { userId: userId, userType: newUserType },
+            { userId, userType: newUserType },
             html => {
                 userSummaryContainer.outerHTML = html;
             }

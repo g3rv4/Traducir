@@ -1,12 +1,15 @@
-initializeStringSearch();
+import { ajaxGet, queryStringFromObject } from "../shared/ajax";
+import { clone, spinner } from "../shared/utils";
 
-function initializeStringSearch() {
-    const queryDropdowns = document.querySelectorAll("select.js-string-query-filter");
-    const queryTextInputs = document.querySelectorAll("input[type=text].js-string-query-filter");
-    const queryLinks = document.querySelectorAll("a.js-string-query-filter");
+declare var stringQueryFilters: any;
+
+export default function initializeStringSearch() {
+    const queryDropdowns = document.querySelectorAll("select.js-string-query-filter") as NodeListOf<HTMLSelectElement>;
+    const queryTextInputs = document.querySelectorAll("input[type=text].js-string-query-filter") as NodeListOf<HTMLInputElement>;
+    const queryLinks = document.querySelectorAll("a.js-string-query-filter") as NodeListOf<HTMLAnchorElement>;
     let initialQueryFilters;
 
-    window.onload = function () {
+    window.onload = () => {
         initialQueryFilters = clone(stringQueryFilters);
 
         hookDropdowns();
@@ -32,28 +35,29 @@ function initializeStringSearch() {
     }
 
     function hookDropdowns() {
-        for (var i = 0; i < queryDropdowns.length; i++) {
+        for (let i = 0; i < queryDropdowns.length; i++) {
             queryDropdowns[i].onchange = e => { updateList(e.target, true); };
         }
     }
 
     function hookTextboxes() {
-        var textInputTimeout = null;
-        for (var i = 0; i < queryTextInputs.length; i++) {
-            queryTextInputs[i].onkeyup = function (e) {
+        let textInputTimeout = null;
+        for (let i = 0; i < queryTextInputs.length; i++) {
+            queryTextInputs[i].onkeyup = e => {
                 clearTimeout(textInputTimeout);
                 textInputTimeout = setTimeout(() => { updateList(e.target); }, 500);
             };
-        };
+        }
     }
 
     function hookQuickLinks() {
-        for (var i = 0; i < queryLinks.length; i++) {
+        for (let i = 0; i < queryLinks.length; i++) {
             const link = queryLinks.item(i);
             link.onclick = e => {
-                const queryKey = e.target.getAttribute("data-string-query-key");
-                const queryValue = e.target.getAttribute("data-string-query-value");
-                const dropdown = document.querySelector(`select[data-string-query-key=${queryKey}`);
+                const target = e.target as HTMLElement;
+                const queryKey = target.getAttribute("data-string-query-key");
+                const queryValue = target.getAttribute("data-string-query-value");
+                const dropdown = document.querySelector(`select[data-string-query-key=${queryKey}`) as HTMLSelectElement;
                 dropdown.value = queryValue;
                 updateList(e.target, true);
                 e.preventDefault();
@@ -62,32 +66,34 @@ function initializeStringSearch() {
     }
 
     function hookHistoryPopState() {
-        window.onpopstate = function (e) {
+        window.onpopstate = e => {
             stringQueryFilters = e.state || initialQueryFilters;
             setInputsFromCurrentFilters();
             updateList(null);
         };
     }
 
-    function updateList(triggeringElement, valueIsNumber) {
+    function updateList(triggeringElement, valueIsNumber?) {
         spinner(true);
 
         if (triggeringElement) {
             const queryKey = triggeringElement.getAttribute("data-string-query-key");
-            var queryValue = triggeringElement.getAttribute("data-string-query-value") || triggeringElement.value;
-            if (valueIsNumber) queryValue = parseInt(queryValue);
+            let queryValue = triggeringElement.getAttribute("data-string-query-value") || triggeringElement.value;
+            if (valueIsNumber) {
+                queryValue = parseInt(queryValue, 10);
+            }
             stringQueryFilters[queryKey] = queryValue;
         }
 
         const queryString = queryStringFromObject(stringQueryFilters);
 
         if (triggeringElement) {
-            history.pushState(clone(stringQueryFilters), "", queryString ? 'filters' + queryString : '/');
+            history.pushState(clone(stringQueryFilters), "", queryString ? "filters" + queryString : "/");
         }
 
         ajaxGet(
-            '/strings_list',
-            'text',
+            "/strings_list",
+            "text",
             queryString,
             html => {
                 document.getElementById("strings_list").innerHTML = html;
