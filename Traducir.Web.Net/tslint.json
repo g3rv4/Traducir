@@ -19,17 +19,11 @@
     "max-classes-per-file": false,
     "no-conditional-assignment": false,
     "variable-name": false,
-    "no-shadowed-variable": false,
-    "prefer-for-of": false,
     "trailing-comma": [
       true,
       {
         "singleline": "never"
       }
-    ],
-    "no-empty": [
-      true,
-      "allow-empty-functions"
     ]
   }
 }

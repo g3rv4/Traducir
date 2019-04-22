@@ -35,15 +35,15 @@ export default function initializeStringSearch() {
     }
 
     function hookDropdowns() {
-        for (let i = 0; i < queryDropdowns.length; i++) {
-            queryDropdowns[i].onchange = e => { updateList(e.target, true); };
+        for (const dropdown of queryDropdowns) {
+            dropdown.onchange = e => { updateList(e.target, true); };
         }
     }
 
     function hookTextboxes() {
         let textInputTimeout = null;
-        for (let i = 0; i < queryTextInputs.length; i++) {
-            queryTextInputs[i].onkeyup = e => {
+        for (const input of queryTextInputs) {
+            input.onkeyup = e => {
                 clearTimeout(textInputTimeout);
                 textInputTimeout = setTimeout(() => { updateList(e.target); }, 500);
             };
@@ -95,9 +95,7 @@ export default function initializeStringSearch() {
             "/strings_list",
             "text",
             queryString,
-            html => {
-                document.getElementById("strings_list").innerHTML = html;
-            }
+            html => document.getElementById("strings_list").innerHTML = html
         );
     }
 }

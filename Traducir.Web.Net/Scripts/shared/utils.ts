@@ -11,13 +11,13 @@ export function dynamicEventHook(events, selector, handler) {
         events = [events];
     }
 
-    events.forEach(event =>
+    for (const event of events) {
         document.addEventListener(event, e => {
-            if (Array.from(document.querySelectorAll(selector)).indexOf(e.target) === -1) {
+            if (Array.from(document.querySelectorAll(selector)).indexOf(e.target) !== -1) {
                 handler.call(e.target, e);
             }
-        })
-    );
+        });
+    }
 }
 
 export function toCamelCase(s) {

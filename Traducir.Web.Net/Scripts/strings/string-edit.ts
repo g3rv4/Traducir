@@ -1,5 +1,6 @@
 import { ajaxGet, ajaxPost, queryStringFromObject, defaultAjaxOnErrorResponse } from "../shared/ajax";
 import { dynamicEventHook, toCamelCase } from "../shared/utils";
+import modal from "../shared/modal";
 
 export default function initializeStringEdit() {
     const suggestionCreationErrors = {
@@ -22,9 +23,7 @@ export default function initializeStringEdit() {
             "/string_edit_ui",
             "text",
             queryStringFromObject({ stringId }),
-            html => {
-                modal.show("Suggestions", html);
-            }
+            html => modal.show("Suggestions", html)
         );
     }
 

@@ -46,3 +46,5 @@ const modal = (() => {
         contents: modalContents
     };
 })();
+
+export default modal;

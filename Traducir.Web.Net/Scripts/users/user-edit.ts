@@ -17,9 +17,7 @@ function initializeUserEdit() {
             "/change-user-type",
             "text",
             { userId, userType: newUserType },
-            html => {
-                userSummaryContainer.outerHTML = html;
-            }
+            html => userSummaryContainer.outerHTML = html
         );
     }
 }
