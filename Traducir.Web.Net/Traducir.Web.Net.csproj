@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <TypeScriptToolsVersion>3.4.3</TypeScriptToolsVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -75,5 +76,7 @@
     <ProjectReference Include="..\Traducir.Core\Traducir.Core.csproj" />
     <ProjectReference Include="..\Traducir.Migrations\Traducir.Migrations.csproj" />
   </ItemGroup>
+  
+  <Import Project="Build\js.build" />
 
 </Project>

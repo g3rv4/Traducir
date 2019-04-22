@@ -1,0 +1,5 @@
+<Project>
+    <Target Name="BuildJSFiles"  BeforeTargets="Build">
+        <Exec Command="node.exe ./node_modules/grunt/bin/grunt" />
+    </Target>
+</Project>

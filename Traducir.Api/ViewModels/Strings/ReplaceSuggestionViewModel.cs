@@ -1,4 +1,3 @@
-
 namespace Traducir.Api.ViewModels.Strings
 {
     public class ReplaceSuggestionViewModel

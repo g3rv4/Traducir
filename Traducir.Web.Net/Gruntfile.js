@@ -66,7 +66,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-clean");
 
-    grunt.registerTask("default", ["tslint:dev", "clean", "ts", "rollup", "copy", "watch"]);
+    grunt.registerTask("default", ["tslint:dev", "clean", "ts", "rollup", "copy"]);
+    grunt.registerTask("watch", ["tslint:dev", "clean", "ts", "rollup", "copy", "watch"]);
 
     grunt.registerTask("generate-tslint-prod", "Generate the tslint file for prod", function () {
         let tslint = grunt.file.readJSON("tslint.json");

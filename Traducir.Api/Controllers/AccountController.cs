@@ -120,39 +120,6 @@ namespace Traducir.Api.Controllers
             return Redirect(returnUrl ?? "/");
         }
 
-        private async Task LoginUser(int userId, string asUserType, bool asModerator)
-        {
-            var user = await _userService.GetUserAsync(userId);
-            var userTypeString = asUserType == null ? user.UserType.ToString() : Enum.Parse(typeof(UserType), asUserType).ToString();
-            var userType = (UserType)Enum.Parse(typeof(UserType), userTypeString);
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimType.Id, user.Id.ToString(CultureInfo.InvariantCulture)),
-                new Claim(ClaimType.Name, user.DisplayName),
-                new Claim(ClaimType.UserType, userTypeString),
-            };
-            if (userType >= UserType.User)
-            {
-                claims.Add(new Claim(ClaimType.CanSuggest, "1"));
-                if (userType >= UserType.TrustedUser)
-                {
-                    claims.Add(new Claim(ClaimType.CanReview, "1"));
-                }
-            }
-
-            if (asModerator || user.IsModerator)
-            {
-                claims.Add(new Claim(ClaimType.IsModerator, "1"));
-            }
-
-            var identity = new ClaimsIdentity(claims, "login");
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity));
-        }
-
         [Authorize]
         [Route("app/api/me")]
         public async Task<IActionResult> WhoAmI()
@@ -228,6 +195,39 @@ namespace Traducir.Api.Controllers
             }
 
             return NoContent();
+        }
+
+        private async Task LoginUser(int userId, string asUserType, bool asModerator)
+        {
+            var user = await _userService.GetUserAsync(userId);
+            var userTypeString = asUserType == null ? user.UserType.ToString() : Enum.Parse(typeof(UserType), asUserType).ToString();
+            var userType = (UserType)Enum.Parse(typeof(UserType), userTypeString);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimType.Id, user.Id.ToString(CultureInfo.InvariantCulture)),
+                new Claim(ClaimType.Name, user.DisplayName),
+                new Claim(ClaimType.UserType, userTypeString),
+            };
+            if (userType >= UserType.User)
+            {
+                claims.Add(new Claim(ClaimType.CanSuggest, "1"));
+                if (userType >= UserType.TrustedUser)
+                {
+                    claims.Add(new Claim(ClaimType.CanReview, "1"));
+                }
+            }
+
+            if (asModerator || user.IsModerator)
+            {
+                claims.Add(new Claim(ClaimType.IsModerator, "1"));
+            }
+
+            var identity = new ClaimsIdentity(claims, "login");
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity));
         }
 
         private string GetOauthReturnUrl()
