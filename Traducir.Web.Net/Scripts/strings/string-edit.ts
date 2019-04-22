@@ -81,9 +81,9 @@ export default function initializeStringEdit() {
 
         handleSuggestionTextChanged: (stringId, textarea) => {
             const replaceButtons = document.querySelectorAll(".js-replace-suggestion") as NodeListOf<HTMLButtonElement>;
-            replaceButtons.forEach(button => {
+            for (const button of replaceButtons) {
                 button.disabled = !textarea.value.trim();
-            });
+            }
         },
 
         replaceSuggestion: (stringId, button) => {
