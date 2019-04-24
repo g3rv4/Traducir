@@ -39,7 +39,7 @@ function initializeNotifications() {
         notificationSettings.notificationsInterval = intervalSelector.value;
     });
 
-    document.getElementById("save-and-add-browser").addEventListener("click", async () => { await saveAndAddBrowser(); });
+    document.getElementById("save-and-add-browser").addEventListener("click", saveAndAddBrowser);
 
     async function saveAndAddBrowser(): Promise<void> {
         const subscription = await subscribeUserToPush();
@@ -60,21 +60,18 @@ function initializeNotifications() {
 
     async function subscribeUserToPush(): Promise<PushSubscription> {
         try {
-            const registration = await registerServiceWorker();
+            await navigator.serviceWorker.register("/service-worker.js");
+            const registration = await navigator.serviceWorker.ready;
 
             const subscribeOptions = {
                 applicationServerKey: urlBase64ToUint8Array(notificationSettings.vapidPublic),
                 userVisibleOnly: true
             };
 
-            return await registration.pushManager.subscribe(subscribeOptions);
+            return registration.pushManager.subscribe(subscribeOptions);
         } catch (e) {
-            alert("Error asking for permission");
+            alert("Error asking for permission" + e.message);
             throw e;
         }
-    }
-
-    function registerServiceWorker(): Promise<ServiceWorkerRegistration> {
-        return navigator.serviceWorker.register("/js/service-worker.js");
     }
 }

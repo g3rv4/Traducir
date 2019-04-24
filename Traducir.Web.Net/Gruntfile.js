@@ -10,6 +10,11 @@ module.exports = function (grunt) {
                 files: [
                     { expand: true, src: ["**/*.js"], cwd: "Scripts/", dest: "wwwroot/js/" },
                 ],
+            },
+            serviceWorker: {
+                files: [
+                    { src: "wwwroot/js/service-worker.js", dest: "wwwroot/service-worker.js"}
+                ]
             }
         },
         clean: {
