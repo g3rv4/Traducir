@@ -1,0 +1,66 @@
+@using Traducir.Core.Models.Enums
+@model Traducir.Web.Net.ViewModels.Users.NotificationsViewModel
+
+@{
+    var notificationPropertyGroups = new[] { Model.NotificationProperties(0), Model.NotificationProperties(1) };
+}
+
+@section Scripts
+{
+    <script>
+        var notificationSettings = {
+            @foreach(var notification in notificationPropertyGroups[0].Union(notificationPropertyGroups[1]))
+            {
+                <text>@($"{notification.DataName}: {notification.Value.ToString().ToLower()},")</text>
+            }
+            notificationsInterval: @((int)Model.NotificationSettings.NotificationsInterval),
+            notificationsIntervalValue: @((int)Model.NotificationSettings.NotificationsIntervalValue),
+            vapidPublic: @Json.Serialize(Model.VapidPublic)
+        };
+    </script>
+
+    <script src="~/js/notifications.js" asp-append-version="true"></script>
+}
+
+<div class="container" id="main-container">
+    <div class="m-2 text-center">
+        <h2>Notification settings</h2>
+    </div>
+    <div class="row mt-4">
+        <div class="col text-center">
+            <h3>System notifications</h3>
+        </div>
+        <div class="col text-center">
+            <h3>Your suggestion notifications</h3>
+        </div>
+    </div>
+    <div class="row">
+        @foreach(var propertyGroup in notificationPropertyGroups)
+        {
+            <div class="col">
+                <ul class="list-group">
+                    @foreach (var notification in propertyGroup)
+                    {
+                        <li class="@Model.ClassFor(notification.Value)" data-notification-name="@notification.DataName">@notification.DisplayName</li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+    <div class="col">
+        <div class="row">
+            Notify me about the same type of event at most once every
+            <input type="number" id="notifications-interval-value" value="@Model.NotificationSettings.NotificationsIntervalValue" />
+            @Html.DropDownListFor(
+                model => model.NotificationSettings.NotificationsInterval,
+                Html.GetEnumSelectList(typeof(NotificationInterval)),
+                null,
+                new { id="notifications-interval" }
+            )
+        </div>
+    </div>
+    <div class="text-center mt-4">
+        <button class="btn btn-primary mr-2" id="save-and-add-browser">Save and add current browser</button>
+        <button class="btn btn-danger" id="stop-receiving-notifications">Stop receiving notifications everywhere</button>
+    </div>
+</div>

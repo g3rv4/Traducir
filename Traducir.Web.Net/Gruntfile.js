@@ -56,6 +56,10 @@ module.exports = function (grunt) {
             users: {
                 src: 'wwwroot/dist/modules/users/user-edit.js',
                 dest: 'wwwroot/js/users.js'
+            },
+            notifications: {
+                src: 'wwwroot/dist/modules/users/notifications.js',
+                dest: 'wwwroot/js/notifications.js'
             }
         }
     });

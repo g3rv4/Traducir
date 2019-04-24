@@ -1,10 +1,10 @@
 import { spinner } from "./utils";
 
-export function ajaxGet(url, responseType, queryString, onSuccess, onErrorResponse?, onFailure?) {
+export function ajaxGet(url, responseType, queryString, onSuccess?, onErrorResponse?, onFailure?) {
     ajax("GET", url, responseType, queryString, null, onSuccess, onErrorResponse, onFailure);
 }
 
-export function ajaxPost(url, responseType, body, onSuccess, onErrorResponse?, onFailure?) {
+export function ajaxPost(url, responseType, body, onSuccess?, onErrorResponse?, onFailure?) {
     ajax("POST", url, responseType, null, body, onSuccess, onErrorResponse, onFailure);
 }
 
@@ -27,6 +27,8 @@ function ajax(method, url, responseType, queryString, body, onSuccess, onErrorRe
                             } finally {
                                 spinner(false);
                             }
+                        } else {
+                            spinner(false);
                         }
                     });
             } else {

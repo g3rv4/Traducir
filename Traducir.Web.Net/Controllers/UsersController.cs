@@ -77,5 +77,41 @@ namespace Traducir.Web.Net.Controllers
 
             return View(model);
         }
+
+        [Authorize]
+        [Route("/notifications")]
+        public async Task<IActionResult> Notifications()
+        {
+            var userId = User.GetClaim<int>(ClaimType.Id);
+            var notificationSettings = await _userService.GetNotificationSettings(userId);
+            var vapid = _configuration.GetValue<string>("VAPID_PUBLIC");
+
+            var model = new NotificationsViewModel
+            {
+                NotificationSettings = notificationSettings,
+                VapidPublic = vapid
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("/update-notification-settings")]
+        public async Task<IActionResult> UpdateNotificationSettings([FromBody] UpdateNotificationSettingsViewModel model)
+        {
+            var userId = User.GetClaim<int>(ClaimType.Id);
+            if (!await _userService.UpdateNotificationSettings(userId, model.Notifications))
+            {
+                return BadRequest();
+            }
+
+            if (!await _userService.AddNotificationBrowser(userId, model.Subscription.ToWebPushSubscription()))
+            {
+                return BadRequest();
+            }
+
+            return NoContent();
+        }
     }
 }

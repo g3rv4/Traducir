@@ -17,5 +17,14 @@ body {
 }
 
 .string-list tr td:first-of-type {
-    cursor: pointer
+    cursor: pointer;
+}
+
+.notification-type {
+    cursor: pointer;
+}
+
+.sorry-no-push {
+    text-align: center;
+    margin-top: 100px;
 }

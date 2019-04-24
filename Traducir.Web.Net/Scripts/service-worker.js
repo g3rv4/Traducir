@@ -8,7 +8,7 @@ self.addEventListener('push', function (event) {
             return {
                 action: idx,
                 title: a.title
-            }
+            };
         }),
         requireInteraction: data.requireInteraction,
         data: data,
