@@ -70,7 +70,7 @@ function initializeNotifications() {
 
             return registration.pushManager.subscribe(subscribeOptions);
         } catch (e) {
-            alert("Error asking for permission" + e.message);
+            alert("Error asking for permission: " + e.message);
             throw e;
         }
     }
