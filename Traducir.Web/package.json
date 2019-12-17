@@ -19,7 +19,7 @@
     "@types/react-router-dom": "^4.2.6",
     "@types/reactstrap": "^5.0.20",
     "awesome-typescript-loader": "^3.4.1",
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",
     "clean-webpack-plugin": "^0.1.19",
