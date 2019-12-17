@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StackExchange.Profiling;
+using Traducir.Api.Services;
 using Traducir.Core.Helpers;
 using Traducir.Core.Services;
 
@@ -31,6 +32,8 @@ namespace Traducir.Api
 
         public ILoggerFactory LoggerFactory { get; }
 
+        public string CookiePath { get; set; } = "/app";
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
@@ -40,10 +43,14 @@ namespace Traducir.Api
             services.AddSingleton(typeof(ISEApiService), typeof(SEApiService));
             services.AddSingleton(typeof(IUserService), typeof(UserService));
             services.AddSingleton(typeof(INotificationService), typeof(NotificationService));
+            services.AddSingleton(typeof(IStringsService), typeof(StringsService));
 
             if (HostingEnvironment.IsDevelopment() && !Configuration.GetValue<bool>("PUSH_TO_TRANSIFEX_ON_DEV"))
             {
-                LoggerFactory.AddConsole(LogLevel.Information);
+                services.AddLogging(loggingBuilder =>
+                {
+                    loggingBuilder.AddConsole();
+                });
                 services.AddSingleton(typeof(ILoggerFactory), LoggerFactory);
                 services.AddSingleton(typeof(TransifexService), typeof(TransifexService));
                 services.AddSingleton(typeof(ITransifexService), typeof(ReadonlyTransifexService));
@@ -60,7 +67,7 @@ namespace Traducir.Api
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
             {
-                o.Cookie.Path = "/app";
+                o.Cookie.Path = CookiePath;
                 o.Events.OnRedirectToLogin = context =>
                 {
                     context.Response.StatusCode = 401;

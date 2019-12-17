@@ -1,0 +1,30 @@
+body {
+    padding-top: 54px;
+}
+
+@media (min-width: 992px) {
+    body {
+        padding-top: 56px;
+    }
+}
+
+.w-95 {
+    width: 95% !important;
+}
+
+.modal-dialog:not(.alert-modal) .modal-content {
+    overflow: scroll;
+}
+
+.string-list tr td:first-of-type {
+    cursor: pointer;
+}
+
+.notification-type {
+    cursor: pointer;
+}
+
+.sorry-no-push {
+    text-align: center;
+    margin-top: 100px;
+}

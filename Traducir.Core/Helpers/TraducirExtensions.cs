@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using Traducir.Core.Models.Enums;
 
 namespace Traducir.Core.Helpers
 {
@@ -23,6 +25,11 @@ namespace Traducir.Core.Helpers
         public static bool HasValue(this string str)
         {
             return !str.IsNullOrEmpty();
+        }
+
+        public static string NullIfEmpty(this string str)
+        {
+            return string.IsNullOrWhiteSpace(str) ? null : str;
         }
 
         #pragma warning disable CA5351
@@ -70,5 +77,11 @@ namespace Traducir.Core.Helpers
 
             return $"{parts[0]}|{string.Join(",", variables)}";
         }
+
+        public static string ToDisplayString(this UserType userType) =>
+            userType == UserType.TrustedUser ? "Trusted User" : userType.ToString();
+
+        public static string ToIsoFormat(this DateTime date) =>
+            date.ToString("yyyy-MM-dd HH\\:mm\\:ss", CultureInfo.InvariantCulture);
     }
 }

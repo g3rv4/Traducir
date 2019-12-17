@@ -1,0 +1,31 @@
+@model Traducir.Web.Net.ViewModels.Home.FilterResultsViewModel
+
+<div class="m-2 text-center">
+    <h2>
+        Results @(Model.Count > 0 ? $"({Model.Count})" : null)
+    </h2>
+</div>
+<table class="table string-list">
+    <thead class="thead-light">
+        <tr>
+            <th>String</th>
+            <th>Translation</th>
+            <th>Suggestions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if(Model.Count == 0)
+        {
+            <tr>
+                <td colSpan="3" class="text-center">No results (sad trombone)</td>
+            </tr>
+        }
+        else
+        {
+            foreach (var str in Model.StringSummaries)
+            {
+                <partial name="StringSummary" model="str"/>
+            }
+        }
+    </tbody>
+</table>

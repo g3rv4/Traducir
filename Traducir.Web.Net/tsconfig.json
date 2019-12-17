@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "outDir": "./wwwroot/dist/modules",
+    "rootDir": "./Scripts",
+    "sourceMap": false,
+    "strict": false,
+    "module": "esnext",
+    "target": "es6",
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "include": [
+    "./Scripts/**/*"
+  ]
+}

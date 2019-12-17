@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -8,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Traducir.Api.ViewModels.Account;
@@ -24,23 +24,44 @@ namespace Traducir.Api.Controllers
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly bool _isDevelopmentEnvironment;
 
         public AccountController(
             IConfiguration configuration,
             ISEApiService seApiService,
             IUserService userService,
-            IAuthorizationService authorizationService)
+            IAuthorizationService authorizationService,
+            IHostingEnvironment hostingEnvironment)
         {
             _seApiService = seApiService;
             _configuration = configuration;
             _userService = userService;
             _authorizationService = authorizationService;
+            _isDevelopmentEnvironment = hostingEnvironment.IsDevelopment();
+        }
+
+        [Route("app/impersonate")]
+        public async Task<IActionResult> Impersonate(string returnUrl, int userId)
+        {
+            if (!_isDevelopmentEnvironment)
+            {
+                return NotFound();
+            }
+
+            await _userService.CreateFakeUsers();
+
+            var user = await _userService.GetUserAsync(userId);
+            await LoginUser(user.Id, null, false);
+
+            return Redirect(returnUrl ?? "/");
         }
 
         [Route("app/login")]
-        public IActionResult LogIn(string returnUrl)
+        public IActionResult LogIn(string returnUrl, string asUserType = null, bool asModerator = false)
         {
-            return Redirect(_seApiService.GetInitialOauthUrl(GetOauthReturnUrl(), returnUrl));
+            var state = _isDevelopmentEnvironment ? $"{asUserType} {(asModerator ? "true" : null)} {returnUrl}" : returnUrl;
+
+            return Redirect(_seApiService.GetInitialOauthUrl(GetOauthReturnUrl(), state));
         }
 
         [Route("app/logout")]
@@ -53,6 +74,22 @@ namespace Traducir.Api.Controllers
         [Route("app/oauth-callback")]
         public async Task<IActionResult> OauthCallback(string code, string state = null)
         {
+            string returnUrl, asUserType;
+            bool asModerator;
+            if (_isDevelopmentEnvironment && state != null)
+            {
+                var splitParts = state.Split(' ');
+                asUserType = splitParts[0].NullIfEmpty();
+                asModerator = splitParts[1] == "true";
+                returnUrl = splitParts[2].NullIfEmpty();
+            }
+            else
+            {
+                asUserType = null;
+                asModerator = false;
+                returnUrl = state;
+            }
+
             var siteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN");
 
             var accessToken = await _seApiService.GetAccessTokenFromCodeAsync(code, GetOauthReturnUrl());
@@ -73,40 +110,14 @@ namespace Traducir.Api.Controllers
             {
                 Id = currentUser.UserId,
                 DisplayName = currentUser.DisplayName,
-                IsModerator = currentUser.UserType == "moderator",
+                IsModerator = asModerator || currentUser.UserType == "moderator",
                 CreationDate = DateTime.UtcNow,
                 LastSeenDate = DateTime.UtcNow
             });
 
-            var user = await _userService.GetUserAsync(currentUser.UserId);
+            await LoginUser(currentUser.UserId, asUserType, asModerator);
 
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimType.Id, user.Id.ToString(CultureInfo.InvariantCulture)),
-                new Claim(ClaimType.Name, user.DisplayName),
-                new Claim(ClaimType.UserType, user.UserType.ToString())
-            };
-            if (user.UserType >= UserType.User)
-            {
-                claims.Add(new Claim(ClaimType.CanSuggest, "1"));
-                if (user.UserType >= UserType.TrustedUser)
-                {
-                    claims.Add(new Claim(ClaimType.CanReview, "1"));
-                }
-            }
-
-            if (user.IsModerator)
-            {
-                claims.Add(new Claim(ClaimType.IsModerator, "1"));
-            }
-
-            var identity = new ClaimsIdentity(claims, "login");
-
-            await HttpContext.SignInAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal(identity));
-
-            return Redirect(state ?? "/");
+            return Redirect(returnUrl ?? "/");
         }
 
         [Authorize]
@@ -184,6 +195,39 @@ namespace Traducir.Api.Controllers
             }
 
             return NoContent();
+        }
+
+        private async Task LoginUser(int userId, string asUserType, bool asModerator)
+        {
+            var user = await _userService.GetUserAsync(userId);
+            var userTypeString = asUserType == null ? user.UserType.ToString() : Enum.Parse(typeof(UserType), asUserType).ToString();
+            var userType = (UserType)Enum.Parse(typeof(UserType), userTypeString);
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimType.Id, user.Id.ToString(CultureInfo.InvariantCulture)),
+                new Claim(ClaimType.Name, user.DisplayName),
+                new Claim(ClaimType.UserType, userTypeString),
+            };
+            if (userType >= UserType.User)
+            {
+                claims.Add(new Claim(ClaimType.CanSuggest, "1"));
+                if (userType >= UserType.TrustedUser)
+                {
+                    claims.Add(new Claim(ClaimType.CanReview, "1"));
+                }
+            }
+
+            if (asModerator || user.IsModerator)
+            {
+                claims.Add(new Claim(ClaimType.IsModerator, "1"));
+            }
+
+            var identity = new ClaimsIdentity(claims, "login");
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(identity));
         }
 
         private string GetOauthReturnUrl()
