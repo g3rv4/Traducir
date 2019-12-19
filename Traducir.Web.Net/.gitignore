@@ -1,6 +1,0 @@
-wwwroot/**/*.min.*
-node_modules/
-.tscache/
-dist/
-wwwroot/js/
-wwwroot/service-worker.js

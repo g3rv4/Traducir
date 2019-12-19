@@ -4,5 +4,7 @@ obj/
 .vs/
 *.*proj.user
 Traducir.Web/node_modules/
-Traducir.Web/dist/
+Traducir.Web/wwwroot/js/
+Traducir.Web/wwwroot/css/*.min.css
 launchSettings.json
+.tscache/

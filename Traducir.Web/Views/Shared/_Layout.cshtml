@@ -1,0 +1,110 @@
+@inject Traducir.Web.ViewModels.LayoutViewModel viewModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>traducir.win</title>
+
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true"/>
+
+        <link rel="stylesheet" href="~/css/site.css" />
+        <link rel="stylesheet" href="~/css/spinner.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
+              crossorigin="anonymous"
+              integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"/>
+
+        <link rel="stylesheet" href="~/css/site.min.css" />
+    </environment>
+
+    <script defer src="~/lib/fontawesome.js"></script>
+</head>
+<body>
+    <div id="modal-container" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog w-95 mw-100" role="document">
+        <div class="modal-content">
+          <!-- the .setContent() method will update this element's HTML -->
+        </div>
+      </div>
+    </div>
+    <div class="loading" id="spinner" style='display:none'>Loading...</div>
+    <div id="root">
+        <nav class="fixed-top navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand d-none d-lg-block" href="/">@viewModel.ConfigName Translations 🦄 @viewModel.UserInfo</a>
+                <button type="button" class="navbar-toggler">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse">
+                    <ul class="ml-auto navbar-nav">
+                        <li class="nav-item">
+                            <a href="https://github.com/g3rv4/Traducir" target="_blank" class="nav-link">Source Code</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Database
+                            </a>
+                            <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="https://db.traducir.win">Access the Database</a>
+                                <a class="dropdown-item" href="https://github.com/g3rv4/Traducir/blob/master/docs/USING_REDASH.md">Instructions</a>
+                            </div>
+                        </li>
+                        @if (viewModel.IsLoggedIn)
+                        {
+                            <li class="nav-item dropdown">
+                                <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    My account
+                                </a>
+                                <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="suggestions/@(viewModel.UserId)">My Suggestions</a>
+                                    <a class="dropdown-item" href="notifications">My Notifications</a>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a href="users" target="_blank" class="nav-link">Users</a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            @{
+                                var returnUrl = System.Net.WebUtility.UrlEncode(viewModel.CurrentPathAndQuery);
+                            }
+                            @if (viewModel.IsLoggedIn)
+                            {
+                                <a href="/app/logout?returnUrl=@returnUrl" class="nav-link">Log out</a>
+                            }
+                            else
+                            {
+                                <a href="/app/login?returnUrl=@returnUrl" class="nav-link">Log in!</a>
+                            }
+                        </li>
+                        <environment include="Development">
+                            <partial name="DevelopmentMenu" model="viewModel" />
+                        </environment>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        @RenderBody()
+    </div>
+
+    <environment include="Development">
+        <script src="~/lib/bootstrap-native/js/bootstrap-native-v4.min.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap.native/2.0.26/bootstrap-native-v4.min.js"
+                asp-fallback-src="~/lib/bootstrap-native/js/bootstrap-native-v4.min.js"
+                asp-fallback-test="typeof(Modal)==='function'"
+                crossorigin="anonymous">
+        </script>
+    </environment>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

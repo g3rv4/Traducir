@@ -8,11 +8,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Traducir.Migrations", "Trad
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Traducir.Core", "Traducir.Core\Traducir.Core.csproj", "{3C96AC2E-8595-4861-BA12-79AA3E4E7793}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Traducir.Web", "Traducir.Web\Traducir.Web.njsproj", "{BF303B5E-3289-45FD-A285-5081B4CCBDB2}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8B7040D6-BAA7-4677-9B38-D25CE1B46FFD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Traducir.Web.Net", "Traducir.Web.Net\Traducir.Web.Net.csproj", "{FB1119B4-CFC8-4EEA-801F-6DA22C52580C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Traducir.Web", "Traducir.Web\Traducir.Web.csproj", "{FB1119B4-CFC8-4EEA-801F-6DA22C52580C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
