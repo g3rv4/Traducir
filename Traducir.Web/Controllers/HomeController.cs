@@ -1,11 +1,9 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Traducir.Api.Services;
 using Traducir.Core.Helpers;
 using Traducir.Web.Models;
 using Traducir.Web.ViewModels.Home;
-using Traducir.Api.ViewModels.Strings;
 using Traducir.Core.Models.Enums;
 using System;
 using Traducir.Core.Models;
@@ -13,7 +11,9 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Traducir.Core.Services;
 using Microsoft.Extensions.Configuration;
-using Traducir.Api.Models.Enums;
+using Traducir.Web.Models.Home;
+using Traducir.Web.Models.Enums;
+using Traducir.Web.Services;
 
 namespace Traducir.Web.Controllers
 {

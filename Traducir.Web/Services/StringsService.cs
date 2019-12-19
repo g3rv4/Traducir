@@ -6,14 +6,15 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Traducir.Api.Models.Enums;
-using Traducir.Api.ViewModels.Strings;
+using Traducir.Web.ViewModels.Home;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
+using Traducir.Web.Models.Enums;
+using Traducir.Web.Models.Home;
 
-namespace Traducir.Api.Services
+namespace Traducir.Web.Services
 {
     public interface IStringsService
     {

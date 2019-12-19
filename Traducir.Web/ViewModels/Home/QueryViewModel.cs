@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Traducir.Api.ViewModels.Strings
+namespace Traducir.Web.ViewModels.Home
 {
 #pragma warning disable CA1717
     public enum SuggestionApprovalStatus

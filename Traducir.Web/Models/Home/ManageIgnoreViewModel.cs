@@ -1,4 +1,4 @@
-namespace Traducir.Api.ViewModels.Strings
+namespace Traducir.Web.Models.Home
 {
     public class ManageIgnoreViewModel
     {

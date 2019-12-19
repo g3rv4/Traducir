@@ -3,9 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Services;
-using Traducir.Core.Services;
 
-namespace Traducir.Api
+namespace Traducir.Core.Services
 {
     // To be used in development environment only
     public class ReadonlyTransifexService : ITransifexService

@@ -1,6 +1,6 @@
 using Traducir.Core.Models;
 
-namespace Traducir.Api.ViewModels.Account
+namespace Traducir.Web.ViewModels.Users
 {
     public class SubscriptionViewModel
     {

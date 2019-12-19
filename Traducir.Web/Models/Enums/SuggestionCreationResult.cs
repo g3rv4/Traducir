@@ -1,4 +1,4 @@
-﻿namespace Traducir.Api.Models.Enums
+namespace Traducir.Web.Models.Enums
 {
     public enum SuggestionCreationResult
     {

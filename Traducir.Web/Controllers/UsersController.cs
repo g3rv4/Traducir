@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Traducir.Api.ViewModels.Account;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
+using Traducir.Web.Models.Users;
 using Traducir.Web.ViewModels.Users;
 
 namespace Traducir.Web.Controllers

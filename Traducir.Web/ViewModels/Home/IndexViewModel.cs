@@ -1,5 +1,3 @@
-using Traducir.Api.ViewModels.Strings;
-
 namespace Traducir.Web.ViewModels.Home
 {
     public class IndexViewModel

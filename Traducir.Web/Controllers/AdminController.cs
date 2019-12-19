@@ -9,7 +9,7 @@ using StackExchange.Exceptional;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
 
-namespace Traducir.Api.Controllers
+namespace Traducir.Web.Controllers
 {
     public class AdminController : Controller
     {
@@ -32,13 +32,13 @@ namespace Traducir.Api.Controllers
             _configuration = configuration;
         }
 
-        [Route("app/admin/throw")]
+        [Route("admin/throw")]
         public static IActionResult Throw()
         {
             throw new InvalidOperationException();
         }
 
-        [Route("app/api/admin/pull")]
+        [Route("admin/pull")]
         public async Task<IActionResult> PullStrings()
         {
             var strings = await _transifexService.GetStringsFromTransifexAsync();
@@ -46,21 +46,21 @@ namespace Traducir.Api.Controllers
             return NoContent();
         }
 
-        [Route("app/api/admin/pull-so-dump")]
+        [Route("admin/pull-so-dump")]
         public async Task<IActionResult> PullSODump(string dumpUrl)
         {
             await _soStringService.PullSODump(dumpUrl);
             return NoContent();
         }
 
-        [Route("app/api/admin/update-translations-fron-so-dump")]
+        [Route("admin/update-translations-fron-so-dump")]
         public async Task<IActionResult> UpdateTranslationsFromSODump(string overrideExisting)
         {
             await _soStringService.UpdateTranslationsFromSODump(overrideExisting != null);
             return NoContent();
         }
 
-        [Route("app/api/admin/push")]
+        [Route("admin/push")]
         public async Task<IActionResult> PushStrings()
         {
             var stringsToPush = await _soStringService.GetStringsAsync(s => s.HasTranslation, includeEverything: true);
@@ -78,14 +78,14 @@ namespace Traducir.Api.Controllers
             return NoContent();
         }
 
-        [Route("app/api/admin/generate-notifications")]
+        [Route("admin/generate-notifications")]
         public async Task<IActionResult> GenerateNotifications()
         {
             await _notificationService.SendStateNotifications(Request.Host.ToString());
             return NoContent();
         }
 
-        [Route("app/api/admin/migrate")]
+        [Route("admin/migrate")]
         public IActionResult Migrate()
         {
             var migrationsAssembly = typeof(Migrations.Program).Assembly;
@@ -101,7 +101,7 @@ namespace Traducir.Api.Controllers
             return NoContent();
         }
 
-        [Route("app/admin/errors/{path?}/{subPath?}")]
+        [Route("admin/errors/{path?}/{subPath?}")]
         public async Task Exceptions() => await ExceptionalMiddleware.HandleRequestAsync(HttpContext);
     }
 }
