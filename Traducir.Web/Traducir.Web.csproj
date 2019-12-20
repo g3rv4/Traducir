@@ -3,10 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <TypeScriptToolsVersion>3.4.3</TypeScriptToolsVersion>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugNoTS|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
@@ -28,7 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifier" Version="2.9.406" />
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.2.3" />
+    <PackageReference Include="Microsoft.AspNetCore.All" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
