@@ -1,5 +1,11 @@
 @inject Traducir.Web.ViewModels.LayoutViewModel viewModel
-
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@functions{
+    public string GetAntiXsrfRequestToken()
+    {
+        return Xsrf.GetAndStoreTokens(Context).RequestToken;
+    }
+}
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +13,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>traducir.win</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
     <environment include="Development">
         <link rel="stylesheet" href="~/css/site.css" />
         <link rel="stylesheet" href="~/css/spinner.css" />
@@ -20,11 +26,11 @@
 </head>
 <body>
     <div id="modal-container" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-dialog w-95 mw-100" role="document">
-        <div class="modal-content">
-          <!-- the .setContent() method will update this element's HTML -->
+        <div class="modal-dialog w-95 mw-100" role="document">
+            <div class="modal-content">
+                <!-- the .setContent() method will update this element's HTML -->
+            </div>
         </div>
-      </div>
     </div>
     <div class="loading" id="spinner" style='display:none'>Loading...</div>
     <div id="root">
@@ -77,10 +83,10 @@
                             }
                         </li>
                         @*
-                        // it will be back
-                        <environment include="Development">
-                            <partial name="DevelopmentMenu" model="viewModel" />
-                        </environment> *@
+                            // it will be back
+                            <environment include="Development">
+                                <partial name="DevelopmentMenu" model="viewModel" />
+                            </environment> *@
                     </ul>
                 </div>
             </div>
@@ -91,6 +97,10 @@
 
     <script src="~/lib/bootstrap-native/js/bootstrap-native-v4.min.js"></script>
     <script src="~/lib/require.2.3.6.min.js"></script>
+    <script src="~/js/dist/app.js" asp-append-version="true"></script>
+    <script>
+        var csrfToken = '@GetAntiXsrfRequestToken()';
+    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

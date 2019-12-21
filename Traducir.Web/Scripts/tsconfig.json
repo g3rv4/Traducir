@@ -1,14 +1,11 @@
 {
   "compilerOptions": {
-    "rootDir": "./",
     "sourceMap": true,
     "mapRoot": "/js/dist",
+    "outFile": "../wwwroot/js/dist/app.js",
     "strict": false,
     "module": "amd",
-    "target": "es6",
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
+    "target": "es6"
   },
   "include": [
     "./**/*"

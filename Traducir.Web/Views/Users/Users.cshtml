@@ -1,8 +1,8 @@
-@model  Traducir.Web.ViewModels.Users.UsersListViewModel
+@model Traducir.Web.ViewModels.Users.UsersListViewModel
 
 @section Scripts
 {
-    <script src="~/js/users.js"></script>
+    <script>require(["users/user-edit"], users => { users.default(); });</script>
 }
 
 <div class="container">
@@ -18,7 +18,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach(var user in Model.Users)
+            @foreach (var user in Model.Users)
             {
                 <partial name="UserSummary" model="user" />
             }

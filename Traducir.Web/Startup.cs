@@ -122,9 +122,17 @@ namespace Traducir.Web
             });
 
             services
-                .AddMvc()
+                .AddMvc(options =>
+                {
+                    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                })
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddViewOptions(options => options.HtmlHelperOptions.ClientValidationEnabled = false);
+
+            services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "X-CSRF-TOKEN";
+            });
 
             services.AddHttpContextAccessor();
         }

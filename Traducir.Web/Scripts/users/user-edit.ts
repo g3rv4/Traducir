@@ -1,7 +1,9 @@
 import { ajaxPost } from "../shared/ajax";
 import { dynamicEventHook } from "../shared/utils";
 
-initializeUserEdit();
+export default function run() {
+    initializeUserEdit();
+}
 
 function initializeUserEdit() {
     dynamicEventHook("click", "[data-change-to-user-type]", e => {

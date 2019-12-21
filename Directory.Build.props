@@ -5,7 +5,8 @@
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
         <PlatformTarget>AnyCPU</PlatformTarget>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <Configurations>Debug;Release;DebugNoTS;ReleaseNoTS;Local</Configurations>
+        <Configurations>Debug;Release;Local</Configurations>
+        <DefineConstants Condition="'$(Configuration)' == 'Local'">TRACE;DEBUG;LOCAL</DefineConstants>
         <DebugType>full</DebugType>
     </PropertyGroup>
 

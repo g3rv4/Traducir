@@ -3,7 +3,9 @@ declare var notificationSettings: any;
 import { ajaxPost, defaultAjaxOnErrorResponse } from "../shared/ajax";
 import { urlBase64ToUint8Array } from "../shared/utils";
 
-initializeNotifications();
+export default function run() {
+    initializeNotifications();
+}
 
 function initializeNotifications() {
     const supportsPush = ("serviceWorker" in navigator) && ("PushManager" in window);

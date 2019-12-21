@@ -19,7 +19,7 @@
         };
     </script>
 
-    <script src="~/js/notifications.js"></script>
+    <script>require(["users/notifications"], users => { users.default(); });</script>
 }
 
 <div class="container" id="main-container">

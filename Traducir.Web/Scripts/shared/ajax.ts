@@ -1,5 +1,7 @@
 import { spinner } from "./utils";
 
+declare var csrfToken: string;
+
 export function ajaxGet(url, responseType, queryString, onSuccess?, onErrorResponse?, onFailure?) {
     ajax("GET", url, responseType, queryString, null, onSuccess, onErrorResponse, onFailure);
 }
@@ -15,6 +17,10 @@ function ajax(method, url, responseType, queryString, body, onSuccess, onErrorRe
         body = JSON.stringify(body);
     }
     const headers = body ? { "Content-Type": "application/json" } : {};
+
+    if (method === "POST") {
+        headers["X-CSRF-TOKEN"] = csrfToken;
+    }
 
     fetch(url + (queryString || ""), { method, body, headers })
         .then(response => {
