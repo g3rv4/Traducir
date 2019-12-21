@@ -27,6 +27,8 @@ namespace Traducir.Core.Services
 
         Task<bool> UpdateNotificationSettings(int userId, NotificationSettings newSettings);
 
+        Task WipeNotificationDataAsync(int userId);
+
         Task<bool> AddNotificationBrowser(int userId, WebPushSubscription subscription);
 
         Task<bool> SendNotification(int userId, NotificationType type, bool useHttps, string host);
@@ -174,33 +176,19 @@ Where  Id = @userId", new { userId });
         {
             using (var db = _dbService.GetConnection())
             {
-                return (await db.ExecuteAsync(@"
+                return await UpdateNotificationSettings(userId, newSettings, db);
+            }
+        }
+
+        public async Task WipeNotificationDataAsync(int userId)
+        {
+            using (var db = _dbService.GetConnection())
+            {
+                await UpdateNotificationSettings(userId, new NotificationSettings(), db);
+                await db.ExecuteAsync(@"
 Update Users
-Set    NextNotificationUrgentStrings = Case When @NotifyUrgentStrings > 0 Then @now End,
-       NextNotificationSuggestionsAwaitingApproval = Case When @NotifySuggestionsAwaitingApproval > 0 Then @now End,
-       NextNotificationSuggestionsAwaitingReview = Case When @NotifySuggestionsAwaitingReview > 0 Then @now End,
-       NextNotificationStringsPushedToTransifex = Case When @NotifyStringsPushedToTransifex > 0 Then @now End,
-       NextNotificationSuggestionsApproved = Case When @NotifySuggestionsApproved > 0 Then @now End,
-       NextNotificationSuggestionsRejected = Case When @NotifySuggestionsRejected > 0 Then @now End,
-       NextNotificationSuggestionsReviewed = Case When @NotifySuggestionsReviewed > 0 Then @now End,
-       NextNotificationSuggestionsOverriden = Case When @NotifySuggestionsOverriden > 0 Then @now End,
-       NotificationsIntervalId = @NotificationsInterval,
-       NotificationsIntervalValue = @NotificationsIntervalValue
-Where  Id = @userId", new
-                {
-                    newSettings.NotifyUrgentStrings,
-                    newSettings.NotifySuggestionsAwaitingApproval,
-                    newSettings.NotifySuggestionsAwaitingReview,
-                    newSettings.NotifyStringsPushedToTransifex,
-                    newSettings.NotifySuggestionsApproved,
-                    newSettings.NotifySuggestionsRejected,
-                    newSettings.NotifySuggestionsReviewed,
-                    newSettings.NotifySuggestionsOverriden,
-                    newSettings.NotificationsInterval,
-                    newSettings.NotificationsIntervalValue,
-                    now = DateTime.UtcNow,
-                    userId
-                })) == 1;
+Set    NotificationDetails = NULL
+Where  Id = @userId", new { userId });
             }
         }
 
@@ -329,6 +317,37 @@ Where       Id = @userId", new { userId });
 Update Users
 Set    NotificationDetails = @content
 Where  Id = @userId", new { userId, content });
+        }
+
+        private async Task<bool> UpdateNotificationSettings(int userId, NotificationSettings newSettings, DbConnection db)
+        {
+            return (await db.ExecuteAsync(@"
+Update Users
+Set    NextNotificationUrgentStrings = Case When @NotifyUrgentStrings > 0 Then @now End,
+       NextNotificationSuggestionsAwaitingApproval = Case When @NotifySuggestionsAwaitingApproval > 0 Then @now End,
+       NextNotificationSuggestionsAwaitingReview = Case When @NotifySuggestionsAwaitingReview > 0 Then @now End,
+       NextNotificationStringsPushedToTransifex = Case When @NotifyStringsPushedToTransifex > 0 Then @now End,
+       NextNotificationSuggestionsApproved = Case When @NotifySuggestionsApproved > 0 Then @now End,
+       NextNotificationSuggestionsRejected = Case When @NotifySuggestionsRejected > 0 Then @now End,
+       NextNotificationSuggestionsReviewed = Case When @NotifySuggestionsReviewed > 0 Then @now End,
+       NextNotificationSuggestionsOverriden = Case When @NotifySuggestionsOverriden > 0 Then @now End,
+       NotificationsIntervalId = @NotificationsInterval,
+       NotificationsIntervalValue = @NotificationsIntervalValue
+Where  Id = @userId", new
+            {
+                newSettings.NotifyUrgentStrings,
+                newSettings.NotifySuggestionsAwaitingApproval,
+                newSettings.NotifySuggestionsAwaitingReview,
+                newSettings.NotifyStringsPushedToTransifex,
+                newSettings.NotifySuggestionsApproved,
+                newSettings.NotifySuggestionsRejected,
+                newSettings.NotifySuggestionsReviewed,
+                newSettings.NotifySuggestionsOverriden,
+                newSettings.NotificationsInterval,
+                newSettings.NotificationsIntervalValue,
+                now = DateTime.UtcNow,
+                userId
+            })) == 1;
         }
 
         private async Task<bool> SendNotification(int userId, Models.Services.PushNotificationMessage message)

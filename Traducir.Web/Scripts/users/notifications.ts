@@ -42,6 +42,7 @@ function initializeNotifications() {
     });
 
     document.getElementById("save-and-add-browser").addEventListener("click", saveAndAddBrowser);
+    document.getElementById("stop-receiving-notifications").addEventListener("click", wipeNotifications);
 
     async function saveAndAddBrowser(): Promise<void> {
         const subscription = await subscribeUserToPush();
@@ -75,5 +76,15 @@ function initializeNotifications() {
             alert("Error asking for permission: " + e.message);
             throw e;
         }
+    }
+
+    function wipeNotifications() {
+        ajaxPost("/delete-notifications", "text", {}, () => location.reload(), response => {
+            if (response.status === 401) {
+                history.pushState(null, "", "/");
+            } else {
+                defaultAjaxOnErrorResponse(response);
+            }
+        })
     }
 }

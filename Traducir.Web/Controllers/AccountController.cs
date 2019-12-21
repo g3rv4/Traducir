@@ -39,7 +39,7 @@ namespace Traducir.Web.Controllers
         }
 
         [Route("login")]
-        public IActionResult LogIn(string returnUrl, string asUserType = null, bool asModerator = false)
+        public IActionResult LogIn(string returnUrl)
         {
             return Redirect(_seApiService.GetInitialOauthUrl(GetOauthReturnUrl(), returnUrl));
         }
@@ -116,9 +116,7 @@ namespace Traducir.Web.Controllers
                 new ClaimsPrincipal(identity));
         }
 
-        private string GetOauthReturnUrl()
-        {
-            return Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS") ? "https" : "http");
-        }
+        private string GetOauthReturnUrl() =>
+            Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS") ? "https" : "http");
     }
 }

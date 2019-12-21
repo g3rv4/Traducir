@@ -24,10 +24,10 @@ namespace Traducir.Web.Controllers
             IConfiguration configuration,
             ISOStringService soStringService)
         {
-            this._userService = userService;
-            this._authorizationService = authorizationService;
-            this._configuration = configuration;
-            this._soStringService = soStringService;
+            _userService = userService;
+            _authorizationService = authorizationService;
+            _configuration = configuration;
+            _soStringService = soStringService;
         }
 
         [Route("/users")]
@@ -111,6 +111,16 @@ namespace Traducir.Web.Controllers
                 return BadRequest();
             }
 
+            return NoContent();
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("/delete-notifications")]
+        public async Task<IActionResult> DeleteNotifications()
+        {
+            var userId = User.GetClaim<int>(ClaimType.Id);
+            await _userService.WipeNotificationDataAsync(userId);
             return NoContent();
         }
     }
