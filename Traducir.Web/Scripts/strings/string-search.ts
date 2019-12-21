@@ -7,16 +7,12 @@ export default function initializeStringSearch() {
     const queryDropdowns = document.querySelectorAll("select.js-string-query-filter") as NodeListOf<HTMLSelectElement>;
     const queryTextInputs = document.querySelectorAll("input[type=text].js-string-query-filter") as NodeListOf<HTMLInputElement>;
     const queryLinks = document.querySelectorAll("a.js-string-query-filter") as NodeListOf<HTMLAnchorElement>;
-    let initialQueryFilters;
+    let initialQueryFilters = clone(stringQueryFilters);
 
-    window.onload = () => {
-        initialQueryFilters = clone(stringQueryFilters);
-
-        hookDropdowns();
-        hookTextboxes();
-        hookQuickLinks();
-        hookHistoryPopState();
-    };
+    hookDropdowns();
+    hookTextboxes();
+    hookQuickLinks();
+    hookHistoryPopState();
 
     function setInputsFromCurrentFilters() {
         let i;

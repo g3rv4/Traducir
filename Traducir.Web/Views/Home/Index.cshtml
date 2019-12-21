@@ -16,7 +16,8 @@
         };
     </script>
 
-    <script src="~/js/strings.js"></script>
+    <script src="~/js/dist/strings.js" asp-append-version="true"></script>
+    <script>require(["strings/strings"], strings => { strings.default(); });</script>
 }
 
 <div class="container">

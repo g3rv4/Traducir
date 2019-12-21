@@ -1,16 +1,17 @@
 {
   "compilerOptions": {
-    "outDir": "./wwwroot/dist/modules",
-    "rootDir": "./Scripts",
-    "sourceMap": false,
+    "rootDir": "./",
+    "sourceMap": true,
+    "mapRoot": "/js/dist",
     "strict": false,
-    "module": "esnext",
+    "module": "amd",
     "target": "es6",
     "typeRoots": [
       "./node_modules/@types"
     ]
   },
   "include": [
-    "./Scripts/**/*"
-  ]
+    "./**/*"
+  ],
+  "compileOnSave": true
 }

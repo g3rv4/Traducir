@@ -1,0 +1,6 @@
+{
+  "extends": "../base",
+  "compilerOptions": {
+    "outFile": "../../wwwroot/js/dist/strings.js"
+  }
+}

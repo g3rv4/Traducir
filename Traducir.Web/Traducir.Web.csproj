@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <TypeScriptToolsVersion>3.6</TypeScriptToolsVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -48,6 +48,7 @@
     <Folder Include="ViewModels\Account\" />
     <Folder Include="ViewModels\Config\" />
     <Folder Include="ViewModels\Strings\" />
+    <Folder Include="wwwroot\js\" />
   </ItemGroup>
 
 
@@ -55,7 +56,5 @@
     <ProjectReference Include="..\Traducir.Core\Traducir.Core.csproj" />
     <ProjectReference Include="..\Traducir.Migrations\Traducir.Migrations.csproj" />
   </ItemGroup>
-
-  <Import Project="Build\js.build" />
 
 </Project>

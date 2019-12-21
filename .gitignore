@@ -3,8 +3,7 @@ bin/
 obj/
 .vs/
 *.*proj.user
-Traducir.Web/node_modules/
-Traducir.Web/wwwroot/js/
+Traducir.Web/wwwroot/js/dist/
 Traducir.Web/wwwroot/css/*.min.css
 launchSettings.json
 .tscache/
