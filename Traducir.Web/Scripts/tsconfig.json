@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "sourceMap": true,
-    "mapRoot": "/js/dist",
+    "inlineSources": true,
     "outFile": "../wwwroot/js/dist/app.js",
     "strict": false,
     "module": "amd",
