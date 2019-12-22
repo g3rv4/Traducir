@@ -3,6 +3,11 @@
 @model Traducir.Web.ViewModels.Users.UserSummaryViewModel
 @{
     var user = Model.User;
+#if LOCAL
+    var impersonateEnabled = true;
+#else
+    var impersonateEnabled = false;
+#endif
 }
 <tr data-user-id="@user.Id">
     <td>
@@ -14,6 +19,12 @@
     <td>@if (Model.CurrentUserCanManageUsers)
         {
             <div class="btn-group" role="group">
+                @if(impersonateEnabled)
+                {
+                    <a href="/impersonate/@user.Id" class="btn btn-sm btn-danger">
+                        Impersonate
+                    </a>
+                }
                 <a href="/suggestions/@user.Id" class="btn btn-sm btn-primary">view suggestions</a>
                 @if(user.UserType == UserType.User)
                 {
@@ -40,6 +51,12 @@
                     </button>
                 }
             </div>
+        }
+        else if(impersonateEnabled)
+        {
+            <a href="/impersonate/@user.Id" class="btn btn-sm btn-danger">
+                Impersonate
+            </a>
         }
     </td>
 </tr>

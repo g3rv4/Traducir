@@ -85,6 +85,15 @@ namespace Traducir.Web.Controllers
             return Redirect(returnUrl ?? "/");
         }
 
+#if LOCAL
+        [Route("impersonate/{userId}")]
+        public async Task<IActionResult> Impersonate(int userId)
+        {
+            await LoginUser(userId);
+            return Redirect("/");
+        }
+#endif
+
         private async Task LoginUser(int userId)
         {
             var user = await _userService.GetUserAsync(userId);

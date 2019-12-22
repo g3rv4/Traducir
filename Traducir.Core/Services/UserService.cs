@@ -34,8 +34,6 @@ namespace Traducir.Core.Services
         Task<bool> SendNotification(int userId, NotificationType type, bool useHttps, string host);
 
         Task SendBatchNotifications(NotificationType type, bool useHttps, string host, int? count = null);
-
-        Task CreateFakeUsers();
     }
 
     public class UserService : IUserService
@@ -282,20 +280,6 @@ Where  {type.GetUserColumnName()} < @now", new { now = DateTime.UtcNow });
 Update Users
 Set    {type.GetUserColumnName()} = DateAdd(minute, NotificationsIntervalId * NotificationsIntervalValue, @now)
 Where  Id In @successfulUserIds", new { successfulUserIds, columnName = type.GetUserColumnName(), now = DateTime.UtcNow });
-            }
-        }
-
-        public async Task CreateFakeUsers()
-        {
-            using (var db = _dbService.GetConnection())
-            {
-                await db.ExecuteAsync(@"
-if not exists (select Id from Users where Id = -2)
-insert into Users (Id, DisplayName, IsModerator, IsTrusted, IsReviewer, IsBanned, CreationDate, NotificationsIntervalId, NotificationsIntervalValue, NotificationsIntervalMinutes)
-values
-(-2, 'Eggs McLaren', 0, 0, 0, 0, CURRENT_TIMESTAMP, 1440, 7, 10080),
-(-3, 'Mato#34', 0, 1, 0, 0, CURRENT_TIMESTAMP, 1440, 7, 10080),
-(-4, 'Kazuhiko Nishi', 0, 0, 1, 0, CURRENT_TIMESTAMP, 1440, 7, 10080)");
             }
         }
 
