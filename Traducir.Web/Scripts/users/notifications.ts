@@ -85,6 +85,6 @@ function initializeNotifications() {
             } else {
                 defaultAjaxOnErrorResponse(response);
             }
-        })
+        });
     }
 }

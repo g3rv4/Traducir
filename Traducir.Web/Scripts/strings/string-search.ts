@@ -7,7 +7,7 @@ export default function initializeStringSearch() {
     const queryDropdowns = document.querySelectorAll("select.js-string-query-filter") as NodeListOf<HTMLSelectElement>;
     const queryTextInputs = document.querySelectorAll("input[type=text].js-string-query-filter") as NodeListOf<HTMLInputElement>;
     const queryLinks = document.querySelectorAll("a.js-string-query-filter") as NodeListOf<HTMLAnchorElement>;
-    let initialQueryFilters = clone(stringQueryFilters);
+    const initialQueryFilters = clone(stringQueryFilters);
 
     hookDropdowns();
     hookTextboxes();
