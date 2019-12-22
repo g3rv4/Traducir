@@ -16,7 +16,7 @@ function initializeUserEdit() {
         const newUserType = element.getAttribute("data-change-to-user-type");
 
         ajaxPost(
-            "/change-user-type",
+            "/users/change-type",
             "text",
             { userId, userType: newUserType },
             html => userSummaryContainer.outerHTML = html

@@ -47,7 +47,7 @@ function initializeNotifications() {
     async function saveAndAddBrowser(): Promise<void> {
         const subscription = await subscribeUserToPush();
         ajaxPost(
-            "/update-notification-settings",
+            "/users/me/notifications/update",
             "text",
             { notifications: notificationSettings, subscription },
             null,
@@ -79,7 +79,7 @@ function initializeNotifications() {
     }
 
     function wipeNotifications() {
-        ajaxPost("/delete-notifications", "text", {}, () => location.reload(), response => {
+        ajaxPost("/users/me/notifications/delete", "text", {}, () => location.reload(), response => {
             if (response.status === 401) {
                 history.pushState(null, "", "/");
             } else {

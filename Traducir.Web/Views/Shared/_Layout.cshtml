@@ -61,8 +61,8 @@
                                     My account
                                 </a>
                                 <div tabindex="-1" role="menu" aria-hidden="true" class="dropdown-menu dropdown-menu-right">
-                                    <a class="dropdown-item" href="/suggestions/@(viewModel.UserId)">My Suggestions</a>
-                                    <a class="dropdown-item" href="/notifications">My Notifications</a>
+                                    <a class="dropdown-item" href="@Url.Action("SuggestionsByUser", "Users", new { userId = viewModel.UserId})">My Suggestions</a>
+                                    <a class="dropdown-item" href="@Url.Action("Notifications", "Users")">My Notifications</a>
                                 </div>
                             </li>
                         }

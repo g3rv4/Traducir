@@ -123,7 +123,7 @@ namespace Traducir.Core.Models.Enums
                 case NotificationType.SuggestionsRejected:
                 case NotificationType.SuggestionsReviewed:
                 case NotificationType.SuggestionsOverriden:
-                    return $"{basePath}/suggestions/{userId}";
+                    return $"{basePath}/users/{userId}/suggestions";
                 default:
                     throw new ArgumentException($"Missing url info for notification {type}");
             }

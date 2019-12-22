@@ -8,10 +8,10 @@
     <div class="row text-center mt-3">
         <div class="col d-none d-lg-block">
             <div class="btn-group" role="group">
-                <a href="/suggestions/@Model.UserId" class="btn btn-outline-info nav-link mx-1 @(Model.CurrentState == null ? "active" : null)">All</a>
+                <a href="@Url.Action("SuggestionsByUser", "Users", new { userId = Model.UserId})" class="btn btn-outline-info nav-link mx-1 @(Model.CurrentState == null ? "active" : null)">All</a>
                 @foreach(var state in Model.SuggestionStatesForFilters)
                 {
-                    <a href="/suggestions/@Model.UserId?state=@((int)state)" class="btn btn-outline-info nav-link mx-1 @(state==Model.CurrentState ? "active" : null)">@state.DisplayName()</a>
+                    <a href="@Url.Action("SuggestionsByUser", "Users", new { userId = Model.UserId, state = (int)state})" class="btn btn-outline-info nav-link mx-1 @(state==Model.CurrentState ? "active" : null)">@state.DisplayName()</a>
                 }
             </div>
         </div>

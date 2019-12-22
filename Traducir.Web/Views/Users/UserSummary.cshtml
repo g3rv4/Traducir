@@ -25,7 +25,7 @@
                         Impersonate
                     </a>
                 }
-                <a href="/suggestions/@user.Id" class="btn btn-sm btn-primary">view suggestions</a>
+                <a href="@Url.Action("SuggestionsByUser", "Users", new { userId = user.Id})" class="btn btn-sm btn-primary">view suggestions</a>
                 @if(user.UserType == UserType.User)
                 {
                     <button type="button" class="btn btn-sm btn-warning" data-change-to-user-type="@((int)UserType.TrustedUser)">

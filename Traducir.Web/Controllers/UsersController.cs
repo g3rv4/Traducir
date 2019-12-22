@@ -30,7 +30,7 @@ namespace Traducir.Web.Controllers
             _soStringService = soStringService;
         }
 
-        [Route("/users")]
+        [Route("users")]
         public async Task<IActionResult> Users()
         {
             var users = (await _userService.GetUsersAsync())
@@ -46,7 +46,7 @@ namespace Traducir.Web.Controllers
 
         [HttpPost]
         [Authorize(Policy = TraducirPolicy.CanManageUsers)]
-        [Route("/change-user-type")]
+        [Route("users/change-type")]
         public async Task<IActionResult> ChangeUserType([FromBody] ChangeUserTypeViewModel model)
         {
             // explicitly whitelist accepted types
@@ -68,7 +68,7 @@ namespace Traducir.Web.Controllers
         }
 
         [Authorize]
-        [Route("/suggestions/{userId:INT}")]
+        [Route("users/{userId:INT}/suggestions")]
         public async Task<IActionResult> SuggestionsByUser(int userId, StringSuggestionState? state)
         {
             var suggestions = await _soStringService.GetSuggestionsByUser(userId, state);
@@ -79,7 +79,7 @@ namespace Traducir.Web.Controllers
         }
 
         [Authorize]
-        [Route("/notifications")]
+        [Route("users/me/notifications")]
         public async Task<IActionResult> Notifications()
         {
             var userId = User.GetClaim<int>(ClaimType.Id);
@@ -97,7 +97,7 @@ namespace Traducir.Web.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("/update-notification-settings")]
+        [Route("users/me/notifications/update")]
         public async Task<IActionResult> UpdateNotificationSettings([FromBody] UpdateNotificationSettingsViewModel model)
         {
             var userId = User.GetClaim<int>(ClaimType.Id);

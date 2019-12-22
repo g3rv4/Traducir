@@ -101,7 +101,7 @@ namespace Traducir.Web.Controllers
             return NoContent();
         }
 
-        [Route("admin/errors/{path?}/{subPath?}")]
+        [Route("errors/{path?}/{subPath?}")]
         public async Task Exceptions() => await ExceptionalMiddleware.HandleRequestAsync(HttpContext);
     }
 }
