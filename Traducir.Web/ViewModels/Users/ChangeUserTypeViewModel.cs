@@ -1,6 +1,6 @@
 using Traducir.Core.Models.Enums;
 
-namespace Traducir.Web.Models.Users
+namespace Traducir.Web.ViewModels.Users
 {
     public class ChangeUserTypeViewModel
     {

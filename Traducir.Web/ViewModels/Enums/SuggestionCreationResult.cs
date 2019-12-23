@@ -1,4 +1,4 @@
-namespace Traducir.Web.Models.Enums
+namespace Traducir.Web.ViewModels.Enums
 {
     public enum SuggestionCreationResult
     {

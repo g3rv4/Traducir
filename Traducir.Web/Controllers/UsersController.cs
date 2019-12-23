@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
-using Traducir.Web.Models.Users;
 using Traducir.Web.ViewModels.Users;
 
 namespace Traducir.Web.Controllers

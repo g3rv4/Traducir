@@ -64,7 +64,7 @@ namespace Traducir.Web
 
             services.AddMiniProfiler(settings =>
             {
-                settings.RouteBasePath = "/app/mini-profiler-resources";
+                settings.PopupRenderPosition = RenderPosition.BottomRight;
             });
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
@@ -154,6 +154,7 @@ namespace Traducir.Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseStaticFiles();
             }
             else
             {
@@ -162,8 +163,6 @@ namespace Traducir.Web
                 app.UseHsts();
                 app.UseHttpsRedirection();
             }
-
-            app.UseStaticFiles();
 
             app.UseMvc();
         }

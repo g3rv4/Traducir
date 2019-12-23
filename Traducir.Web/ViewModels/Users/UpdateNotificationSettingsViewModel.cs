@@ -1,7 +1,6 @@
 using Traducir.Core.Models;
-using Traducir.Web.ViewModels.Users;
 
-namespace Traducir.Web.Models.Users
+namespace Traducir.Web.ViewModels.Users
 {
     public class UpdateNotificationSettingsViewModel
     {

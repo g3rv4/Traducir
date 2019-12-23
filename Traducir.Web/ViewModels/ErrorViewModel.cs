@@ -1,5 +1,5 @@
 
-namespace Traducir.Web.Models
+namespace Traducir.Web.ViewModels
 {
     public class ErrorViewModel
     {
