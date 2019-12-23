@@ -25,13 +25,16 @@ stages:
         Write-Host "##vso[build.updatebuildnumber]$($version)"
       name: SetVersion
     - powershell: |
+        Set-PSDebug -Trace 1
         $pwd = pwd
         docker run --rm -v "$($pwd):/var/app" g3rv4/traducir-builder tslint --project /var/app/Traducir.Web/Scripts/tsconfig.json
       name: Lint
     - powershell: |
+        Set-PSDebug -Trace 1
         docker run --rm -v "$($pwd):/var/app" g3rv4/traducir-builder tsc --build /var/app/Traducir.Web/Scripts/tsconfig.json
       name: Transpile
     - powershell: |
+        Set-PSDebug -Trace 1
         $pwd = pwd
         $uid = sh -c 'id -u'
         $gid = sh -c 'id -g'
