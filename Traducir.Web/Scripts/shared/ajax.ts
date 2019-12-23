@@ -1,6 +1,10 @@
 import { spinner } from "./utils";
 
-declare var csrfToken: string;
+let csrfToken: string;
+
+export function init(token: string) {
+    csrfToken = token;
+}
 
 export function ajaxGet(url, responseType, queryString, onSuccess?, onErrorResponse?, onFailure?) {
     ajax("GET", url, responseType, queryString, null, onSuccess, onErrorResponse, onFailure);

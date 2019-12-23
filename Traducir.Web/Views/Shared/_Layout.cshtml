@@ -70,16 +70,13 @@
                             <a href="/users" class="nav-link">Users</a>
                         </li>
                         <li class="nav-item">
-                            @{
-                                var returnUrl = System.Net.WebUtility.UrlEncode(viewModel.CurrentPathAndQuery);
-                            }
                             @if (viewModel.IsLoggedIn)
                             {
-                                <a href="/logout?returnUrl=@returnUrl" class="nav-link">Log out</a>
+                                <a href="/logout" class="nav-link js-add-return-url">Log out</a>
                             }
                             else
                             {
-                                <a href="/login?returnUrl=@returnUrl" class="nav-link">Log in!</a>
+                                <a href="/login" class="nav-link js-add-return-url">Log in!</a>
                             }
                         </li>
                     </ul>
@@ -94,7 +91,9 @@
     <script src="~/lib/require.2.3.6.min.js"></script>
     <script src="~/js/dist/app.js" asp-append-version="true"></script>
     <script>
-        var csrfToken = '@GetAntiXsrfRequestToken()';
+        require(["app"], app => {
+            app.init('@GetAntiXsrfRequestToken()');
+        });
     </script>
     @RenderSection("Scripts", required: false)
 </body>
