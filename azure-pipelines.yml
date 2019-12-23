@@ -1,0 +1,45 @@
+trigger:
+- master
+pr: none
+
+resources:
+  repositories:
+    - repository: templates
+      endpoint: g3rv4
+      type: github
+      name: g3rv4/AzurePipelinesTemplates
+
+stages:
+- template: agent-provision.yml@templates
+- stage: Build
+  pool: default
+  jobs:
+  - job: DoBuild
+    workspace:
+      clean: all
+    steps:
+    - powershell: |
+        $hash = '$(Build.SourceVersion)'
+        $buildId = '$(Build.BuildId)'
+        $version = "$($hash.Substring(0, 7)).$buildId"
+        Write-Host "##vso[build.updatebuildnumber]$($version)"
+      name: SetVersion
+    - powershell: |
+        $pwd = pwd
+        docker run --rm -v "$($pwd):/var/app" g3rv4/traducir-builder tslint --project /var/app/Traducir.Web/Scripts/tsconfig.json
+      name: Lint
+    - powershell: |
+        docker run --rm -v "$($pwd):/var/app" g3rv4/traducir-builder tsc --build /var/app/Traducir.Web/Scripts/tsconfig.json
+      name: Transpile
+    - powershell: |
+        $pwd = pwd
+        $uid = sh -c 'id -u'
+        $gid = sh -c 'id -g'
+        docker run --rm -v "$($pwd):/var/app" g3rv4/traducir-builder ash -c "dotnet publish -c Release /var/app/Traducir.Web/Traducir.Web.csproj && chown -R $($uid):$($gid) /var/app"
+        if($LASTEXITCODE){
+            Exit $LASTEXITCODE
+        }
+      name: Publish
+      failOnStderr: false
+    - publish: 'Traducir.Web/bin/Release/netcoreapp2.2/publish'
+      artifact: 'Traducir.$(Build.BuildNumber)'

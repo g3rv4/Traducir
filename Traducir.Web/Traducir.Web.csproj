@@ -9,19 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Views\Shared\_ValidationScriptsPartial.cshtml" />
-    <Content Remove="wwwroot\css\site.min.css" />
-    <Content Remove="wwwroot\js\site.min.js" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="Properties\launchSettings.jsonx" />
+    <Content Remove="Scripts\*" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\Traducir.Web\lib\unicorn.png" Link="wwwroot\unicorn.png" />
-  </ItemGroup>
-
 
   <ItemGroup>
     <PackageReference Include="BuildBundlerMinifier" Version="2.9.406" />
@@ -32,17 +22,6 @@
     <PackageReference Include="Simple.Migrations" Version="0.9.19" />
     <PackageReference Include="StackExchange.Exceptional.AspNetCore" Version="2.0.0" />
   </ItemGroup>
-
-
-  <ItemGroup>
-    <Folder Include="Models\Enums\" />
-    <Folder Include="Services\" />
-    <Folder Include="ViewModels\Account\" />
-    <Folder Include="ViewModels\Config\" />
-    <Folder Include="ViewModels\Strings\" />
-    <Folder Include="wwwroot\js\" />
-  </ItemGroup>
-
 
   <ItemGroup>
     <ProjectReference Include="..\Traducir.Core\Traducir.Core.csproj" />
