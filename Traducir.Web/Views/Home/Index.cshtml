@@ -16,7 +16,14 @@
         };
     </script>
 
-    <script>require(["strings/strings"], strings => { strings.default(); });</script>
+    <script>require(["strings/strings"], strings => {
+        strings.init()
+        @if(Model.StringId.HasValue){
+            <text>
+                strings.show(@Json.Serialize(Model.StringId));
+            </text>
+        }
+    });</script>
 }
 
 <div class="container">

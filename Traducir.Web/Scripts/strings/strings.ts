@@ -1,7 +1,9 @@
 import InitStringSearch from "./string-search";
-import InitStringEdit from "./string-edit";
+import { init as initStringEdit } from "./string-edit";
 
-export default function run() {
+export function init() {
     InitStringSearch();
-    InitStringEdit();
+    initStringEdit();
 }
+
+export { showString as show } from "./string-edit";

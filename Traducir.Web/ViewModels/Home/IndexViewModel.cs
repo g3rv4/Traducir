@@ -6,5 +6,6 @@ namespace Traducir.Web.ViewModels.Home
         public QueryViewModel StringsQuery { get; set; }
         public FilterResultsViewModel FilterResults { get; set; }
         public bool UserCanSeeIgnoredAndPushStatus { get; set; }
+        public int? StringId { get; set; }
     }
 }

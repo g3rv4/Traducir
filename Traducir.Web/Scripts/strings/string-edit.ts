@@ -2,7 +2,25 @@ import { ajaxGet, ajaxPost, queryStringFromObject, defaultAjaxOnErrorResponse } 
 import { dynamicEventHook, toCamelCase } from "../shared/utils";
 import modal from "../shared/modal";
 
-export default function initializeStringEdit() {
+export function showString(stringId: number) {
+    ajaxGet(
+        "/string_edit_ui",
+        "text",
+        queryStringFromObject({ stringId }),
+        html => {
+            history.pushState({ stringId, prevUrl: window.location.href, prevState: history.state }, "", `/strings/${stringId}`);
+            modal.show("Suggestions", html, () => {
+                let newUrl = history.state.prevUrl;
+                if (window.location.href === history.state.prevUrl) {
+                    newUrl = "/";
+                }
+                history.pushState(history.state.prevState, "", newUrl);
+            });
+        }
+    );
+}
+
+export function init() {
     const suggestionCreationErrors = {
         2: "We couldn't find the id you send, did you need to refresh your page?",
         3: "The suggestion you are sending is the same as the actual translation",
@@ -19,12 +37,7 @@ export default function initializeStringEdit() {
 
     function loadStringEditorFor(searchResultsRow) {
         const stringId = searchResultsRow.getAttribute("data-string-id");
-        ajaxGet(
-            "/string_edit_ui",
-            "text",
-            queryStringFromObject({ stringId }),
-            html => modal.show("Suggestions", html)
-        );
+        showString(stringId);
     }
 
     dynamicEventHook("click", "button[data-string-action]", e => {

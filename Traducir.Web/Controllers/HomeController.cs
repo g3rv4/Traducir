@@ -36,10 +36,14 @@ namespace Traducir.Web.Controllers
             _configuration = configuration;
         }
 
-        public Task<IActionResult> Index() => Filters(null);
+        [Route("")]
+        public Task<IActionResult> Index() => Filters();
 
-        [Route("/filters")]
-        public async Task<IActionResult> Filters(QueryViewModel query)
+        [Route("strings/{stringId}")]
+        public Task<IActionResult> ShowString(int stringId) => Filters(stringId: stringId);
+
+        [Route("filters")]
+        public async Task<IActionResult> Filters(QueryViewModel query = null, int? stringId = null)
         {
             FilterResultsViewModel filterResults = null;
 
@@ -66,7 +70,8 @@ namespace Traducir.Web.Controllers
                 StringCounts = await _stringsService.GetStringCounts(),
                 StringsQuery = query,
                 FilterResults = filterResults,
-                UserCanSeeIgnoredAndPushStatus = User.GetClaim<UserType>(ClaimType.UserType) >= UserType.TrustedUser
+                UserCanSeeIgnoredAndPushStatus = User.GetClaim<UserType>(ClaimType.UserType) >= UserType.TrustedUser,
+                StringId = stringId,
             };
 
             return View("~/Views/Home/Index.cshtml", viewModel);

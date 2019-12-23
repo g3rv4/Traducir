@@ -2,12 +2,13 @@ declare var Modal: any;
 
 const modal = (() => {
     let currentModal = null;
+    let onClose: () => void;
 
     function modalContainer() {
         return document.getElementById("modal-container");
     }
 
-    const showModal = (title, contents) => {
+    function showModal(title: string, contents: string, closeCallback?: () => void) {
         hideModal();
 
         const modalHtml =
@@ -22,23 +23,24 @@ const modal = (() => {
             </div>`;
 
         currentModal = new Modal(modalContainer(), { content: modalHtml });
+        onClose = closeCallback;
 
         modalContainer().addEventListener("hidden.bs.modal", event => {
+            onClose?.();
             currentModal = null;
+            onClose = null;
         }, false);
 
         currentModal.show();
-    };
+    }
 
-    const modalContents = () => {
+    function modalContents() {
         modalContainer().querySelector(".modal-body");
-    };
+    }
 
-    const hideModal = () => {
-        if (currentModal) {
-            currentModal.hide();
-        }
-    };
+    function hideModal() {
+        currentModal?.hide();
+    }
 
     return {
         show: showModal,

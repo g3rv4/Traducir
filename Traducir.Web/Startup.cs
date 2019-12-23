@@ -38,7 +38,7 @@ namespace Traducir.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-                        services.AddMvc();
+            services.AddMvc();
 
             services.AddSingleton(typeof(IDbService), typeof(DbService));
             services.AddSingleton(typeof(ISOStringService), typeof(SOStringService));
@@ -165,12 +165,7 @@ namespace Traducir.Web
 
             app.UseStaticFiles();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}");
-            });
+            app.UseMvc();
         }
     }
 }
