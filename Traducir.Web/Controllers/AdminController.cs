@@ -46,17 +46,10 @@ namespace Traducir.Web.Controllers
             return NoContent();
         }
 
-        [Route("admin/pull-so-dump")]
-        public async Task<IActionResult> PullSODump(string dumpUrl)
+        [Route("admin/update-translations-fron-so-db")]
+        public async Task<IActionResult> UpdateTranslationsFromSODB(bool? overrideExisting = null)
         {
-            await _soStringService.PullSODump(dumpUrl);
-            return NoContent();
-        }
-
-        [Route("admin/update-translations-fron-so-dump")]
-        public async Task<IActionResult> UpdateTranslationsFromSODump(string overrideExisting)
-        {
-            await _soStringService.UpdateTranslationsFromSODump(overrideExisting != null);
+            await _soStringService.UpdateTranslationsFromSODB(overrideExisting ?? false);
             return NoContent();
         }
 

@@ -35,9 +35,7 @@ namespace Traducir.Core.Services
 
         Task UpdateStringsPushed();
 
-        Task PullSODump(string dumpUrl);
-
-        Task UpdateTranslationsFromSODump(bool overrideExisting);
+        Task UpdateTranslationsFromSODB(bool overrideExisting);
 
         Task<bool> ManageUrgencyAsync(int stringId, bool isUrgent, int userId);
 
@@ -449,43 +447,47 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                                     .Where(e => e.oldNK != e.newNk));
         }
 
-        public async Task PullSODump(string dumpUrl)
+        public async Task UpdateTranslationsFromSODB(bool overrideExisting)
         {
+            int? lcid = _configuration.GetValue<int?>("LCID");
+            if (!lcid.HasValue)
+            {
+                throw new Exception("Need an LCID defined");
+            }
+
+            SODBString[] soStrings;
+            using (MiniProfiler.Current.Step("Fetching data from SO"))
             using (var httpClient = new HttpClient())
             {
-                var response = await httpClient.GetAsync(dumpUrl);
+                var response = await httpClient.GetAsync("https://stackoverflow.com/api/translation-strings");
                 response.EnsureSuccessStatusCode();
 
                 using (var stream = await response.Content.ReadAsStreamAsync())
                 using (var reader = new StreamReader(stream))
-                using (var csv = new CsvReader(reader))
-                using (var db = _dbService.GetConnection())
+                {
+                    soStrings = Jil.JSON.Deserialize<SODBString[]>(reader);
+                }
+            }
+
+            using (MiniProfiler.Current.Step("Filtering out strings for other LCIDs"))
+            {
+                // filter the strings to the locale this site is using
+                soStrings = soStrings.Where(s => s.LCID == lcid.Value).ToArray();
+            }
+
+            using (var db = _dbService.GetConnection())
+            {
+                using (MiniProfiler.Current.Step("Bulk inserting the data from the service"))
                 {
                     await ResetDumpTable(db);
                     var table = new DataTable();
-                    table.Columns.Add("Id", typeof(int));
-                    table.Columns.Add("LocaleId", typeof(int));
                     table.Columns.Add("Hash", typeof(string));
                     table.Columns.Add("NormalizedHash", typeof(string));
-                    table.Columns.Add("CreationDate", typeof(DateTime));
-                    table.Columns.Add("ModifiedDate", typeof(DateTime?));
-                    table.Columns.Add("LastSeenDate", typeof(DateTime));
                     table.Columns.Add("Translation", typeof(string));
-                    table.Columns.Add("TranslationOverride", typeof(string));
 
-                    var str = new SODumpString();
-
-                    foreach (var s in csv.EnumerateRecords(str))
+                    foreach (var s in soStrings)
                     {
-                        table.Rows.Add(s.Id,
-                            s.LocaleId,
-                            s.Hash,
-                            s.NormalizedHash,
-                            s.CreationDate,
-                            s.ModifiedDate,
-                            s.LastSeenDate,
-                            s.Translation == "NULL" ? null : s.Translation,
-                            s.TranslationOverride == "NULL" ? null : s.TranslationOverride);
+                        table.Rows.Add(s.Hash, s.NormalizedHash, s.EffectiveTranslation);
                     }
 
                     var copyDb = (SqlConnection)db.WrappedConnection;
@@ -501,44 +503,24 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
                         copy.WriteToServer(table);
                     }
                 }
-            }
-        }
 
-        public async Task UpdateTranslationsFromSODump(bool overrideExisting)
-        {
-            using (var db = _dbService.GetConnection())
-            {
-                // update the ones in the db that are not in Transifex
-                await db.ExecuteAsync($@"
+                using (MiniProfiler.Current.Step("Updating the translations!"))
+                {
+                    await db.ExecuteAsync($@"
 Insert Into StringHistory
             (StringId, HistoryTypeId, CreationDate)
 Select s.Id, {{=TranslationUpdatedFromDump}}, @now
 From   Strings s
-Join   SODumpTable dump On dump.Hash = s.[Key]
+Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
 Where  s.Translation Is Null;
 
 Update s
 Set    s.Translation = dump.Translation,
        s.IsUrgent = 0
 From   Strings s
-Join   SODumpTable dump On dump.Hash = s.[Key]
+Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
 {(overrideExisting ? string.Empty : "Where  s.Translation Is Null;")}", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
-
-                // update the ones in the db that have a translation with a different variant order
-                await db.ExecuteAsync(@"
-Insert Into StringHistory
-            (StringId, HistoryTypeId, CreationDate)
-Select s.Id, {=TranslationUpdatedFromDump}, @now
-From   Strings s
-Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
-Where  s.Translation Is Null;
-
-Update s
-Set    s.Translation = dump.Translation,
-       s.IsUrgent = 0
-From   Strings s
-Join   SODumpTable dump On dump.NormalizedHash = s.NormalizedKey
-Where  s.Translation Is Null;", new { now = DateTime.UtcNow, StringHistoryType.TranslationUpdatedFromDump });
+                }
             }
 
             await RefreshCacheAsync();
@@ -775,15 +757,10 @@ Select @idString", new
 Drop Table If Exists dbo.SODumpTable;
 Create Table dbo.SODumpTable
 (
-Id                  Int Not Null,
-LocaleId            SmallInt Not Null,
+Id                  Int Not Null Identity (1, 1),
 Hash                VarChar(255) Not Null,
 NormalizedHash      VarChar(255) Not Null,
 Translation         NVarChar(Max) Null,
-CreationDate        DateTime Not Null,
-ModifiedDate        DateTime Null,
-LastSeenDate        DateTime Not Null,
-TranslationOverride NVarChar(Max) Null,
 
 Constraint PK_SODumpTable Primary Key Clustered (Id),
 Constraint IX_SODumpTable_Hash Unique (Hash),

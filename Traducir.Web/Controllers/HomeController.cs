@@ -38,6 +38,9 @@ namespace Traducir.Web.Controllers
         [Route("")]
         public Task<IActionResult> Index() => Filters();
 
+        [Route("string/{stringId}")]
+        public IActionResult OldStringUrl(int stringId) => RedirectPermanent(Url.Action(nameof(ShowString), new { stringId }));
+
         [Route("strings/{stringId}")]
         public Task<IActionResult> ShowString(int stringId) => Filters(stringId: stringId);
 
