@@ -11,15 +11,15 @@ Users can go to traducir.win and do searches of existing strings and their curre
 If you didn't yet please read [Traduciendo el sitio… Esta vez, con más control sobre el proceso
 ](https://es.meta.stackoverflow.com/q/3378).
 
-Go to https://traducir.win. You will found that the user interface is pretty intuitive. Just bear in mind that not all the strings should be translated, only those that are found on the user interface of target Stack Exchange site should be. At this time https://traducir.win only has [Stack Overflow en español](https://es.stackoverflow.com) as a target site.
+Go to https://traducir.win. You will found that the user interface is pretty intuitive. Just bear in mind that not all the strings should be translated, only those that are found on the user interface of target Stack Exchange site should be.
 
 To learn the ropes of app follow the [tour](/docs/TOUR.md)
 
 ## What technologies is it using?
-The backend runs a .NET Core web application and the frontend is a React SPA. As a database, it uses SQL Server. There's a [docker image](https://hub.docker.com/r/g3rv4/traducir/) that's what's used to run this (and that image gets updated automatically on every push to `master`).
+It's a .NET Core web application. As a database, it uses SQL Server.
 
 ## I'd like to help, how can I set up a dev environment on my machine?
-I'm glad you asked... [I've written a doc about it](https://github.com/g3rv4/Traducir/blob/master/docs/DEV_ENVIRONMENT.md)! If that doesn't work, feel free to [open an issue](https://github.com/g3rv4/Traducir/issues).
+I'm glad you asked... [We've written a doc about it](https://github.com/g3rv4/Traducir/blob/master/docs/DEV_ENVIRONMENT.md)! If that doesn't work, feel free to [open an issue](https://github.com/g3rv4/Traducir/issues).
 
 ## Would you like to contribute?
 

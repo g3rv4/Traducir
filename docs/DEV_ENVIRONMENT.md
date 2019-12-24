@@ -6,25 +6,11 @@ Do you want to help writing beautiful code? THANK YOU THANK YOU THANK YOU <3
 
 In order to run this project on your computer entirely, you're going to need:
 
-1. An IDE compatible with .NET, Typescript and JSX. I love [Visual Studio Code](https://code.visualstudio.com/) and that's what I've used to develop the first version... entirely on MacOs.
-   * I use the following extensions that make my life so much better:
-       * [ASP.NET Helper](https://marketplace.visualstudio.com/items?itemName=schneiderpat.aspnet-helper)
-       * [C#](https://marketplace.visualstudio.com/items?itemName=ms-vscode.csharp)
-       * [C# Extensions](https://marketplace.visualstudio.com/items?itemName=jchannon.csharpextensions)
-       * [C# FixFormat](https://marketplace.visualstudio.com/items?itemName=Leopotam.csharpfixformat)
+1. An IDE compatible with .NET and Typescript and JSX. I love [Visual Studio Code](https://code.visualstudio.com/), but nothing can beat regular Visual Studio if you're on Windows.
 2. A SQL Server instance. You can use Microsoft's docker image. [I put together some instructions to set it up using docker-compose](https://github.com/g3rv4/Traducir/blob/master/docs/MSSQL_DOCKER.md).
 3. A [StackApp](https://stackapps.com/) that has `localhost` as the OAuth Domain.
-4. [.NET Core](https://www.microsoft.com/net/) and [Node.js](https://nodejs.org/en/) set up.
-5. A Transifex account with access to the project you want to work with. I'm assuming it's SOes because it's the first one. You're going to need an API key that you can generate [on their site](https://www.transifex.com/user/settings/api/).
-
-For the C# FixFormat extension to make me happy, I'm using the following settings. Adhering to them would be greatly appreciated.
-
-```
-"csharpfixformat.style.braces.onSameLine": false,
-"csharpfixformat.style.spaces.afterParenthesis": false,
-"csharpfixformat.style.spaces.beforeParenthesis": false,
-"csharp.suppressHiddenDiagnostics": false,
-```
+4. [.NET Core](https://www.microsoft.com/net/).
+5. A Transifex account with access to the project you want to work with. I'm assuming it's SOes on the instructions. You're going to need an API key that you can generate [on their site](https://www.transifex.com/user/settings/api/).
 
 ## Initial setup
 
@@ -33,7 +19,7 @@ Create a database named `Traducir` (it could be whatever, just know that I'm ass
 
 It can be accomplished by running `Create Database Traducir` (yes, without uppercases because we don't yell at our database server). Also, I'm using `sa` on my machine... if you don't want to for whatever reason, create a user for the application and make sure it can do anything on that database.
 
-### Set up the backend on Visual Studio Code
+### Set up the app on Visual Studio Code
 
 Open the project and go to Debug => Start Debugging. The first time it should ask you to add some files inside of a `.vscode` folder. Just tell it to go ahead and do it.
 
@@ -44,7 +30,7 @@ Open the `.vscode/launch.json` and replace the existing `environmentVariables` k
 ```
 "environmentVariables": {
     "ASPNETCORE_ENVIRONMENT": "Development",
-    "FRIENDLY_NAME": "SOes",
+    "FRIENDLY_NAME": "LOCAL",
     "CONNECTION_STRING": "Server=<SQL SERVER ADDRESS>;Database=Traducir;User Id=<SQL SERVER USER>;Password=<SQL SERVER PASSWORD>;Min Pool Size=5;",
 
     "USE_HTTPS": "False",
@@ -57,16 +43,21 @@ Open the `.vscode/launch.json` and replace the existing `environmentVariables` k
     "TRANSIFEX_RESOURCE_PATH": "api/2/project/stack-overflow-es/resource/english/translation/es/strings/",
     "TRANSIFEX_LINK_PATH": "stack-exchange/stack-overflow-es/translate/#es/english",
     "PUSH_TO_TRANSIFEX_ON_DEV": "False"
+
+    <THIS IS OPTIONAL IF YOU WANT TO PLAY WITH WEB PUSH NOTIFICATIONS>
+    "VAPID_SUBJECT": "<SUBJECT OF YOUR VAPID KEY>",
+    "VAPID_PUBLIC": "<VAPID PUBLIC KEY>",
+    "VAPID_PRIVATE": "<VAPID PRIVATE KEY>",
 },
 ```
 
-Now... if you run it, it should work. Visit `http://localhost:5000/app/api/admin/migrate` to run the migrations. That should create all the tables the system uses for you (or run migrations that were created since you last pulled). If you visit `http://localhost:5000/app/api/admin/pull` that should populate the strings on your database. Give it a try :)
+Now... if you run it, it should work. Visit `http://localhost:5000/admin/migrate` to run the migrations. That should create all the tables the system uses for you (or run migrations that were created since you last pulled). If you visit `http://localhost:5000/admin/pull` that should populate the strings on your database. Give it a try :)
 
-### Set up the backend on Visual Studio 2017
+### Set up the app on Visual Studio 2017
 
-Open the folder Traducir. Once there, double click Traducir.sln. This will open the solution. Before we can continue, we have to configure the enviroment variables for the backend project. This variables are stored on the property pages for `Traducir.Api`. There are two ways to configure this variables.
+Open the folder Traducir. Once there, double click Traducir.sln. This will open the solution. Before we can continue, we have to configure the enviroment variables for the backend project. This variables are stored on the property pages for `Traducir.Web`. There are two ways to configure this variables.
 
-The hard way, is setting them up manually one by one on the property page of the project. Rigth Click on the project name (Traducir.Api) and click on properties. Go to debug tab, and select the profile IIS Express (should be selected by default). Once there, you can set up this variables on the grid that said environment variables
+The hard way, is setting them up manually one by one on the property page of the project. Rigth Click on the project name (Traducir.Web) and click on properties. Go to debug tab, and select the profile IIS Express (should be selected by default). Once there, you can set up this variables on the grid that said environment variables
 
 ![Image to environment variables](Images/enviromentvariables.PNG)
 
@@ -86,47 +77,22 @@ Under profiles, you will see something like this:
     },
 ```
 
-Replace the "environmentVariables" to (changing whatever is between `<>` with the appropriate values for you):
+Replace the "environmentVariables" to (changing whatever is between `<>` with the appropriate values for you) as explained in the `Set up the app on Visual Studio Code` section
 
-```
-"environmentVariables": {
-    "ASPNETCORE_ENVIRONMENT": "Development",
-    "FRIENDLY_NAME": "SOes",
-    "CONNECTION_STRING": "Server=<SQL SERVER ADDRESS>;Database=Traducir;User Id=<SQL SERVER USER>;Password=<SQL SERVER PASSWORD>;Min Pool Size=5;",
-
-    "USE_HTTPS": "False",
-    "STACKAPP_SECRET": "<YOUR STACKAPP SECRET>",
-    "STACKAPP_CLIENT_ID": "<YOUR STACKAPP CLIENT ID>",
-    "STACKAPP_KEY": "<YOUR STACKAPP KEY>",
-    "STACKAPP_SITEDOMAIN": "es.stackoverflow.com",
-
-    "TRANSIFEX_APIKEY": "<YOUR TRANSIFEX API KEY>",
-    "TRANSIFEX_RESOURCE_PATH": "api/2/project/stack-overflow-es/resource/english/translation/es/strings/",
-    "TRANSIFEX_LINK_PATH": "stack-exchange/stack-overflow-es/translate/#es/english"
-    }
-```
-When this file is created it will select a default port for your application. This port is inside this file, under "iisSettings",  on "applicationUrl". We need to change it to 5000, so the frontend could find it.
-
-So, we need to change:
+When this file is created it will select a default port for your application. This port is inside this file, under "iisSettings",  on "applicationUrl". Feel free to change it if you wish by setting it to something like
 
 ```
 "applicationUrl": "http://localhost:5000/"
 ```
 
-Now... if you run it, it should work. Visit `http://localhost:[yourport]/app/api/admin/migrate` to run the migrations. That should create all the tables the system uses for you (or run migrations that were created since you last pulled). If you visit `http://localhost:[yourport]/app/api/admin/pull` that should populate the strings on your database. Give it a try :)
-
-### Set up the frontend
-
-On the terminal, go to whatever the project is set up and then into the `Traducir.Web` folder. Then type `npm install`. It should take a little while to install the javascript dependencies, but it's only once.
+Now... if you run it, it should work. Visit `http://localhost:[yourport]/admin/migrate` to run the migrations. That should create all the tables the system uses for you (or run migrations that were created since you last pulled). If you visit `http://localhost:[yourport]/admin/pull` that should populate the strings on your database. Give it a try :)
 
 ## Running it
 
-Once you were able to run the project from VS Code, the next time you open the project you can just press F5 or got o Debug => Start Debugging to start the backend.
+Once you are able to run the project from VS Code, the next time you open the project you can just press F5 or got o Debug => Start Debugging to start the backend. When using VS Code, make sure you set up a build task that's using tsc to watch TS files for changes. If you are using Visual Studio, make sure you have the Typescript SDK installed.
 
-And to run the frontend, you can just go to the `Traducir.Web` folder on the console and write `npm start` (now that I'm writing it, I'm sure there's a way to integrate it with VS Code... I'll look into that unless somebody beats me to it).
+And that's it! if you go to `http://localhost:[yourport]` everything should work as expected. You should be able to do searches. And if you click on "Log In", that should work as well.
 
-And that's it! if you go to `http://localhost:8080` everything should work as expected. You should be able to do searches. And if you click on "Log In", that should work as well.
-
-If you want to test being a trusted user or a reviewer, you can just change that on the database... but you should log out and log in again in order to see the changes.
+If you want to test being a trusted user or a reviewer, you can go to `users` and click on the "Impersonate" button (as long as you're using the `DebugRisky` build configuration).
 
 **WARNING:** Pushes to transifex are going to fail for you unless you are a reviewer on their system. If you *are*, I strongly suggest that you don't use your main account's API key, as you will end up pushing trash to Transifex. *This only applies to site moderators*.
