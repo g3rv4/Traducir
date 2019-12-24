@@ -13,16 +13,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <title>traducir.win</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" use-static-domain />
     <environment include="Development">
         <link rel="stylesheet" href="~/css/site.css" />
         <link rel="stylesheet" href="~/css/spinner.css" />
     </environment>
     <environment exclude="Development">
-        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" use-static-domain />
     </environment>
 
-    <script defer src="~/lib/fontawesome.js"></script>
+    <script defer src="~/lib/fontawesome.js" asp-append-version="true" use-static-domain></script>
 </head>
 <body>
     <mini-profiler />
@@ -89,9 +89,9 @@
         @RenderBody()
     </div>
 
-    <script src="~/lib/bootstrap-native/js/bootstrap-native-v4.min.js"></script>
-    <script src="~/lib/require.2.3.6.min.js"></script>
-    <script src="~/js/dist/app.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap-native/js/bootstrap-native-v4.min.js" asp-append-version="true" use-static-domain></script>
+    <script src="~/lib/require.2.3.6.min.js" asp-append-version="true" use-static-domain></script>
+    <script src="~/js/dist/app.js" asp-append-version="true" use-static-domain></script>
     <script>
         require(["app"], app => {
             app.init('@GetAntiXsrfRequestToken()');
