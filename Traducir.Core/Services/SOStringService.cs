@@ -102,6 +102,22 @@ namespace Traducir.Core.Services
                     }
                 }
 
+                using (MiniProfiler.Current.Step("Fixing normalized keys"))
+                {
+                    // once upon a time, someone used to host Traducir in an Ubuntu docker image. That same someone used
+                    // OrderBy without specifying a comparer.
+                    // A year later, this subject decided to use the Alpine image to host it... it's smaller, they thought
+                    // it compiles and it runs... that must be safe!
+                    // BUT! our hero never realized that Comparer<string>.Default (and even StringComparer.InvariantCultureIgnoreCase)
+                    // order things different. So when that happened, trying to join by NormalizedKey caused this method to
+                    // try to insert a bunch of already existing strings. Fortunately, we do have an index that doesn't allow two
+                    // strings with the same Key.
+                    // Aaanyway, as a sacrifice to the Gods (the old and the new), they were required to fix all the keys before
+                    // running the pull. They initially wrote an admin route, but considering this is all in-memory and pretty fast,
+                    // let's do it here every time this runs. We'll remove it. Eventually.
+                    await FixNormalizedKeysAsync(db);
+                }
+
                 using (MiniProfiler.Current.Step("Delete strings"))
                 {
                     await db.ExecuteAsync(@"
@@ -425,6 +441,14 @@ And    StateId In ({=Created}, {=ApprovedByTrustedUser});";
             }
         }
 
+        private async Task FixNormalizedKeysAsync(IDbConnection db)
+        {
+            var currentNormalized = await db.QueryAsync<string>(@"Select NormalizedKey From Strings Group By NormalizedKey");
+            await db.ExecuteAsync(@"Update Strings Set NormalizedKey = @newNK Where NormalizedKey = @oldNK",
+                currentNormalized.Select(oldNK => new { oldNK, newNk = oldNK.ToNormalizedKey() })
+                                    .Where(e => e.oldNK != e.newNk));
+        }
+
         public async Task PullSODump(string dumpUrl)
         {
             using (var httpClient = new HttpClient())
@@ -741,7 +765,7 @@ Select @idString", new
             {
                 return await db.QuerySingleAsync<int>(
                     "select StringId from StringSuggestions where Id=@suggestionId",
-                    new { suggestionId } );
+                    new { suggestionId });
             }
         }
 

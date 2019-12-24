@@ -73,7 +73,7 @@ namespace Traducir.Core.Helpers
             }
 
             var parts = key.Split('|');
-            var variables = parts[1].Split(',').OrderBy(v => v);
+            var variables = parts[1].Split(',').OrderBy(v => v, StringComparer.OrdinalIgnoreCase);
 
             return $"{parts[0]}|{string.Join(",", variables)}";
         }
