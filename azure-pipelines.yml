@@ -33,16 +33,13 @@ stages:
         Set-PSDebug -Trace 1
         docker run --rm -v "$($pwd):/var/app" g3rv4/traducir-builder tsc --build /var/app/Traducir.Web/Scripts/tsconfig.json
       name: Transpile
-    - powershell: |
-        Set-PSDebug -Trace 1
-        $pwd = pwd
-        $uid = sh -c 'id -u'
-        $gid = sh -c 'id -g'
-        docker run --rm -v "$($pwd):/var/app" g3rv4/traducir-builder ash -c "dotnet publish -c Release /var/app/Traducir.Web/Traducir.Web.csproj && chown -R $($uid):$($gid) /var/app"
-        if($LASTEXITCODE){
-            Exit $LASTEXITCODE
-        }
-      name: Publish
-      failOnStderr: false
+    - template: azure-dotnet-publish.yml
+      parameters:
+        buildConfiguration: Release
+    - template: azure-dotnet-publish.yml
+      parameters:
+        buildConfiguration: ReleaseRisky
     - publish: 'Traducir.Web/bin/Release/netcoreapp2.2/publish'
       artifact: 'Traducir.$(Build.BuildNumber)'
+    - publish: 'Traducir.Web/bin/ReleaseRisky/netcoreapp2.2/publish'
+      artifact: 'Traducir.Risky.$(Build.BuildNumber)'
