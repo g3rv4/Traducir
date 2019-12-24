@@ -5,8 +5,9 @@
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
         <PlatformTarget>AnyCPU</PlatformTarget>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-        <Configurations>Debug;Release;Local</Configurations>
-        <DefineConstants Condition="'$(Configuration)' == 'Local'">TRACE;DEBUG;LOCAL</DefineConstants>
+        <Configurations>Debug;DebugRisky;Release;ReleaseRisky</Configurations>
+        <DefineConstants Condition="'$(Configuration)' == 'DebugRisky'">TRACE;DEBUG;RISKY</DefineConstants>
+        <DefineConstants Condition="'$(Configuration)' == 'ReleaseRisky'">RISKY</DefineConstants>
         <DebugType>full</DebugType>
     </PropertyGroup>
 

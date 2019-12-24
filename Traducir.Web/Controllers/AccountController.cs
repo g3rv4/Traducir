@@ -85,7 +85,7 @@ namespace Traducir.Web.Controllers
             return Redirect(returnUrl ?? "/");
         }
 
-#if LOCAL
+#if RISKY
         [Route("impersonate/{userId}")]
         public async Task<IActionResult> Impersonate(int userId)
         {

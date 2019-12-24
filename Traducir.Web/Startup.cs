@@ -24,6 +24,12 @@ namespace Traducir.Web
     {
         public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
         {
+#if RISKY
+            if (!hostingEnvironment.IsDevelopment() && !configuration.GetValue("ALLOW_RISKY", false))
+            {
+                throw new Exception("Can't run a risky build here");
+            }
+#endif
             Configuration = configuration;
             HostingEnvironment = hostingEnvironment;
             LoggerFactory = loggerFactory;

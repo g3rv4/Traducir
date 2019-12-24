@@ -60,6 +60,7 @@ namespace Traducir.Web.Controllers
             return NoContent();
         }
 
+#if !RISKY
         [Route("admin/push")]
         public async Task<IActionResult> PushStrings()
         {
@@ -77,6 +78,7 @@ namespace Traducir.Web.Controllers
 
             return NoContent();
         }
+#endif
 
         [Route("admin/generate-notifications")]
         public async Task<IActionResult> GenerateNotifications()

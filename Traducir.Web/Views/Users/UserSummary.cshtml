@@ -3,7 +3,7 @@
 @model Traducir.Web.ViewModels.Users.UserSummaryViewModel
 @{
     var user = Model.User;
-#if LOCAL
+#if RISKY
     var impersonateEnabled = true;
 #else
     var impersonateEnabled = false;

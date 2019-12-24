@@ -51,6 +51,11 @@ namespace Traducir.Core.Services
             }
         }
 
+#if RISKY
+        public Task<bool> PushStringsToTransifexAsync(ImmutableArray<SOString> strings)
+        {
+            throw new NotImplementedException("Method not available on a RISKY build");
+#else
         public async Task<bool> PushStringsToTransifexAsync(ImmutableArray<SOString> strings)
         {
             using (MiniProfiler.Current.Step("Pushing strings to Transifex"))
@@ -85,6 +90,7 @@ namespace Traducir.Core.Services
 
                 return success;
             }
+#endif
         }
 
         private HttpClient GetHttpClient()
