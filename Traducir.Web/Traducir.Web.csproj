@@ -3,15 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
-    <TypeScriptToolsVersion>3.6</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>3.7</TypeScriptToolsVersion>
     <CodeAnalysisRuleSet>../ca.ruleset</CodeAnalysisRuleSet>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Properties\launchSettings.jsonx" />
-    <Content Remove="Scripts\*" />
+    <Content Update="Scripts\*" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
   <ItemGroup>
