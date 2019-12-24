@@ -16,35 +16,36 @@
         </a>
     </td>
     <td>@user.UserType.ToDisplayString()</td>
-    <td>@if (Model.CurrentUserCanManageUsers)
+    <td>
+        @if (Model.CurrentUserCanManageUsers)
         {
             <div class="btn-group" role="group">
-                @if(impersonateEnabled)
+                @if (impersonateEnabled)
                 {
                     <a href="/impersonate/@user.Id" class="btn btn-sm btn-danger">
                         Impersonate
                     </a>
                 }
                 <a href="@Url.Action("SuggestionsByUser", "Users", new { userId = user.Id})" class="btn btn-sm btn-primary">view suggestions</a>
-                @if(user.UserType == UserType.User)
+                @if (user.UserType == UserType.User)
                 {
                     <button type="button" class="btn btn-sm btn-warning" data-change-to-user-type="@((int)UserType.TrustedUser)">
                         Make trusted user
                     </button>
                 }
-                @if(user.UserType == UserType.Banned)
+                @if (user.UserType == UserType.Banned)
                 {
                     <button type="button" class="btn btn-sm btn-warning" data-change-to-user-type="@((int)UserType.User)">
                         Lift Ban
                     </button>
                 }
-                @if(user.UserType == UserType.TrustedUser)
+                @if (user.UserType == UserType.TrustedUser)
                 {
                     <button type="button" class="btn btn-sm btn-danger" data-change-to-user-type="@((int)UserType.User)">
                         Make regular user
                     </button>
                 }
-                @if(Model.UserCanBeBanned)
+                @if (Model.UserCanBeBanned)
                 {
                     <button type="button" class="btn btn-sm btn-danger" data-change-to-user-type="@((int)UserType.Banned)">
                         Ban User
@@ -52,7 +53,7 @@
                 }
             </div>
         }
-        else if(impersonateEnabled)
+        else if (impersonateEnabled)
         {
             <a href="/impersonate/@user.Id" class="btn btn-sm btn-danger">
                 Impersonate

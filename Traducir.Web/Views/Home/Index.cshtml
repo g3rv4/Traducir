@@ -16,14 +16,16 @@
         };
     </script>
 
-    <script>require(["strings/strings"], strings => {
-        strings.init()
-        @if(Model.StringId.HasValue){
-            <text>
-                strings.show(@Json.Serialize(Model.StringId));
-            </text>
-        }
-    });</script>
+    <script>
+        require(["strings/strings"], strings => {
+            strings.init()
+            @if(Model.StringId.HasValue){
+                <text>
+                    strings.show(@Json.Serialize(Model.StringId));
+                </text>
+            }
+        });
+    </script>
 }
 
 <div class="container">
@@ -52,7 +54,7 @@
                     model => model.StringsQuery.TranslationStatus,
                     Html.GetEnumSelectList(typeof(TranslationStatus)),
                     null,
-                    new { @class="js-string-query-filter form-control", id="withoutTranslation", data_string_query_key="translationStatus" })
+                    new { @class = "js-string-query-filter form-control", id = "withoutTranslation", data_string_query_key = "translationStatus" })
             </div>
         </div>
         <div class="col">
@@ -62,7 +64,7 @@
                     model => model.StringsQuery.SuggestionsStatus,
                     Html.GetEnumSelectList(typeof(SuggestionApprovalStatus)),
                     null,
-                    new { @class="js-string-query-filter form-control", id="suggestionsStatus", data_string_query_key="suggestionsStatus" })
+                    new { @class = "js-string-query-filter form-control", id = "suggestionsStatus", data_string_query_key = "suggestionsStatus" })
             </div>
         </div>
     </div>
@@ -80,11 +82,11 @@
                     model => model.StringsQuery.UrgencyStatus,
                     Html.GetEnumSelectList(typeof(UrgencyStatus)),
                     null,
-                    new { @class="js-string-query-filter form-control", id="urgencyStatus", data_string_query_key="urgencyStatus" })
+                    new { @class = "js-string-query-filter form-control", id = "urgencyStatus", data_string_query_key = "urgencyStatus" })
             </div>
         </div>
     </div>
-    @if(Model.UserCanSeeIgnoredAndPushStatus)
+    @if (Model.UserCanSeeIgnoredAndPushStatus)
     {
         <div class="row">
             <div class="col">
@@ -94,7 +96,7 @@
                         model => model.StringsQuery.IgnoredStatus,
                         Html.GetEnumSelectList(typeof(IgnoredStatus)),
                         null,
-                        new { @class="js-string-query-filter form-control", id="ignoredStatus", data_string_query_key="ignoredStatus" })
+                        new { @class = "js-string-query-filter form-control", id = "ignoredStatus", data_string_query_key = "ignoredStatus" })
                 </div>
             </div>
             <div class="col">
@@ -104,7 +106,7 @@
                         model => model.StringsQuery.PushStatus,
                         Html.GetEnumSelectList(typeof(PushStatus)),
                         null,
-                        new { @class="js-string-query-filter form-control", id="pushStatus", data_string_query_key="pushStatus" })
+                        new { @class = "js-string-query-filter form-control", id = "pushStatus", data_string_query_key = "pushStatus" })
                 </div>
             </div>
         </div>
@@ -135,7 +137,7 @@
         }
         else
         {
-            <partial name="FilterResults" model="Model.FilterResults"/>
+            <partial name="FilterResults" model="Model.FilterResults" />
         }
     </div>
 </div>

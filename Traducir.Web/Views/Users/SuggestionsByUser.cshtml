@@ -10,7 +10,7 @@
         <div class="col d-none d-lg-block">
             <div class="btn-group" role="group">
                 <a href="@Url.Action("SuggestionsByUser", "Users", new { userId = Model.UserId})" class="btn btn-outline-info nav-link mx-1 @(Model.CurrentState == null ? "active" : null)">All</a>
-                @foreach(var state in SuggestionsByUserViewModel.SuggestionStatesForFilters)
+                @foreach (var state in SuggestionsByUserViewModel.SuggestionStatesForFilters)
                 {
                     <a href="@Url.Action("SuggestionsByUser", "Users", new { userId = Model.UserId, state = (int)state})" class="btn btn-outline-info nav-link mx-1 @(state==Model.CurrentState ? "active" : null)">@state.DisplayName()</a>
                 }
@@ -18,9 +18,9 @@
         </div>
     </div>
 
-    @if(Model.Suggestions.Any())
+    @if (Model.Suggestions.Any())
     {
-        foreach(var suggestion in Model.Suggestions)
+        foreach (var suggestion in Model.Suggestions)
         {
             <div class="mt-5">
                 <div>
@@ -49,11 +49,9 @@
                                     @history.HistoryType.DisplayName()
                                 </td>
                                 <td>
-                                    <a
-                                        href="https://@Model.SiteDomain/users/@Model.UserId"
-                                        target="_blank"
-                                        title="at @suggestion.CreationDate.ToIsoFormat() UTC"
-                                    >
+                                    <a href="https://@Model.SiteDomain/users/@Model.UserId"
+                                       target="_blank"
+                                       title="at @suggestion.CreationDate.ToIsoFormat() UTC">
                                         @history.UserName
                                     </a>
                                 </td>
