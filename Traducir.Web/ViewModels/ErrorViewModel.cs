@@ -1,4 +1,3 @@
-
 namespace Traducir.Web.ViewModels
 {
     public class ErrorViewModel

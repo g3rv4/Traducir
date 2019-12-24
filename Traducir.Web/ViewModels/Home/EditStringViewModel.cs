@@ -21,12 +21,14 @@ namespace Traducir.Web.ViewModels.Home
 
         public SOString String { get; set; }
 
+        public bool CanSendFinalTranslation => UserType == UserType.Reviewer;
+
         public bool CurrentUserSuggested(SOStringSuggestion suggestion) =>
             UserIsLoggedIn && suggestion.CreatedById == UserId;
 
         public bool MustRenderSuggestionActionsFor(SOStringSuggestion suggestion)
         {
-            if(!UserIsLoggedIn || !UserCanReview)
+            if (!UserIsLoggedIn || !UserCanReview)
             {
                 return false;
             }
@@ -34,7 +36,5 @@ namespace Traducir.Web.ViewModels.Home
             // a trusted user can't act on a suggestion approved by a trusted user
             return !(suggestion.State == StringSuggestionState.ApprovedByTrustedUser && UserType == UserType.TrustedUser);
         }
-
-        public bool CanSendFinalTranslation => UserType == UserType.Reviewer;
     }
 }

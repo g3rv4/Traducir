@@ -6,12 +6,12 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Traducir.Web.ViewModels.Home;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
 using Traducir.Core.Services;
 using Traducir.Web.ViewModels.Enums;
+using Traducir.Web.ViewModels.Home;
 
 namespace Traducir.Web.Services
 {

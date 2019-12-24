@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Traducir.Core.Models;
@@ -11,6 +12,9 @@ namespace Traducir.Web.ViewModels.Users
 
         public string VapidPublic { get; set; }
 
+        public static string ClassFor(bool value) =>
+            $"notification-type list-group-item {(value ? "active" : null)}";
+
         public NotificationProperty[] NotificationProperties(int group)
         {
             var minOrder = group == 0 ? 0 : 4;
@@ -20,13 +24,13 @@ namespace Traducir.Web.ViewModels.Users
                 .Select(p =>
                 {
                     var attribute = p.GetCustomAttributes<DisplayAttribute>().SingleOrDefault();
-                    if(attribute == null || attribute.Order < minOrder || attribute.Order > maxOrder)
+                    if (attribute == null || attribute.Order < minOrder || attribute.Order > maxOrder)
                     {
                         return null;
                     }
                     return new NotificationProperty
                     {
-                        DataName = char.ToLower(p.Name[0]) + p.Name.Substring(1),
+                        DataName = char.ToLower(p.Name[0], CultureInfo.InvariantCulture) + p.Name.Substring(1),
                         DisplayName = attribute.Name,
                         Value = (bool)p.GetValue(NotificationSettings, null),
                         Order = attribute.Order
@@ -36,9 +40,6 @@ namespace Traducir.Web.ViewModels.Users
                 .OrderBy(n => n.Order)
                 .ToArray();
         }
-
-        public string ClassFor(bool value) =>
-            $"notification-type list-group-item {(value ? "active" : null)}";
 
         public class NotificationProperty
         {

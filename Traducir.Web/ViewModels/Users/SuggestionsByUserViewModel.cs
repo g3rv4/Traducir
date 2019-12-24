@@ -8,6 +8,9 @@ namespace Traducir.Web.ViewModels.Users
 {
     public class SuggestionsByUserViewModel
     {
+        public static IEnumerable<StringSuggestionState> SuggestionStatesForFilters =>
+            Enum.GetValues(typeof(StringSuggestionState)).OfType<StringSuggestionState>().OrderBy(s => (int)s);
+
         public IEnumerable<SOStringSuggestion> Suggestions { get; set; }
 
         public int UserId { get; set; }
@@ -16,8 +19,10 @@ namespace Traducir.Web.ViewModels.Users
 
         public StringSuggestionState? CurrentState { get; set; }
 
-        public string BadgeClassForState(StringSuggestionState state) {
-            switch (state) {
+        public static string BadgeClassForState(StringSuggestionState state)
+        {
+            switch (state)
+            {
                 case StringSuggestionState.Created:
                     return "badge-secondary";
                 case StringSuggestionState.ApprovedByReviewer:
@@ -31,8 +36,5 @@ namespace Traducir.Web.ViewModels.Users
                     return null;
             }
         }
-
-        public IEnumerable<StringSuggestionState> SuggestionStatesForFilters =>
-            Enum.GetValues(typeof(StringSuggestionState)).OfType<StringSuggestionState>().OrderBy(s => (int)s);
     }
 }

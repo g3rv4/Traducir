@@ -1,15 +1,16 @@
 @using System.Linq
 @using Traducir.Core.Helpers
 @using Traducir.Core.Models.Enums
+@using Traducir.Web.ViewModels.Users
 
-@model Traducir.Web.ViewModels.Users.SuggestionsByUserViewModel
+@model SuggestionsByUserViewModel
 
 <div class="container">
     <div class="row text-center mt-3">
         <div class="col d-none d-lg-block">
             <div class="btn-group" role="group">
                 <a href="@Url.Action("SuggestionsByUser", "Users", new { userId = Model.UserId})" class="btn btn-outline-info nav-link mx-1 @(Model.CurrentState == null ? "active" : null)">All</a>
-                @foreach(var state in Model.SuggestionStatesForFilters)
+                @foreach(var state in SuggestionsByUserViewModel.SuggestionStatesForFilters)
                 {
                     <a href="@Url.Action("SuggestionsByUser", "Users", new { userId = Model.UserId, state = (int)state})" class="btn btn-outline-info nav-link mx-1 @(state==Model.CurrentState ? "active" : null)">@state.DisplayName()</a>
                 }
@@ -29,7 +30,7 @@
                     <span class="font-weight-bold">Suggestion:</span> <pre class="d-inline">@suggestion.Suggestion</pre>
                 </div>
                 <div>
-                    <span class="font-weight-bold">State:</span> <span class="badge @Model.BadgeClassForState(suggestion.State)">@suggestion.State.DisplayName()</span>
+                    <span class="font-weight-bold">State:</span> <span class="badge @SuggestionsByUserViewModel.BadgeClassForState(suggestion.State)">@suggestion.State.DisplayName()</span>
                 </div>
                 <table class="table">
                     <thead>

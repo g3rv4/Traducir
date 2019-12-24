@@ -1,5 +1,6 @@
 @using Traducir.Core.Models.Enums
-@model Traducir.Web.ViewModels.Users.NotificationsViewModel
+@using Traducir.Web.ViewModels.Users
+@model NotificationsViewModel
 
 @{
     var notificationPropertyGroups = new[] { Model.NotificationProperties(0), Model.NotificationProperties(1) };
@@ -41,7 +42,7 @@
                 <ul class="list-group">
                     @foreach (var notification in propertyGroup)
                     {
-                        <li class="@Model.ClassFor(notification.Value)" data-notification-name="@notification.DataName">@notification.DisplayName</li>
+                        <li class="@NotificationsViewModel.ClassFor(notification.Value)" data-notification-name="@notification.DataName">@notification.DisplayName</li>
                     }
                 </ul>
             </div>

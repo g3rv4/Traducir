@@ -10,12 +10,14 @@ namespace Traducir.Web.Helpers
     [HtmlTargetElement("link", Attributes = "use-static-domain", TagStructure = TagStructure.WithoutEndTag)]
     public class StaticDomainTagHelper : TagHelper
     {
-        public override int Order => 1000;
-        private string StaticDomain { get; set; }
         public StaticDomainTagHelper(IConfiguration configuration)
         {
             StaticDomain = configuration.GetValue<string>("STATIC_DOMAIN");
         }
+
+        public override int Order => 1000;
+
+        private string StaticDomain { get; set; }
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {

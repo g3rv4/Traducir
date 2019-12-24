@@ -1,18 +1,18 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Traducir.Core.Helpers;
-using Traducir.Web.ViewModels.Home;
-using Traducir.Core.Models.Enums;
-using System;
-using Traducir.Core.Models;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
-using Traducir.Core.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Traducir.Core.Helpers;
+using Traducir.Core.Models;
+using Traducir.Core.Models.Enums;
+using Traducir.Core.Services;
 using Traducir.Web.Services;
-using Traducir.Web.ViewModels.Enums;
 using Traducir.Web.ViewModels;
+using Traducir.Web.ViewModels.Enums;
+using Traducir.Web.ViewModels.Home;
 
 namespace Traducir.Web.Controllers
 {
@@ -52,7 +52,7 @@ namespace Traducir.Web.Controllers
             }
             else if (query.IsEmpty)
             {
-                //let's redirect to root if we get just '/filters'
+                // let's redirect to root if we get just '/filters'
                 return RedirectToAction(nameof(Index));
             }
             else
@@ -217,6 +217,7 @@ namespace Traducir.Web.Controllers
 
             return await GetStringSummaryViewModelFor(model.StringId);
         }
+
         private async Task<PartialViewResult> GetStringSummaryViewModelFor(int stringId, bool asChanged = true)
         {
             var str = await _soStringsService.GetStringByIdAsync(stringId);
