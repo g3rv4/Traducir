@@ -8,7 +8,12 @@ export function showString(stringId: number) {
         "text",
         queryStringFromObject({ stringId }),
         html => {
-            history.pushState({ stringId, prevUrl: window.location.href, prevState: history.state }, "", `/strings/${stringId}`);
+            // when people visit the string url by doing a request, we don't need to pushState
+            const newPath = `/strings/${stringId}`;
+            if (window.location.pathname !== newPath) {
+                history.pushState({ stringId, prevUrl: window.location.href, prevState: history.state }, "", newPath);
+            }
+
             modal.show("Suggestions", html, () => {
                 let newUrl = history.state.prevUrl;
                 if (window.location.href === history.state.prevUrl) {

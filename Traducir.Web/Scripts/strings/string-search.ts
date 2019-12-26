@@ -62,10 +62,8 @@ export default function initializeStringSearch() {
     }
 
     function hookHistoryPopState() {
-        window.onpopstate = e => {
-            stringQueryFilters = e.state || initialQueryFilters;
-            setInputsFromCurrentFilters();
-            updateList(null);
+        window.onpopstate = _ => {
+            location.reload();
         };
     }
 
