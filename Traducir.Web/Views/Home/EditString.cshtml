@@ -1,3 +1,4 @@
+@using System.Net
 @using Traducir.Core.Models.Enums
 @model Traducir.Web.ViewModels.Home.EditStringViewModel
 
@@ -63,6 +64,12 @@
             <button type="button" class="btn btn-sm btn-primary" data-string-action="copy-as-suggestion" data-string-action-target="translated-string">
                 Copy as suggestion
             </button>
+        </div>
+    }
+
+    @if (!Model.UserIsLoggedIn) {
+        <div class="mt-2">
+            You can't propose new suggestions because you're not logged in. <a href="/login?returnUrl=@WebUtility.UrlEncode(Url.Action("ShowString", new { stringId = Model.String.Id }))">Click here to log in</a>
         </div>
     }
 
