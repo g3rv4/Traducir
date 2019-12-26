@@ -46,7 +46,7 @@ namespace Traducir.Web.Controllers
             return NoContent();
         }
 
-        [Route("admin/update-translations-fron-so-db")]
+        [Route("admin/update-translations-from-so-db")]
         public async Task<IActionResult> UpdateTranslationsFromSODB(bool? overrideExisting = null)
         {
             await _soStringService.UpdateTranslationsFromSODB(overrideExisting ?? false);
