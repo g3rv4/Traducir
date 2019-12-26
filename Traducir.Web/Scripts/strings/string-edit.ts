@@ -15,11 +15,7 @@ export function showString(stringId: number) {
             }
 
             modal.show("Suggestions", html, () => {
-                let newUrl = history.state.prevUrl;
-                if (window.location.href === history.state.prevUrl) {
-                    newUrl = "/";
-                }
-                history.pushState(history.state.prevState, "", newUrl);
+                history.pushState(history.state?.prevState, "", history.state?.prevUrl ?? "/");
             });
         }
     );
