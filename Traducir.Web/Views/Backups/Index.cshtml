@@ -1,0 +1,21 @@
+@model List<Traducir.Web.ViewModels.Backups.Backup>
+<div class="container">
+    <div class="m-2 text-center">
+        <h2>Backups</h2>
+    </div>
+    <table class="table">
+        <thead class="thead-light">
+            <tr>
+                <th>File</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var backup in Model)
+            {
+                <tr>
+                    <td><a href="@backup.Url">@backup.Filename</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

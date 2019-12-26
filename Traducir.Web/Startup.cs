@@ -97,7 +97,7 @@ namespace Traducir.Web
 
             services.AddExceptional(settings =>
             {
-                settings.UseExceptionalPageOnThrow = HostingEnvironment.IsDevelopment();
+                settings.UseExceptionalPageOnThrow = true;
                 settings.OnBeforeLog += (sender, args) =>
                 {
                     var match = Regex.Match(args.Error.FullUrl, "^(([^/]+)//([^/]+))/", RegexOptions.Compiled);
