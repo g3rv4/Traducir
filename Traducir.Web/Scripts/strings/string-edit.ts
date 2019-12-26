@@ -2,21 +2,26 @@ import { ajaxGet, ajaxPost, queryStringFromObject, defaultAjaxOnErrorResponse } 
 import { dynamicEventHook, toCamelCase } from "../shared/utils";
 import modal from "../shared/modal";
 
-export function showString(stringId: number) {
+export function showString(stringId: number, reuseModal?: boolean) {
     ajaxGet(
         "/string_edit_ui",
         "text",
         queryStringFromObject({ stringId }),
         html => {
-            // when people visit the string url by doing a request, we don't need to pushState
-            const newPath = `/strings/${stringId}`;
-            if (window.location.pathname !== newPath) {
-                history.pushState({ stringId, prevUrl: window.location.href, prevState: history.state }, "", newPath);
-            }
+            if (reuseModal) {
+                const content = document.getElementById("modal-body");
+                content.innerHTML = html;
+            } else {
+                // when people visit the string url by doing a request, we don't need to pushState
+                const newPath = `/strings/${stringId}`;
+                if (window.location.pathname !== newPath) {
+                    history.pushState({ stringId, prevUrl: window.location.href, prevState: history.state }, "", newPath);
+                }
 
-            modal.show("Suggestions", html, () => {
-                history.pushState(history.state?.prevState, "", history.state?.prevUrl ?? "/");
-            });
+                modal.show("Suggestions", html, () => {
+                    history.pushState(history.state?.prevState, "", history.state?.prevUrl ?? "/");
+                });
+            }
         }
     );
 }
@@ -89,7 +94,9 @@ export function init() {
             ajaxForStringAction(
                 stringId,
                 "/manage-urgency",
-                { stringId, isUrgent: mustBeUrgent }
+                { stringId, isUrgent: mustBeUrgent },
+                null,
+                true
             );
         },
 
@@ -161,15 +168,21 @@ export function init() {
         }
     };
 
-    function ajaxForStringAction(stringId, url, body, onErrorResponse?) {
+    function ajaxForStringAction(stringId, url, body, onErrorResponse?, keepModalOpen?: boolean) {
         ajaxPost(
             url,
             "text",
             body,
             text => {
                 const stringSummaryContainer = document.querySelector(`.js-string-summary[data-string-id='${stringId}']`);
-                stringSummaryContainer.outerHTML = text;
-                modal.hide();
+                if (stringSummaryContainer) {
+                    stringSummaryContainer.outerHTML = text;
+                }
+                if (keepModalOpen) {
+                    showString(stringId, true);
+                } else {
+                    modal.hide();
+                }
             },
             onErrorResponse
         );
