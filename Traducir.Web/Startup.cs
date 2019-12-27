@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,22 @@ namespace Traducir.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            if (Configuration.GetValue<bool>("ALLOW_IP_FORWARDING"))
+            {
+                services.Configure<ForwardedHeadersOptions>(options =>
+                {
+                    options.ForwardedHeaders =
+                        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+                    // I don't want to know what the nginx ip is. Also: the container that runs this doesn't expose a port to the world
+                    options.KnownNetworks.Clear();
+                    options.KnownProxies.Clear();
+
+                    // we have CF forwarding all the requests for the RU site
+                    options.ForwardLimit = Configuration.GetValue<int>("IP_FORWARD_LIMIT", 1);
+                });
+            }
 
             services.AddSingleton(typeof(IDbService), typeof(DbService));
             services.AddSingleton(typeof(ISOStringService), typeof(SOStringService));
@@ -146,6 +163,11 @@ namespace Traducir.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            if (Configuration.GetValue<bool>("ALLOW_IP_FORWARDING"))
+            {
+                app.UseForwardedHeaders();
+            }
+
             app.UseAuthentication();
             app.UseMiniProfiler();
             app.UseExceptional();
