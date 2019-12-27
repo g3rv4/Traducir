@@ -88,6 +88,18 @@ namespace Traducir.Web
             services.AddMiniProfiler(settings =>
             {
                 settings.PopupRenderPosition = RenderPosition.BottomRight;
+                settings.UserIdProvider = request =>
+                {
+                    if (request.Cookies.TryGetValue("MPUserId", out var mpUserId))
+                    {
+                        return mpUserId;
+                    }
+                    if (request.Path.Value.StartsWith("/admin", StringComparison.Ordinal))
+                    {
+                        return "admin";
+                    }
+                    return request.HttpContext.Connection?.RemoteIpAddress.ToString();
+                };
             });
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
