@@ -113,7 +113,7 @@ namespace Traducir.Core.Services
                     // Aaanyway, as a sacrifice to the Gods (the old and the new), they were required to fix all the keys before
                     // running the pull. They initially wrote an admin route, but considering this is all in-memory and pretty fast,
                     // let's do it here every time this runs. We'll remove it. Eventually.
-                    await FixNormalizedKeysAsync(db);
+                    // await FixNormalizedKeysAsync(db);
                 }
 
                 using (MiniProfiler.Current.Step("Delete strings"))
