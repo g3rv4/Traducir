@@ -40,6 +40,6 @@ stages:
       parameters:
         buildConfiguration: ReleaseRisky
     - publish: 'Traducir.Web/bin/Release/netcoreapp2.2/publish'
-      artifact: 'Traducir.$(Build.BuildNumber)'
+      artifact: 'Traducir'
     - publish: 'Traducir.Web/bin/ReleaseRisky/netcoreapp2.2/publish'
-      artifact: 'Traducir.Risky.$(Build.BuildNumber)'
+      artifact: 'Traducir.Risky'
