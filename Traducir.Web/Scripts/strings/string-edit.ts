@@ -5,7 +5,6 @@ import modal from "../shared/modal";
 export function showString(stringId: number, reuseModal?: boolean) {
     ajaxGet(
         "/string_edit_ui",
-        "text",
         queryStringFromObject({ stringId }),
         html => {
             if (reuseModal) {
@@ -79,7 +78,6 @@ export function init() {
 
             ajaxPost(
                 "/manage-ignore",
-                "text",
                 { stringId, ignored: doIgnore },
                 text => {
                     const stringContainer = button.closest("[data-string-id]");
@@ -171,7 +169,6 @@ export function init() {
     function ajaxForStringAction(stringId, url, body, onErrorResponse?, keepModalOpen?: boolean) {
         ajaxPost(
             url,
-            "text",
             body,
             text => {
                 const stringSummaryContainer = document.querySelector(`.js-string-summary[data-string-id='${stringId}']`);

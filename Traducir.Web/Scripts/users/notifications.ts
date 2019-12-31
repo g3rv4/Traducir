@@ -48,7 +48,6 @@ function initializeNotifications() {
         const subscription = await subscribeUserToPush();
         ajaxPost(
             "/users/me/notifications/update",
-            "text",
             { notifications: notificationSettings, subscription },
             null,
             response => {
@@ -79,7 +78,7 @@ function initializeNotifications() {
     }
 
     function wipeNotifications() {
-        ajaxPost("/users/me/notifications/delete", "text", {}, () => location.reload(), response => {
+        ajaxPost("/users/me/notifications/delete", {}, () => location.reload(), response => {
             if (response.status === 401) {
                 history.pushState(null, "", "/");
             } else {

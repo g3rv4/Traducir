@@ -87,7 +87,6 @@ export default function initializeStringSearch() {
 
         ajaxGet(
             "/strings_list",
-            "text",
             queryString,
             html => document.getElementById("strings_list").innerHTML = html
         );

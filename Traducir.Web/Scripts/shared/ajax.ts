@@ -6,15 +6,15 @@ export function init(token: string) {
     csrfToken = token;
 }
 
-export function ajaxGet(url, responseType, queryString, onSuccess?, onErrorResponse?, onFailure?) {
-    ajax("GET", url, responseType, queryString, null, onSuccess, onErrorResponse, onFailure);
+export function ajaxGet(url: string, queryString, onSuccess?, onErrorResponse?, onFailure?) {
+    ajax("GET", url, queryString, null, onSuccess, onErrorResponse, onFailure);
 }
 
-export function ajaxPost(url, responseType, body, onSuccess?, onErrorResponse?, onFailure?) {
-    ajax("POST", url, responseType, null, body, onSuccess, onErrorResponse, onFailure);
+export function ajaxPost(url, body, onSuccess?, onErrorResponse?, onFailure?) {
+    ajax("POST", url, null, body, onSuccess, onErrorResponse, onFailure);
 }
 
-function ajax(method, url, responseType, queryString, body, onSuccess, onErrorResponse, onFailure) {
+async function ajax(method, url, queryString, body, onSuccess, onErrorResponse, onFailure) {
     spinner(true);
 
     if (body) {
@@ -26,30 +26,21 @@ function ajax(method, url, responseType, queryString, body, onSuccess, onErrorRe
         headers["X-CSRF-TOKEN"] = csrfToken;
     }
 
-    fetch(url + (queryString || ""), { method, body, headers })
-        .then(response => {
-            if (response.ok) {
-                response[responseType]()
-                    .then(value => {
-                        if (onSuccess) {
-                            try {
-                                onSuccess(value);
-                            } finally {
-                                spinner(false);
-                            }
-                        } else {
-                            spinner(false);
-                        }
-                    });
-            } else {
-                spinner(false);
-                (onErrorResponse || defaultAjaxOnErrorResponse)(response);
-            }
-        })
-        .catch(error => {
-            spinner(false);
-            (onFailure || defaultAjaxOnFailure)(error);
-        });
+    try {
+        const response = await fetch(url + (queryString || ""), { method, body, headers });
+        spinner(false);
+        if (response.ok) {
+            const value = await response.text();
+            onSuccess?.(value);
+        } else {
+            const errorHandler = onErrorResponse ?? defaultAjaxOnErrorResponse;
+            errorHandler(response);
+        }
+    } catch (error) {
+        spinner(false);
+        const errorHandler = (onFailure || defaultAjaxOnFailure);
+        errorHandler(error);
+    }
 }
 
 export function queryStringFromObject(object) {

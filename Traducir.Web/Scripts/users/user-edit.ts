@@ -17,7 +17,6 @@ function initializeUserEdit() {
 
         ajaxPost(
             "/users/change-type",
-            "text",
             { userId, userType: newUserType },
             html => userSummaryContainer.outerHTML = html
         );
