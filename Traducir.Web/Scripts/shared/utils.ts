@@ -1,27 +1,31 @@
-export function clone(object) {
-    return JSON.parse(JSON.stringify(object));
+export function clone(obj: object) {
+    return JSON.parse(JSON.stringify(obj));
 }
 
-export function spinner(show) {
-    document.getElementById("spinner").style.display = show ? "block" : "none";
+export function spinner(show: boolean) {
+    const spinnerObj = document.getElementById("spinner");
+    if (!spinnerObj) {
+        throw Error("Could not find a spinner object");
+    }
+    spinnerObj.style.display = show ? "block" : "none";
 }
 
-export function dynamicEventHook(events, selector, handler) {
+export function dynamicEventHook(events: string[] | string, selector: string, handler: (e: Event) => void) {
     if (!Array.isArray(events)) {
         events = [events];
     }
 
     for (const event of events) {
         document.addEventListener(event, e => {
-            if (Array.from(document.querySelectorAll(selector)).indexOf(e.target) !== -1) {
+            if (e.target && Array.from(document.querySelectorAll(selector)).indexOf(e.target as Element) !== -1) {
                 handler.call(e.target, e);
             }
         });
     }
 }
 
-export function toCamelCase(s) {
-    return s.replace(/([-_][a-z])/ig, $1 => {
+export function toCamelCase(s: string) {
+    return s.replace(/([-_][a-z])/ig, ($1: string) => {
         return $1.toUpperCase()
             .replace("-", "")
             .replace("_", "");

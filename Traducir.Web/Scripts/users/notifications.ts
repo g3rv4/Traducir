@@ -10,7 +10,12 @@ export default function run() {
 function initializeNotifications() {
     const supportsPush = ("serviceWorker" in navigator) && ("PushManager" in window);
     if (!supportsPush) {
-        document.getElementById("main-container").outerHTML = "<div class='sorry-no-push'>Your browser doesn't support push notifications</div>";
+        const container = document.getElementById("main-container");
+        if (!container) {
+            throw Error("Could not get the container DOM element");
+        }
+
+        container.outerHTML = "<div class='sorry-no-push'>Your browser doesn't support push notifications</div>";
         return;
     }
 
@@ -22,6 +27,10 @@ function initializeNotifications() {
 
     function handleNotificationChange(element: Element) {
         const notificationName = element.getAttribute("data-notification-name");
+        if (!notificationName) {
+            throw Error("Could not get the notification name");
+        }
+
         notificationSettings[notificationName] = !notificationSettings[notificationName];
 
         if (notificationSettings[notificationName]) {
@@ -41,15 +50,24 @@ function initializeNotifications() {
         notificationSettings.notificationsInterval = intervalSelector.value;
     });
 
-    document.getElementById("save-and-add-browser").addEventListener("click", saveAndAddBrowser);
-    document.getElementById("stop-receiving-notifications").addEventListener("click", wipeNotifications);
+    const saveButton = document.getElementById("save-and-add-browser");
+    if (!saveButton) {
+        throw Error("Could not find the save button");
+    }
+    saveButton.addEventListener("click", saveAndAddBrowser);
+
+    const stopNotificationsButton = document.getElementById("stop-receiving-notifications");
+    if (!stopNotificationsButton) {
+        throw Error("Could not find the stop notifications button");
+    }
+    stopNotificationsButton.addEventListener("click", wipeNotifications);
 
     async function saveAndAddBrowser(): Promise<void> {
         const subscription = await subscribeUserToPush();
         ajaxPost(
             "/users/me/notifications/update",
             { notifications: notificationSettings, subscription },
-            null,
+            undefined,
             response => {
                 if (response.status === 401) {
                     history.pushState(null, "", "/");

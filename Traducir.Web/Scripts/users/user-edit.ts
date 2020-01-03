@@ -6,12 +6,16 @@ export default function run() {
 }
 
 function initializeUserEdit() {
-    dynamicEventHook("click", "[data-change-to-user-type]", e => {
-        changeUserTypeFor(e.target);
+    dynamicEventHook("click", "[data-change-to-user-type]", (e: Event) => {
+        changeUserTypeFor(e.target as HTMLElement);
     });
 
-    function changeUserTypeFor(element) {
+    function changeUserTypeFor(element: HTMLElement) {
         const userSummaryContainer = element.closest("[data-user-id]");
+        if (!userSummaryContainer) {
+            throw Error("Could not get the summary container DOM element");
+        }
+
         const userId = userSummaryContainer.getAttribute("data-user-id");
         const newUserType = element.getAttribute("data-change-to-user-type");
 

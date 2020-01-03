@@ -7,41 +7,24 @@ export default function initializeStringSearch() {
     const queryDropdowns = document.querySelectorAll("select.js-string-query-filter") as NodeListOf<HTMLSelectElement>;
     const queryTextInputs = document.querySelectorAll("input[type=text].js-string-query-filter") as NodeListOf<HTMLInputElement>;
     const queryLinks = document.querySelectorAll("a.js-string-query-filter") as NodeListOf<HTMLAnchorElement>;
-    const initialQueryFilters = clone(stringQueryFilters);
 
     hookDropdowns();
     hookTextboxes();
     hookQuickLinks();
     hookHistoryPopState();
 
-    function setInputsFromCurrentFilters() {
-        let i;
-
-        for (i = 0; i < queryDropdowns.length; i++) {
-            const dropdown = queryDropdowns[i];
-            const queryKey = dropdown.getAttribute("data-string-query-key");
-            dropdown.value = stringQueryFilters[queryKey] || 0;
-        }
-
-        for (i = 0; i < queryTextInputs.length; i++) {
-            const textInput = queryTextInputs[i];
-            const queryKey = textInput.getAttribute("data-string-query-key");
-            textInput.value = stringQueryFilters[queryKey];
-        }
-    }
-
     function hookDropdowns() {
         for (const dropdown of queryDropdowns) {
-            dropdown.onchange = e => { updateList(e.target, true); };
+            dropdown.onchange = e => { updateList(e.target as Element, true); };
         }
     }
 
     function hookTextboxes() {
-        let textInputTimeout = null;
+        let textInputTimeout: number | undefined;
         for (const input of queryTextInputs) {
             input.onkeyup = e => {
                 clearTimeout(textInputTimeout);
-                textInputTimeout = setTimeout(() => { updateList(e.target); }, 500);
+                textInputTimeout = setTimeout(() => { updateList(e.target as Element); }, 500);
             };
         }
     }
@@ -53,26 +36,44 @@ export default function initializeStringSearch() {
                 const target = e.target as HTMLElement;
                 const queryKey = target.getAttribute("data-string-query-key");
                 const queryValue = target.getAttribute("data-string-query-value");
+                if (queryValue == null) {
+                    throw Error("Could not get a queryValue");
+                }
+
                 const dropdown = document.querySelector(`select[data-string-query-key=${queryKey}`) as HTMLSelectElement;
+                if (!dropdown) {
+                    throw Error("Could not find the dropdown");
+                }
                 dropdown.value = queryValue;
-                updateList(e.target, true);
+                updateList(e.target as Element, true);
                 e.preventDefault();
             };
         }
     }
 
     function hookHistoryPopState() {
-        window.onpopstate = _ => {
+        window.onpopstate = (_: PopStateEvent) => {
             location.reload();
         };
     }
 
-    function updateList(triggeringElement, valueIsNumber?) {
+    function updateList(triggeringElement: Element, valueIsNumber?: boolean) {
         spinner(true);
 
         if (triggeringElement) {
             const queryKey = triggeringElement.getAttribute("data-string-query-key");
-            let queryValue = triggeringElement.getAttribute("data-string-query-value") || triggeringElement.value;
+            if (!queryKey) {
+                throw Error("Could not find the queryKey");
+            }
+
+            // TODO: Check what things are passed here that have a value
+            let value = null;
+            const elementAsAny = triggeringElement as any;
+            if (elementAsAny.value) {
+                value = elementAsAny.value;
+            }
+
+            let queryValue = triggeringElement.getAttribute("data-string-query-value") ?? value;
             if (valueIsNumber) {
                 queryValue = parseInt(queryValue, 10);
             }
@@ -88,7 +89,14 @@ export default function initializeStringSearch() {
         ajaxGet(
             "/strings_list",
             queryString,
-            html => document.getElementById("strings_list").innerHTML = html
+            html => {
+                const stringsList = document.getElementById("strings_list");
+                if (!stringsList) {
+                    throw Error("Could not get the strings list DOM element");
+                }
+
+                stringsList.innerHTML = html;
+            }
         );
     }
 }

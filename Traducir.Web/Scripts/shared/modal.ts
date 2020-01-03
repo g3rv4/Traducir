@@ -1,11 +1,23 @@
-declare var Modal: any;
+interface ModalContent {
+    content: string;
+}
+
+declare class Modal {
+    constructor(container: HTMLElement, content: ModalContent);
+    public show(): void;
+    public hide(): void;
+}
 
 const modal = (() => {
-    let currentModal = null;
-    let onClose: () => void;
+    let currentModal: Modal | undefined;
+    let onClose: (() => void) | undefined;
 
-    function modalContainer() {
-        return document.getElementById("modal-container");
+    function modalContainer(): HTMLElement {
+        const container = document.getElementById("modal-container");
+        if (container) {
+            return container;
+        }
+        throw new Error("Could not find container for modal");
     }
 
     function showModal(title: string, contents: string, closeCallback?: () => void) {
@@ -25,10 +37,10 @@ const modal = (() => {
         currentModal = new Modal(modalContainer(), { content: modalHtml });
         onClose = closeCallback;
 
-        modalContainer().addEventListener("hidden.bs.modal", event => {
+        modalContainer().addEventListener("hidden.bs.modal", _ => {
             onClose?.();
-            currentModal = null;
-            onClose = null;
+            currentModal = undefined;
+            onClose = undefined;
         }, false);
 
         currentModal.show();

@@ -6,28 +6,30 @@ export function init(token: string) {
     csrfToken = token;
 }
 
-export function ajaxGet(url: string, queryString, onSuccess?, onErrorResponse?, onFailure?) {
-    ajax("GET", url, queryString, null, onSuccess, onErrorResponse, onFailure);
+export function ajaxGet(url: string, queryString?: string, onSuccess?: (_: string) => void, onErrorResponse?: (_: Response) => void, onFailure?: (_: Error) => void) {
+    ajax("GET", url, queryString, undefined, onSuccess, onErrorResponse, onFailure);
 }
 
-export function ajaxPost(url, body, onSuccess?, onErrorResponse?, onFailure?) {
-    ajax("POST", url, null, body, onSuccess, onErrorResponse, onFailure);
+export function ajaxPost(url: string, body: object, onSuccess?: (_: string) => void, onErrorResponse?: (_: Response) => void, onFailure?: (_: Error) => void) {
+    ajax("POST", url, undefined, body, onSuccess, onErrorResponse, onFailure);
 }
 
-async function ajax(method, url, queryString, body, onSuccess, onErrorResponse, onFailure) {
+async function ajax(method: "GET" | "POST", url: string, queryString?: string, body?: object, onSuccess?: (_: string) => void, onErrorResponse?: (_: Response) => void, onFailure?: (_: Error) => void) {
     spinner(true);
 
-    if (body) {
-        body = JSON.stringify(body);
-    }
-    const headers = body ? { "Content-Type": "application/json" } : {};
+    const headers: Record<string, string> = body ? { "Content-Type": "application/json" } : {};
 
     if (method === "POST") {
         headers["X-CSRF-TOKEN"] = csrfToken;
     }
 
     try {
-        const response = await fetch(url + (queryString || ""), { method, body, headers });
+        const requestInit: RequestInit = { method, headers };
+        if (body) {
+            requestInit.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(url + (queryString || ""), requestInit);
         spinner(false);
         if (response.ok) {
             const value = await response.text();
@@ -43,15 +45,15 @@ async function ajax(method, url, queryString, body, onSuccess, onErrorResponse, 
     }
 }
 
-export function queryStringFromObject(object) {
-    if (!object) {
+export function queryStringFromObject(obj: Record<string, string | number>) {
+    if (!obj) {
         return "";
     }
 
     let query = Object
-        .keys(object)
-        .filter(k => !!object[k])
-        .map(k => encodeURIComponent(k) + "=" + encodeURIComponent(object[k]))
+        .keys(obj)
+        .filter(k => !!obj[k])
+        .map(k => encodeURIComponent(k) + "=" + encodeURIComponent(obj[k]))
         .join("&");
 
     if (query) {
@@ -61,10 +63,10 @@ export function queryStringFromObject(object) {
     return query;
 }
 
-export function defaultAjaxOnErrorResponse(response) {
+export function defaultAjaxOnErrorResponse(response: Response) {
     alert(`Error returned by server:\r\n${response.status} - ${response.statusText}`);
 }
 
-function defaultAjaxOnFailure(error) {
+function defaultAjaxOnFailure(error: Error) {
     alert(error);
 }

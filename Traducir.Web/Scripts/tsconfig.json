@@ -3,7 +3,7 @@
     "sourceMap": true,
     "inlineSources": true,
     "outFile": "../wwwroot/js/dist/app.js",
-    "strict": false,
+    "strict": true,
     "module": "amd",
     "target": "es6"
   },
