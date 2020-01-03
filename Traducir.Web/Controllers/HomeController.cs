@@ -170,15 +170,15 @@ namespace Traducir.Web.Controllers
         [HttpPost]
         [Authorize(Policy = TraducirPolicy.CanSuggest)]
         [Route("/delete-suggestion")]
-        public async Task<IActionResult> DeleteSuggestion([FromBody] int suggestionId)
+        public async Task<IActionResult> DeleteSuggestion([FromBody] DeleteSuggestionViewModel model)
         {
-            var success = await _soStringsService.DeleteSuggestionAsync(suggestionId, User.GetClaim<int>(ClaimType.Id));
+            var success = await _soStringsService.DeleteSuggestionAsync(model.SuggestionId, User.GetClaim<int>(ClaimType.Id));
             if (!success)
             {
                 return BadRequest();
             }
 
-            var stringId = await _soStringsService.GetStringIdBySuggestionId(suggestionId);
+            var stringId = await _soStringsService.GetStringIdBySuggestionId(model.SuggestionId);
             return await GetStringSummaryViewModelFor(stringId);
         }
 
