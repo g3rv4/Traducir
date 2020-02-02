@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Traducir.Core.Helpers;
 using Traducir.Core.Models;
 using Traducir.Core.Models.Enums;
@@ -29,7 +30,7 @@ namespace Traducir.Web.Controllers
             ISEApiService seApiService,
             IUserService userService,
             IAuthorizationService authorizationService,
-            IHostingEnvironment hostingEnvironment)
+            IWebHostEnvironment hostingEnvironment)
         {
             _seApiService = seApiService;
             _configuration = configuration;
@@ -126,6 +127,6 @@ namespace Traducir.Web.Controllers
         }
 
         private string GetOauthReturnUrl() =>
-            Url.Action("OauthCallback", null, null, _configuration.GetValue<bool>("USE_HTTPS") ? "https" : "http");
+            Url.Action("OauthCallback", null, null, "https");
     }
 }

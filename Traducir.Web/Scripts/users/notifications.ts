@@ -96,7 +96,7 @@ function initializeNotifications() {
     }
 
     function wipeNotifications() {
-        ajaxPost("/users/me/notifications/delete", {}, () => location.reload(), response => {
+        ajaxPost("/delete-notifications", {}, () => location.reload(), response => {
             if (response.status === 401) {
                 history.pushState(null, "", "/");
             } else {

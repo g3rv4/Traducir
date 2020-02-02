@@ -17,11 +17,22 @@ function initializeUserEdit() {
         }
 
         const userId = userSummaryContainer.getAttribute("data-user-id");
+        if (!userId) {
+            throw Error("Could not get the user Id");
+        }
+
         const newUserType = element.getAttribute("data-change-to-user-type");
+        if (!newUserType) {
+            throw Error("Could not get the new user type");
+
+        }
 
         ajaxPost(
             "/users/change-type",
-            { userId, userType: newUserType },
+            {
+                userId: parseInt(userId, 10),
+                userType: parseInt(newUserType, 10)
+            },
             html => userSummaryContainer.outerHTML = html
         );
     }

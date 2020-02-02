@@ -106,9 +106,9 @@ namespace Traducir.Core.Models.Enums
             }
         }
 
-        public static string GetUrl(this NotificationType type, bool useHttps, string host, int userId)
+        public static string GetUrl(this NotificationType type, string host, int userId)
         {
-            var basePath = $"{(useHttps ? "https" : "http")}://{host}";
+            var basePath = "https://" + host;
             switch (type)
             {
                 case NotificationType.UrgentStrings:

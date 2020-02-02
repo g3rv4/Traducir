@@ -45,24 +45,23 @@ Group By StateId";
                     var urgentStrings = await reader.ReadFirstAsync<int>();
                     var suggestionCounts = (await reader.ReadAsync<(StringSuggestionState state, int count)>()).ToDictionary(e => e.state, e => e.count);
                     NotificationType type;
-                    bool useHttps = _configuration.GetValue<bool>("USE_HTTPS");
 
                     if (urgentStrings > 0)
                     {
                         type = NotificationType.UrgentStrings;
-                        await _userService.SendBatchNotifications(type, useHttps, host, urgentStrings);
+                        await _userService.SendBatchNotifications(type, host, urgentStrings);
                     }
 
                     if (suggestionCounts.TryGetValue(StringSuggestionState.Created, out var count))
                     {
                         type = NotificationType.SuggestionsAwaitingApproval;
-                        await _userService.SendBatchNotifications(type, useHttps, host, count);
+                        await _userService.SendBatchNotifications(type, host, count);
                     }
 
                     if (suggestionCounts.TryGetValue(StringSuggestionState.ApprovedByTrustedUser, out count))
                     {
                         type = NotificationType.SuggestionsAwaitingReview;
-                        await _userService.SendBatchNotifications(type, useHttps, host, count);
+                        await _userService.SendBatchNotifications(type, host, count);
                     }
                 }
             }

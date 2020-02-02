@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using StackExchange.Profiling;
 using Traducir.Core.Helpers;
@@ -23,7 +23,7 @@ namespace Traducir.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
+        public Startup(IConfiguration configuration, IWebHostEnvironment hostingEnvironment, ILoggerFactory loggerFactory)
         {
 #if RISKY
             if (!hostingEnvironment.IsDevelopment() && !configuration.GetValue("ALLOW_RISKY", false))
@@ -38,15 +38,13 @@ namespace Traducir.Web
 
         public IConfiguration Configuration { get; }
 
-        public IHostingEnvironment HostingEnvironment { get; }
+        public IWebHostEnvironment HostingEnvironment { get; }
 
         public ILoggerFactory LoggerFactory { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
-
             if (Configuration.GetValue<bool>("ALLOW_IP_FORWARDING"))
             {
                 services.Configure<ForwardedHeadersOptions>(options =>
@@ -153,15 +151,13 @@ namespace Traducir.Web
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => false;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
             services
-                .AddMvc(options =>
+                .AddControllersWithViews(options =>
                 {
                     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
                 })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddViewOptions(options => options.HtmlHelperOptions.ClientValidationEnabled = false);
 
             services.AddAntiforgery(options =>
@@ -173,7 +169,7 @@ namespace Traducir.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (Configuration.GetValue<bool>("ALLOW_IP_FORWARDING"))
             {
@@ -189,8 +185,6 @@ namespace Traducir.Web
                 HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always
             });
 
-            app.UseMvc();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -202,10 +196,17 @@ namespace Traducir.Web
 
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
-                app.UseHttpsRedirection();
             }
 
-            app.UseMvc();
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

@@ -121,7 +121,10 @@ export function init() {
 
                 ajaxPost(
                     "/manage-ignore",
-                    { stringId, ignored: doIgnore },
+                    {
+                        stringId: parseInt(stringId, 10),
+                        ignored: doIgnore
+                    },
                     text => {
                         const stringContainer = button.closest("[data-string-id]");
                         if (!stringContainer) {
@@ -138,7 +141,10 @@ export function init() {
                 ajaxForStringAction(
                     stringId,
                     "/manage-urgency",
-                    { stringId, isUrgent: mustBeUrgent },
+                    {
+                        stringId: parseInt(stringId, 10),
+                        isUrgent: mustBeUrgent
+                    },
                     undefined,
                     true
                 );
@@ -157,12 +163,19 @@ export function init() {
                 }
 
                 const suggestionId = suggestionElement.getAttribute("data-suggestion-id");
+                if (!suggestionId) {
+                    throw Error("Could not find suggestion id");
+                }
+
                 const newSuggestion = (document.getElementById("suggestion") as HTMLTextAreaElement).value.trim();
 
                 ajaxForStringAction(
                     stringId,
                     "/replace-suggestion",
-                    { suggestionId, newSuggestion }
+                    {
+                        suggestionId: parseInt(suggestionId, 10),
+                        newSuggestion
+                    }
                 );
             };
             case "deleteSuggestion": return (stringId: string, button: Element) => {
@@ -171,11 +184,16 @@ export function init() {
                     throw Error("Could not find the suggestion");
                 }
                 const suggestionId = suggestionElement.getAttribute("data-suggestion-id");
+                if (!suggestionId) {
+                    throw Error("Could not find the suggestion id");
+                }
 
                 ajaxForStringAction(
                     stringId,
                     "/delete-suggestion",
-                    { suggestionId }
+                    {
+                        suggestionId: parseInt(suggestionId, 10)
+                    }
                 );
             };
             case "reviewSuggestion": return (stringId: string, button: Element) => {
@@ -185,19 +203,26 @@ export function init() {
                 }
 
                 const suggestionId = suggestionElement.getAttribute("data-suggestion-id");
+                if (!suggestionId) {
+                    throw Error("Could not find the suggestion id");
+                }
+
                 const approve = button.getAttribute("data-review-action") === "approve";
 
                 ajaxForStringAction(
                     stringId,
                     "/review-suggestion",
-                    { suggestionId, approve }
+                    {
+                        suggestionId: parseInt(suggestionId, 10),
+                        approve
+                    }
                 );
             };
             case "createSuggestion": return (stringId: string, button: Element) => {
                 const rawStringCheckbox = document.getElementById("is-raw-string") as HTMLInputElement;
                 const suggestionElement = document.getElementById("suggestion") as HTMLTextAreaElement;
                 const body = {
-                    stringId,
+                    stringId: parseInt(stringId, 10),
                     suggestion: suggestionElement.value.trim(),
                     approve: button.getAttribute("data-create-approved-suggestion") === "yes",
                     rawString: rawStringCheckbox ? !!rawStringCheckbox.checked : false

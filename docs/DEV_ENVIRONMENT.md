@@ -33,7 +33,6 @@ Open the `.vscode/launch.json` and replace the existing `environmentVariables` k
     "FRIENDLY_NAME": "LOCAL",
     "CONNECTION_STRING": "Server=<SQL SERVER ADDRESS>;Database=Traducir;User Id=<SQL SERVER USER>;Password=<SQL SERVER PASSWORD>;Min Pool Size=5;",
 
-    "USE_HTTPS": "False",
     "STACKAPP_SECRET": "<YOUR STACKAPP SECRET>",
     "STACKAPP_CLIENT_ID": "<YOUR STACKAPP CLIENT ID>",
     "STACKAPP_KEY": "<YOUR STACKAPP KEY>",

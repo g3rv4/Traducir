@@ -31,9 +31,9 @@ namespace Traducir.Core.Services
 
         Task<bool> AddNotificationBrowser(int userId, WebPushSubscription subscription);
 
-        Task<bool> SendNotification(int userId, NotificationType type, bool useHttps, string host);
+        Task<bool> SendNotification(int userId, NotificationType type, string host);
 
-        Task SendBatchNotifications(NotificationType type, bool useHttps, string host, int? count = null);
+        Task SendBatchNotifications(NotificationType type, string host, int? count = null);
     }
 
     public class UserService : IUserService
@@ -208,7 +208,7 @@ Where  Id = @userId", new { userId });
             }
         }
 
-        public async Task<bool> SendNotification(int userId, NotificationType type, bool useHttps, string host)
+        public async Task<bool> SendNotification(int userId, NotificationType type, string host)
         {
             if (type.ShouldBeBatched())
             {
@@ -227,7 +227,7 @@ And    {type.GetUserColumnName()} < @now", new { userId, now = DateTime.UtcNow }
                 {
                     var message = new Models.Services.PushNotificationMessage(
                         type.GetTitle(),
-                        type.GetUrl(useHttps, host, userId),
+                        type.GetUrl(host, userId),
                         type.GetBody(),
                         type.ToString(),
                         true);
@@ -247,7 +247,7 @@ Where  Id = @userId", new { userId, now = DateTime.UtcNow });
             return false;
         }
 
-        public async Task SendBatchNotifications(NotificationType type, bool useHttps, string host, int? count = null)
+        public async Task SendBatchNotifications(NotificationType type, string host, int? count = null)
         {
             if (!type.ShouldBeBatched())
             {
@@ -266,7 +266,7 @@ Where  {type.GetUserColumnName()} < @now", new { now = DateTime.UtcNow });
                 {
                     var message = new Models.Services.PushNotificationMessage(
                         type.GetTitle(count),
-                        type.GetUrl(useHttps, host, userId),
+                        type.GetUrl(host, userId),
                         type.GetBody(),
                         type.ToString(),
                         true);
