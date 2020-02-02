@@ -53,7 +53,7 @@ stages:
     - template: azure-dotnet-publish.yml
       parameters:
         buildConfiguration: ReleaseRisky
-    - publish: 'Traducir.Web/bin/Release/netcoreapp2.2/publish'
+    - publish: 'Traducir.Web/bin/Release/netcoreapp3.1/publish'
       artifact: 'Traducir'
-    - publish: 'Traducir.Web/bin/ReleaseRisky/netcoreapp2.2/publish'
+    - publish: 'Traducir.Web/bin/ReleaseRisky/netcoreapp3.1/publish'
       artifact: 'Traducir.Risky'
