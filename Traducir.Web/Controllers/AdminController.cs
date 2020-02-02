@@ -65,7 +65,7 @@ namespace Traducir.Web.Controllers
 
                 if (sendNotifications)
                 {
-                    await _userService.SendBatchNotifications(NotificationType.StringsPushedToTransifex, false, null);
+                    await _userService.SendBatchNotifications(NotificationType.StringsPushedToTransifex, null);
                 }
             }
 
