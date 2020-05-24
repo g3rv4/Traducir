@@ -7,3 +7,4 @@ Traducir.Web/wwwroot/js/dist/
 Traducir.Web/wwwroot/css/*.min.css
 launchSettings.json
 .tscache/
+.idea/

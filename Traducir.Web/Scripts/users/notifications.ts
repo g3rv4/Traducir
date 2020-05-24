@@ -42,12 +42,12 @@ function initializeNotifications() {
 
     const intervalValueSelector = document.getElementById("notifications-interval-value") as HTMLInputElement;
     intervalValueSelector.addEventListener("change", () => {
-        notificationSettings.notificationsIntervalValue = intervalValueSelector.value;
+        notificationSettings.notificationsIntervalValue = parseInt(intervalValueSelector.value, 10);
     });
 
     const intervalSelector = document.getElementById("notifications-interval") as HTMLInputElement;
     intervalSelector.addEventListener("change", () => {
-        notificationSettings.notificationsInterval = intervalSelector.value;
+        notificationSettings.notificationsInterval = parseInt(intervalSelector.value, 10);
     });
 
     const saveButton = document.getElementById("save-and-add-browser");
