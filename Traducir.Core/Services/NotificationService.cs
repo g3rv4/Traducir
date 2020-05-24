@@ -34,8 +34,10 @@ From   Strings
 Where  IsUrgent = 1
 And    DeletionDate Is Null;
 
-Select   StateId, Count(1)
-From     StringSuggestions
+Select   ss.StateId, Count(1)
+From     StringSuggestions ss
+Join     Strings s on s.Id = ss.StringId
+Where    s.DeletionDate Is Null
 Group By StateId";
 
             using (var db = _dbService.GetConnection())
