@@ -253,6 +253,18 @@ namespace Traducir.Web.Controllers
             return PartialView("EditString", viewModel);
         }
 
+        [Authorize]
+        [Route("strings/{stringId}/history")]
+        public async Task<IActionResult> SuggestionsByString(int stringId)
+        {
+            var suggestions = await _soStringsService.GetSuggestionsByString(stringId);
+            var siteDomain = _configuration.GetValue<string>("STACKAPP_SITEDOMAIN");
+            var str = await _soStringsService.GetStringByIdAsync(stringId);
+            var model = new SuggestionsByStringViewModel { SiteDomain = siteDomain, StringId = stringId, Suggestions = suggestions, String = str };
+
+            return View(model);
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

@@ -138,6 +138,13 @@
             </tbody>
         </table>
     }
+    
+    @if (Model.UserIsLoggedIn)
+    {
+        <div class="mt-2">
+            <a href="/strings/@(Model.String.Id)/history">Translation history</a>
+        </div>
+    }
 
     @if (Model.UserCanSuggest)
     {
