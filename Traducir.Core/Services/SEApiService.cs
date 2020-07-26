@@ -101,7 +101,7 @@ namespace Traducir.Core.Services
 
         private Task<HttpResponseMessage> GetFromApi(string url, string accessToken)
         {
-            var glue = url.Contains("?") ? "&" : "?";
+            var glue = url.Contains("?", StringComparison.OrdinalIgnoreCase) ? "&" : "?";
             return HttpClient.GetAsync($"{url}{glue}key={_appKey}&access_token={accessToken}&filter={FilterId}");
         }
     }

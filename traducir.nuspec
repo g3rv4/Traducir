@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>traducir</id>
+        <version></version>
+        <description>Web app to manage Transifex tranlations.</description>
+        <authors>Gervasio Marchand Cassataro</authors>
+        <repository type="git" url="https://github.com/g3rv4/Traducir.git" />
+    </metadata>
+</package>

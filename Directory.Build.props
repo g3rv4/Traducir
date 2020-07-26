@@ -9,6 +9,7 @@
         <DefineConstants Condition="'$(Configuration)' == 'DebugRisky'">TRACE;DEBUG;RISKY</DefineConstants>
         <DefineConstants Condition="'$(Configuration)' == 'ReleaseRisky'">RISKY</DefineConstants>
         <DebugType>full</DebugType>
+        <Version>1.0.0</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(Configuration.Contains('Release'))">

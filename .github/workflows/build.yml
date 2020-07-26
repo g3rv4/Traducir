@@ -1,0 +1,35 @@
+name: build
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: ['Release', 'Risky']
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build project
+      shell: pwsh
+      run: ./build.ps1 ${{ matrix.variant }} $env:GITHUB_RUN_NUMBER $env:GITHUB_SHA
+    - name: Push it to GitHub
+      run: curl -X PUT -u "$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}" -F package=@$PKG_PATH https://nuget.pkg.github.com/g3rv4/
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: Azure/get-keyvault-secrets@v1.0
+        with:
+          keyvault: "ActionsBuild"
+          secrets: 'OctopusServerUrl, OctopusApiKey'
+        id: azureSecrets
+      - name: Deploy to dev
+        shell: pwsh
+        run: |
+          dotnet tool install --global Octopus.DotNet.Cli
+          dotnet-octo create-release --project Traducir --releaseNumber $VERSION --package $VERSION --deployto Dev --server "${{ steps.azureSecrets.outputs.OctopusServerUrl }}" --apiKey "${{ steps.azureSecrets.outputs.OctopusApiKey }}" --progress
