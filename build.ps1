@@ -4,6 +4,8 @@ param (
     [Parameter(Mandatory=$false)][string]$CommitSHA
 )
 
+$dockerImage = "g3rv4/traducir-builder:3.1.302-alpine3.12"
+
 $basePath = Pwd
 $buildPropsPath = Join-Path $basePath Directory.Build.props
 $buildPath = Join-Path $basePath bin/build
@@ -28,10 +30,10 @@ $uid = sh -c 'id -u'
 $gid = sh -c 'id -g'
 
 Write-Host "Linting..."
-docker run --rm -v "$($basePath):/var/app" g3rv4/traducir-builder tslint --project /var/app/Traducir.Web/Scripts/tsconfig.json
+docker run --rm -v "$($basePath):/var/app" $dockerImage tslint --project /var/app/Traducir.Web/Scripts/tsconfig.json
 
 Write-Host "Transpiling..."
-docker run --rm -v "$($basePath):/var/app" g3rv4/traducir-builder ash -c "tsc --build /var/app/Traducir.Web/Scripts/tsconfig.json && chown -R $($uid):$($gid) /var/app"
+docker run --rm -v "$($basePath):/var/app" $dockerImage ash -c "tsc --build /var/app/Traducir.Web/Scripts/tsconfig.json && chown -R $($uid):$($gid) /var/app"
 
 # Bust sourcemap cache
 $jsPath = 'Traducir.Web/wwwroot/js/dist/app.js'
@@ -43,7 +45,7 @@ $jsContent = $jsContent.Replace('app.js.map', "app.js.map?v=$($sha.Hash)")
 Set-Content -Path $jsPath -Value $jsContent
 
 Write-Host "Building..."
-docker run --rm -v "$($basePath):/var/src" g3rv4/traducir-builder ash -c "dotnet publish -c $BuildType /var/src/Traducir.Web/Traducir.Web.csproj -o /var/src/bin/build && chown -R $($uid):$($gid) /var/src"
+docker run --rm -v "$($basePath):/var/src" $dockerImage ash -c "dotnet publish -c $BuildType /var/src/Traducir.Web/Traducir.Web.csproj -o /var/src/bin/build && chown -R $($uid):$($gid) /var/src"
 
 $nuspecPath = Join-Path $buildPath traducir.nuspec
 $nupkgPath = Join-Path $buildPath "traducir.$($newVersion).nupkg"
