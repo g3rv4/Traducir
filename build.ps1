@@ -4,9 +4,9 @@ param (
     [Parameter(Mandatory=$false)][string]$CommitSHA
 )
 
-$dockerImage = "g3rv4/traducir-builder:3.1.302-alpine3.12"
+$dockerImage = "g3rv4/traducir-builder:3.1.404-alpine3.12"
 
-$basePath = Pwd
+$basePath = Get-Location
 $buildPropsPath = Join-Path $basePath Directory.Build.props
 $buildPath = Join-Path $basePath bin/build
 
@@ -15,6 +15,7 @@ $versionElement = $xmlDoc['Project']['PropertyGroup']['Version']
 $version = [version]$versionElement.InnerText
 $newVersion = "$($version.Major).$($version.Minor).$($BuildNumber)"
 
+$versionWithoutHash = $newVersion
 if ($CommitSHA) {
     $newVersion = "$($newVersion)+$($CommitSHA.SubString(0, 7))"
 }
@@ -52,7 +53,7 @@ $nupkgPath = Join-Path $buildPath "traducir.$($newVersion).nupkg"
 cp traducir.nuspec $nuspecPath
 
 [xml]$xmlDoc = Get-Content $nuspecPath
-$xmlDoc['package']['metadata']['version'].InnerText = $newVersion
+$xmlDoc['package']['metadata']['version'].InnerText = $versionWithoutHash
 if ($BuildType -ne "Release") {
     $currentId = $xmlDoc['package']['metadata']['id'].InnerText
     $xmlDoc['package']['metadata']['id'].InnerText = "$currentId-$($BuildType.ToLower())"
@@ -63,5 +64,11 @@ $xmlDoc.Save($nuspecPath)
 Compress-Archive -Path "$($buildPath)/*" -DestinationPath $nupkgPath
 
 Write-Host "Compressed!"
-Write-Host "::set-env name=VERSION::$newVersion"
-Write-Host "::set-env name=PKG_PATH::$nupkgPath"
+Write-Host "::set-output name=version::$newVersion"
+Write-Host "::set-output name=version_without_hash::$versionWithoutHash"
+
+if ($env:GITHUB_ENV) {
+    Write-Output "VERSION_WITHOUT_HASH=$versionWithoutHash" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    Write-Output "VERSION=$newVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    Write-Output "PKG_PATH=$nupkgPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+}

@@ -6,12 +6,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.build.outputs.version }}
+      version_without_hash: ${{ steps.build.outputs.version_without_hash }}
     strategy:
       matrix:
         variant: ['Release', 'Risky']
     steps:
     - uses: actions/checkout@v2
     - name: Build project
+      id: build
       shell: pwsh
       run: ./build.ps1 ${{ matrix.variant }} $env:GITHUB_RUN_NUMBER $env:GITHUB_SHA
     - name: Push it to GitHub
@@ -23,7 +27,7 @@ jobs:
       - uses: Azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - uses: Azure/get-keyvault-secrets@v1.0
+      - uses: Azure/get-keyvault-secrets@v1.1
         with:
           keyvault: "ActionsBuild"
           secrets: 'OctopusServerUrl, OctopusApiKey'
@@ -32,4 +36,4 @@ jobs:
         shell: pwsh
         run: |
           dotnet tool install --global Octopus.DotNet.Cli
-          dotnet-octo create-release --project Traducir --releaseNumber $VERSION --package $VERSION --deployto Dev --server "${{ steps.azureSecrets.outputs.OctopusServerUrl }}" --apiKey "${{ steps.azureSecrets.outputs.OctopusApiKey }}" --progress
+          dotnet-octo create-release --project Traducir --releaseNumber ${{needs.build.outputs.version}} --package traducir:${{needs.build.outputs.version_without_hash}},traducir-risky:${{needs.build.outputs.version_without_hash}} --deployto Dev --server "${{ steps.azureSecrets.outputs.OctopusServerUrl }}" --apiKey "${{ steps.azureSecrets.outputs.OctopusApiKey }}" --progress
