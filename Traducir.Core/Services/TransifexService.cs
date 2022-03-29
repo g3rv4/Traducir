@@ -13,13 +13,6 @@ using Traducir.Core.Models.Services;
 
 namespace Traducir.Core.Services
 {
-    public interface ITransifexService
-    {
-        Task<ImmutableArray<TransifexString>> GetStringsFromTransifexAsync();
-
-        Task<bool> PushStringsToTransifexAsync(ImmutableArray<SOString> strings);
-    }
-
     public class TransifexService : ITransifexService
     {
         private readonly string _apikey;
