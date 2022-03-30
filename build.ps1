@@ -4,7 +4,7 @@ param (
     [Parameter(Mandatory=$false)][string]$CommitSHA
 )
 
-$dockerImage = "g3rv4/traducir-builder:3.1.404-alpine3.12"
+$dockerImage = "g3rv4/traducir-builder:6.0.201-alpine3.15"
 
 $basePath = Get-Location
 $buildPropsPath = Join-Path $basePath Directory.Build.props
