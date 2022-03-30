@@ -74,9 +74,11 @@ namespace Traducir.Web
                 {
                     loggingBuilder.AddConsole();
                 });
-                services.AddSingleton(typeof(ILoggerFactory), LoggerFactory);
-                services.AddSingleton(typeof(TransifexService), typeof(TransifexService));
-                services.AddSingleton(typeof(ITransifexService), typeof(ReadonlyTransifexService));
+
+                services.AddSingleton<ITransifexService>(serviceProvider =>
+                    new ReadonlyTransifexService(
+                        new TransifexService(Configuration, serviceProvider.GetService<ISOStringService>()),
+                        LoggerFactory));
             }
             else
             {

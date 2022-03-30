@@ -9,10 +9,10 @@ namespace Traducir.Core.Services
     // To be used in development environment only
     public class ReadonlyTransifexService : ITransifexService
     {
-        private readonly TransifexService realService;
+        private readonly ITransifexService realService;
         private readonly ILogger logger;
 
-        public ReadonlyTransifexService(TransifexService realService, ILoggerFactory loggerFactory)
+        public ReadonlyTransifexService(ITransifexService realService, ILoggerFactory loggerFactory)
         {
             this.realService = realService;
             this.logger = loggerFactory.CreateLogger("TRANSIFEX SERVICE");
