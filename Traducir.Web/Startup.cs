@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using StackExchange.Profiling;
 using Traducir.Core.Helpers;
 using Traducir.Core.Services;
+using Traducir.Core.TransifexV3;
 using Traducir.Web.Services;
 using Traducir.Web.ViewModels;
 
@@ -68,6 +69,16 @@ namespace Traducir.Web
             services.AddSingleton(typeof(INotificationService), typeof(NotificationService));
             services.AddSingleton(typeof(IStringsService), typeof(StringsService));
 
+            services.AddHttpClient<TransifexApiClient, TransifexApiClient>(httpClient =>
+                new TransifexApiClient(Configuration.GetValue<string>("TRANSIFEX_APIKEY"), httpClient));
+
+            services.AddSingleton(
+                new TransifexServiceV3Api.ServiceConfiguration(
+                    Configuration.GetValue<string>("TRANSIFEX_V3_ORGANIZATION"),
+                    Configuration.GetValue<string>("TRANSIFEX_V3_PROJECT"),
+                    Configuration.GetValue<string>("TRANSIFEX_V3_RESOURCE"),
+                    Configuration.GetValue<string>("TRANSIFEX_V3_LANGUAGE")));
+
             if (HostingEnvironment.IsDevelopment() && !Configuration.GetValue<bool>("PUSH_TO_TRANSIFEX_ON_DEV"))
             {
                 services.AddLogging(loggingBuilder =>
@@ -75,14 +86,19 @@ namespace Traducir.Web
                     loggingBuilder.AddConsole();
                 });
 
-                services.AddSingleton<ITransifexService>(serviceProvider =>
-                    new ReadonlyTransifexService(
-                        new TransifexService(Configuration, serviceProvider.GetService<ISOStringService>()),
-                        LoggerFactory));
+                services.AddScoped<ITransifexService>(serviceProvider =>
+                {
+                    var transifexService = new TransifexServiceV3Api(
+                        serviceProvider.GetService<TransifexApiClient>(),
+                        serviceProvider.GetService<TransifexServiceV3Api.ServiceConfiguration>(),
+                        serviceProvider.GetService<ISOStringService>());
+
+                    return new ReadonlyTransifexService(transifexService, LoggerFactory);
+                });
             }
             else
             {
-                services.AddSingleton(typeof(ITransifexService), typeof(TransifexService));
+                services.AddSingleton<ITransifexService, TransifexServiceV3Api>();
             }
 
             services.AddMiniProfiler(settings =>
