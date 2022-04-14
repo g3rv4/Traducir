@@ -45,16 +45,7 @@ namespace Traducir.Core.Services
                         Key = translation.Key,
                         Source = translation.OriginalStrings.Other,
                         Comment = translation.DeveloperComment ?? string.Empty, // v2 API returned blank string where v2 returns null
-
-                        // Since migrating to the V3 api, we are considering any strings that exist in Transifex with translations to have
-                        // already been reviewed since that matches how we interact with the system (and because the bulk upload in the new
-                        // API does not allow for a 'reviewed' flag to be included with each translation, which was a feature that v2 had)
-                        Reviewed = translation.Strings is not null,
-
-                        // The 'UnreviewedTranslation' property previously came from the 'translation' field and would be used to return a
-                        // value from the 'Translation' property if 'Reviewed' was true - so, by similar logic as above, we can set this
-                        // value by taking the 'Other' property from the translations data (if any is available for the current string)
-                        UnreviewedTranslation = translation.Strings?.Other
+                        Translation = translation.Strings?.Other
                     })
                     .ToImmutableArray();
             }
