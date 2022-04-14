@@ -196,15 +196,22 @@ namespace Traducir.Core.TransifexV3
             // https://transifex.github.io/openapi/index.html#section/Authentication
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiToken);
             using var response = await _httpClient.SendAsync(request, cancellationToken);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<T>(cancellationToken: cancellationToken);
-                return result!;
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<T>(cancellationToken: cancellationToken);
+                    return result!;
+                }
+                else
+                {
+                    var error = await response.Content.ReadFromJsonAsync<ErrorResponse>(cancellationToken: cancellationToken);
+                    throw new TransifexException($"{callerNameToIncludeInException} failed", error!.Errors);
+                }
             }
-            else
+            catch (JsonException exception)
             {
-                var error = await response.Content.ReadFromJsonAsync<ErrorResponse>(cancellationToken: cancellationToken);
-                throw new TransifexException(callerNameToIncludeInException + " failed", error!.Errors);
+                throw new TransifexException($"{callerNameToIncludeInException} failed when parsing Transifex JSON response. This is likely due to Transifex being under maintenance or offline. Status Code: {response.StatusCode}, Content: '{await response.Content.ReadAsStringAsync(cancellationToken)}'", ImmutableList<TransifexClientError>.Empty, exception);
             }
         }
 
