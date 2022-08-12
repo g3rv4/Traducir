@@ -65,8 +65,15 @@ namespace Traducir.Core.Services
                     ("redirect_uri", returnUrl),
                 }.Select(e => new KeyValuePair<string, string>(e.Item1, e.Item2)));
                 var result = await client.PostAsync("/oauth/access_token", content);
-                result.EnsureSuccessStatusCode();
+                if (result.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    var response = await result.Content.ReadAsStringAsync();
+                    var e = new Exception("Got a 403 when trying to get the token");
+                    e.Data.Add("Response", response);
+                    throw e;
+                }
 
+                result.EnsureSuccessStatusCode();
                 string resultContent = await result.Content.ReadAsStringAsync();
                 var parsedData = HttpUtility.ParseQueryString(resultContent);
                 return parsedData["access_token"];
