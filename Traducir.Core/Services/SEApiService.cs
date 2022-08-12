@@ -68,9 +68,7 @@ namespace Traducir.Core.Services
                 if (result.StatusCode == HttpStatusCode.Forbidden)
                 {
                     var response = await result.Content.ReadAsStringAsync();
-                    var e = new Exception("Got a 403 when trying to get the token");
-                    e.Data.Add("Response", response);
-                    throw e;
+                    throw new Exception("Got a 403 when trying to get the token. Body: " + response);
                 }
 
                 result.EnsureSuccessStatusCode();
