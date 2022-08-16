@@ -25,6 +25,7 @@ namespace Traducir.Core.Services
     public class SEApiService : ISEApiService
     {
         private const string FilterId = "SY(8)VHj.3*xaOr3N*GB)B";
+        private static HttpClient _httpClient;
         private readonly string _clientId;
         private readonly string _appKey;
         private readonly string _appSecret;
@@ -36,15 +37,22 @@ namespace Traducir.Core.Services
             _appSecret = configuration.GetValue<string>("STACKAPP_SECRET");
         }
 
-        private HttpClientHandler Handler => new HttpClientHandler
+        private static HttpClientHandler Handler => new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         };
 
-        private HttpClient HttpClient => new HttpClient(Handler)
+        private static HttpClient HttpClient => _httpClient ??= GetHttpClient();
+
+        private static HttpClient GetHttpClient()
         {
-            BaseAddress = new Uri("https://api.stackexchange.com")
-        };
+            var c = new HttpClient(Handler)
+            {
+                BaseAddress = new Uri("https://api.stackexchange.com"),
+            };
+            c.DefaultRequestHeaders.Add("User-Agent", "Traducir");
+            return c;
+        }
 
         public string GetInitialOauthUrl(string returnUrl, string state = null)
         {
@@ -57,6 +65,7 @@ namespace Traducir.Core.Services
             using (var client = new HttpClient())
             {
                 client.BaseAddress = new Uri("https://stackoverflow.com");
+                client.DefaultRequestHeaders.Add("User-Agent", "Traducir");
                 var content = new FormUrlEncodedContent(new[]
                 {
                     ("client_id", _clientId),
