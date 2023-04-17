@@ -1,3 +1,15 @@
+# This project has been ARCHIVED
+
+Hi there :) this project has been archived, as announced on these posts:
+
+* [Meta Stack Exchange](https://meta.stackexchange.com/q/388400/238921)
+* [Stack Overflow en español](https://es.meta.stackoverflow.com/q/5530/11272)
+* [Stack Overflow em Português](https://pt.meta.stackoverflow.com/q/8873/103127)
+* [Stack Overflow на русском](https://ru.meta.stackoverflow.com/q/12595/282717)
+* [スタック・オーバーフロー](https://ja.meta.stackoverflow.com/q/3872/24611)
+
+There you can find instructions on what to do if you need help with it. I'm leaving this archived so that people can still reference the code, but this no longer matches the version that we're running in prod.
+
 # traducir.win :unicorn:
 A webapp to handle Transifex translations collaboratively using Stack Exchange accounts to log in.
 
